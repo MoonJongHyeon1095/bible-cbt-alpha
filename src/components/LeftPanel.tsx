@@ -5,7 +5,7 @@ import {
   analyzeCognitiveErrors,
   CognitiveErrorAnalysisResult,
   generateBurnsEmpathy,
-} from "../lib/gpt";
+} from "../lib/ai";
 import type { EmotionThoughtPair } from "../types";
 import { EmotionIntensityModal } from "./EmotionIntensityModal";
 import { Button } from "./ui/button";
@@ -60,11 +60,16 @@ export function LeftPanel({
   const [selectedErrors2, setSelectedErrors2] = useState<number[]>([]);
 
   // Step 3일 때 번즈식 공감법 생성
+  // useEffect(() => {
+  //   if (step === 3 && currentPair && !burnsEmpathy && !empathyLoading) {
+  //     generateEmpathy();
+  //   }
+  // }, [step, currentPair]);
   useEffect(() => {
     if (step === 3 && currentPair && !burnsEmpathy && !empathyLoading) {
       generateEmpathy();
     }
-  }, [step, currentPair]);
+  }, [step, currentPair, burnsEmpathy, empathyLoading]);
 
   // 번즈식 공감법 생성
   const generateEmpathy = async () => {

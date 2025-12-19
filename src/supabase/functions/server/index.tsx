@@ -220,6 +220,90 @@ app.post("/make-server-4ba10e96/gemini", async (c) => {
   }
 });
 
+// OpenAI(GPT) API 프록시 엔드포인트
+app.post("/make-server-4ba10e96/gpt", async (c) => {
+  try {
+    const body = await c.req.json().catch(() => ({}));
+    const prompt = body?.prompt;
+    const systemPrompt = body?.systemPrompt;
+
+    if (!prompt || typeof prompt !== "string") {
+      return c.json({ error: "prompt is required" }, 400);
+    }
+
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    if (!OPENAI_API_KEY) {
+      return c.json(
+        { error: "Server configuration error: OPENAI_API_KEY not found" },
+        500
+      );
+    }
+
+    const input = systemPrompt
+      ? [
+          { role: "system", content: String(systemPrompt) },
+          { role: "user", content: prompt },
+        ]
+      : [{ role: "user", content: prompt }];
+
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        input,
+        temperature: 0.7,
+        max_output_tokens: 1200,
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      return c.json(
+        {
+          error: `AI request failed (status: ${response.status})`,
+          details: data,
+        },
+        response.status
+      );
+    }
+
+    const text =
+      typeof data?.output_text === "string"
+        ? data.output_text
+        : extractTextFromResponsesPayload(data) ?? "";
+
+    // ✅ 프론트(gpt/client.ts)가 기대하는 형태: _text
+    return c.json({ ...data, _text: text });
+  } catch (error: any) {
+    return c.json(
+      { error: "Unexpected error", details: error?.message ?? String(error) },
+      500
+    );
+  }
+});
+
+// ---------- helpers ----------
+function extractTextFromResponsesPayload(payload: any): string | null {
+  try {
+    const output = payload?.output;
+    if (!Array.isArray(output)) return null;
+
+    return output
+      .flatMap((o: any) => o?.content ?? [])
+      .map((c: any) => c?.text)
+      .filter((t: any) => typeof t === "string")
+      .join("\n")
+      .trim();
+  } catch {
+    return null;
+  }
+}
+
 // 댓글 불러오기 (GET)
 app.get("/make-server-4ba10e96/comments", async (c) => {
   try {

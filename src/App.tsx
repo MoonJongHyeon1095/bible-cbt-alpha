@@ -1,20 +1,21 @@
-import { useState, useEffect } from 'react';
-import { Navigation } from './components/Navigation';
-import { AuthModal } from './components/AuthModal';
-import { CBTSessionPage } from './components/CBTSessionPage';
-import { DashboardPage } from './components/DashboardPage';
-import { AIChatPage } from './components/AIChatPage';
-import { PrayerNotesPage } from './components/PrayerNotesPage';
-import { ScriptureNotesPage } from './components/ScriptureNotesPage';
-import { PatternsPage } from './components/PatternsPage';
-import { CommunityPage } from './components/CommunityPage';
-import { VoicePage } from './components/VoicePage';
-import { HelplinePage } from './components/HelplinePage';
-import { CommentSection } from './components/CommentSection';
-import { authHelpers } from './lib/supabase';
+import { useEffect, useState } from "react";
+import { AIChatPage } from "./components/AIChatPage";
+import { AuthModal } from "./components/AuthModal";
+import { CBTSessionPage } from "./components/CBTSessionPage";
+import { CommentSection } from "./components/CommentSection";
+import { CommunityPage } from "./components/CommunityPage";
+import { DashboardPage } from "./components/DashboardPage";
+import { DevAIProviderToggle } from "./components/dev/DevAIProviderToggle";
+import { HelplinePage } from "./components/HelplinePage";
+import { Navigation } from "./components/Navigation";
+import { PatternsPage } from "./components/PatternsPage";
+import { PrayerNotesPage } from "./components/PrayerNotesPage";
+import { ScriptureNotesPage } from "./components/ScriptureNotesPage";
+import { VoicePage } from "./components/VoicePage";
+import { authHelpers } from "./lib/supabase";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('cbt');
+  const [currentPage, setCurrentPage] = useState("cbt");
   const [user, setUser] = useState<any>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -28,7 +29,7 @@ export default function App() {
       const { user: currentUser } = await authHelpers.getCurrentUser();
       setUser(currentUser);
     } catch (error) {
-      console.error('사용자 확인 오류:', error);
+      console.error("사용자 확인 오류:", error);
       setUser(null);
     } finally {
       setLoading(false);
@@ -38,7 +39,7 @@ export default function App() {
   const handleLogout = async () => {
     await authHelpers.signOut();
     setUser(null);
-    alert('로그아웃되었습니다.');
+    alert("로그아웃되었습니다.");
   };
 
   const handleAuthSuccess = () => {
@@ -47,23 +48,23 @@ export default function App() {
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'cbt':
+      case "cbt":
         return <CBTSessionPage />;
-      case 'dashboard':
+      case "dashboard":
         return <DashboardPage />;
-      case 'ai-chat':
+      case "ai-chat":
         return <AIChatPage />;
-      case 'prayer-notes':
+      case "prayer-notes":
         return <PrayerNotesPage />;
-      case 'scripture-notes':
+      case "scripture-notes":
         return <ScriptureNotesPage />;
-      case 'patterns':
+      case "patterns":
         return <PatternsPage />;
-      case 'community':
+      case "community":
         return <CommunityPage />;
-      case 'voice':
+      case "voice":
         return <VoicePage />;
-      case 'helpline':
+      case "helpline":
         return <HelplinePage />;
       default:
         return <CBTSessionPage />;
@@ -91,9 +92,7 @@ export default function App() {
         onShowAuth={() => setShowAuthModal(true)}
       />
 
-      <main className="pb-16">
-        {renderPage()}
-      </main>
+      <main className="pb-16">{renderPage()}</main>
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-16">
@@ -101,7 +100,9 @@ export default function App() {
           <div className="text-center mb-8">
             <div className="inline-block bg-white border border-slate-200 shadow-sm rounded-2xl px-10 py-5 mb-6">
               <p className="text-slate-500 text-sm mb-1">Copyright © 2025</p>
-              <p className="text-slate-800 text-lg tracking-wide">617ALLIANCE</p>
+              <p className="text-slate-800 text-lg tracking-wide">
+                617ALLIANCE
+              </p>
             </div>
           </div>
 
@@ -116,6 +117,8 @@ export default function App() {
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
       />
+
+      <DevAIProviderToggle />
     </div>
   );
 }

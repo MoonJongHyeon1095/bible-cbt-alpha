@@ -1,6 +1,6 @@
 // src/lib/gpt/client.ts
-import { projectId, publicAnonKey } from "@/utils/supabase/info";
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/utils/supabase/runtime";
+import { projectId, publicAnonKey } from "../../utils/supabase/info";
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../../utils/supabase/runtime";
 
 const fallbackUrl = `https://${projectId}.supabase.co`;
 const baseUrl = SUPABASE_URL?.trim() || fallbackUrl;
@@ -27,6 +27,13 @@ export async function callGptText(prompt: string, opts: GptCallOptions = {}) {
   });
 
   const data = await res.json().catch(() => ({}));
+  if (data?.usage) {
+    console.log("[GPT TOKEN USAGE]", {
+      input: data.usage.input_tokens,
+      output: data.usage.output_tokens,
+      total: data.usage.total_tokens,
+    });
+  }
 
   if (!res.ok) {
     const msg = data?.error ?? `AI 요청 실패 (status: ${res.status})`;

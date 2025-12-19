@@ -33,7 +33,7 @@ export async function callGeminiAPI(
             ? "내일"
             : `약 ${Math.ceil(retryAfterSeconds / 60)}분 후`;
 
-        const errorMessage = `⏰ AI 서버의 일일 무료 사용량을 초과했습니다.\n\n${retryMessage}에 다시 시도하시거나, 더 많이 사용하시려면 Google AI Studio(https://aistudio.google.com)에서 새로운 무료 API 키를 발급받아 설정하실 수 있습니다.\n\n불편을 드�� 죄송합니다.`;
+        const errorMessage = `⏰ AI 서버의 일일 무료 사용량을 초과했습니다.\n\n${retryMessage}에 다시 시도하시거나, 더 많이 사용하시려면 Google AI Studio(https://aistudio.google.com)에서 새로운 무료 API 키를 발급받아 설정하실 수 있습니다.\n\n불편을 드려 죄송합니다.`;
 
         console.error("Gemini API 할당량 초과:", {
           status: response.status,
@@ -77,39 +77,39 @@ export async function callGeminiAPI(
   }
 }
 
-export async function generateThreeAutomaticThoughts(
-  situation: string,
-  emotion: string
-): Promise<string[]> {
-  const systemPrompt = `당신은 기독교 상담 전문성을 갖춘 인지행동치료(CBT) 전문가입니다. 사용자의 상황과 감정을 분석하여 자동적 사고를 정확하게 파악합니다. 항상 간결하고 구체적으로 응답하세요.`;
+// export async function generateThreeAutomaticThoughts(
+//   situation: string,
+//   emotion: string
+// ): Promise<string[]> {
+//   const systemPrompt = `당신은 기독교 상담 전문성을 갖춘 인지행동치료(CBT) 전문가입니다. 사용자의 상황과 감정을 분석하여 자동적 사고를 정확하게 파악합니다. 항상 간결하고 구체적으로 응답하세요.`;
 
-  const prompt = `상황: ${situation}
-감정: ${emotion}
+//   const prompt = `상황: ${situation}
+// 감정: ${emotion}
 
-이 상황에서 \"${emotion}\" 감정을 느낄 때 사람들이 흔히 가지는 자동적 사고 3가지를 생성해주세요.
+// 이 상황에서 \"${emotion}\" 감정을 느낄 때 사람들이 흔히 가지는 자동적 사고 3가지를 생성해주세요.
 
-형식:
-1. [자동적 사고 1]
-2. [자동적 사고 2]
-3. [자동적 사고 3]`;
+// 형식:
+// 1. [자동적 사고 1]
+// 2. [자동적 사고 2]
+// 3. [자동적 사고 3]`;
 
-  const response = await callGeminiAPI(prompt, systemPrompt);
+//   const response = await callGeminiAPI(prompt, systemPrompt);
 
-  // 응답을 파싱하여 배열로 변환
-  const thoughts = response
-    .split("\n")
-    .filter((line) => line.trim().match(/^\d+\./))
-    .map((line) => line.replace(/^\d+\.\s*/, "").trim())
-    .slice(0, 3);
+//   // 응답을 파싱하여 배열로 변환
+//   const thoughts = response
+//     .split("\n")
+//     .filter((line) => line.trim().match(/^\d+\./))
+//     .map((line) => line.replace(/^\d+\.\s*/, "").trim())
+//     .slice(0, 3);
 
-  return thoughts.length === 3
-    ? thoughts
-    : [
-        "이 상황은 나를 힘들게 만든다",
-        "나는 이것을 감당할 수 없을 것 같다",
-        "이런 일이 또 일어날 것이다",
-      ];
-}
+//   return thoughts.length === 3
+//     ? thoughts
+//     : [
+//         "이 상황은 나를 힘들게 만든다",
+//         "나는 이것을 감당할 수 없을 것 같다",
+//         "이런 일이 또 일어날 것이다",
+//       ];
+// }
 
 // SDT(자기결정이론) 기반 자동사고 3개 + 인지오류 기반 자동사고 10개 생성
 export async function generateExtendedAutomaticThoughts(

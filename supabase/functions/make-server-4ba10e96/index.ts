@@ -10,6 +10,7 @@ const FUNCTION_NAME =
 
 // ✅ basePath를 명시적으로 설정
 const app = new Hono().basePath(`/${FUNCTION_NAME}`);
+//const app = new Hono();
 
 // middlewares
 app.use("*", logger());

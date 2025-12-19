@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 // import { generateExtendedAutomaticThoughts } from "../lib/gemini";
-import { generateExtendedAutomaticThoughts } from "@/lib/gpt";
+import { generateExtendedAutomaticThoughts } from "../lib/ai";
 import type { EmotionThoughtPair } from "../types";
 import { FirstEmotionIntensityModal } from "./FirstEmotionIntensityModal";
 import { Button } from "./ui/button";
@@ -516,14 +516,7 @@ export function CenterPanel({
         selectedEmotion
       );
 
-      // SDT 3개 + 인지오류 기반 10개를 하나의 배열로 합치기 (레이블 제거)
-      const allThoughts = [
-        ...result.sdtThoughts.map((st) => st.thought),
-        ...result.cognitiveThoughts.map((ct) =>
-          ct.replace(/\s*\([^)]*\)\s*$/g, "").trim()
-        ), // 괄호 제거
-      ];
-
+      const allThoughts = result.sdtThoughts.map((st) => st.thought);
       setGeneratedThoughts(allThoughts);
 
       // 화면을 위로 스크롤
