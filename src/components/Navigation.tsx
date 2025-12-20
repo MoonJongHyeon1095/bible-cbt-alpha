@@ -28,7 +28,6 @@ export function Navigation({
   onShowAuth,
 }: NavigationProps) {
   const navItems = [
-    // { id: 'cbt', label: '마음생각고쳐쓰기', icon: Brain },
     { id: "dashboard", label: "대시보드", icon: LayoutDashboard },
     { id: "ai-chat", label: "AI 상담", icon: MessageSquare },
     { id: "prayer-notes", label: "기도 노트", icon: BookOpen },

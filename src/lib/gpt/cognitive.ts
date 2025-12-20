@@ -1,5 +1,3 @@
-
-
 // src/lib/gpt/cognitive.ts
 import { callGptText } from "./client";
 
@@ -74,18 +72,21 @@ type LlmResponseShape = {
 };
 
 const SYSTEM_PROMPT = `
-너는 인지행동치료(CBT) 관점에서 "인지오류"를 식별하는 전문가다.
+너는 인지행동치료(CBT) 관점에서 "생각의 왜곡"을 식별하는 전문가다.
 
-요구사항:
-- 아래 10가지 인지오류 중 해당하는 것을 3~5개 고른다.
-- index 의미에 정확히 부합하는 경우만 선택한다. 애매하면 다른 index를 고르거나 제외한다.
-- userQuote는 입력 텍스트에서 문장을 그대로 복사한다(의역/요약 금지).
-- analysis는 왜 해당 인지오류인지 2~3문장으로 구체적으로 설명한다.
-- 중복(동일 인지오류) 선택은 피한다.
-- 출력은 오직 JSON만 허용한다. (설명/주석/코드블록/번호/불릿 금지)
-- 아래 스키마를 정확히 지킨다.
+너의 목표:
+- 아래 10가지 중 해당하는 것을 3~5개 고른다. (애매하면 제외, 중복 피함)
+- 각 항목에 대해 userQuote(그대로 인용)와 analysis(3문장)를 작성한다.
 
-출력 스키마(정확히):
+가장 중요한 규칙 (반드시 지켜):
+1) userQuote는 입력 텍스트에서 문장을 그대로 복사한다. (의역/요약 금지)
+2) analysis는 반드시 3문장 이상이어야 한다. (3~5 문장)
+3) analysis는 '정의/교과서 설명'을 하지 않는다. 대신 "이 문장에서 일어난 추론 점프"를 지적한다.
+4) analysis에는 사용자의 상황, 배후 사고를 반드시 구체적으로 반영한다. (그래야 상황을 반영했다고 볼 수 있음)
+5) analysis의 마지막에는 그 감정이 더 커질 수 있음을 지적하고, 구체적인 확인 질문 예시를 제시한다. 
+
+출력은 오직 JSON만 허용한다. (설명/주석/코드블록/번호/불릿 금지)
+출력 스키마:
 {
   "errors": [
     { "index": 1, "userQuote": "...", "analysis": "..." }
@@ -144,7 +145,7 @@ export async function analyzeCognitiveErrors(
   thought: string
 ): Promise<CognitiveErrorAnalysisResult> {
   // ✅ user prompt는 최소 정보만: 상황/사고 + 10개 목록은 system에 이미 고정
-  const prompt = `상황: ${situation}\n자동사고: ${thought}`;
+  const prompt = `상황: ${situation}\n배후 사고: ${thought}`;
 
   try {
     const raw = await callGptText(prompt, { systemPrompt: SYSTEM_PROMPT });
@@ -210,3 +211,4 @@ export async function analyzeCognitiveErrors(
     return toResult(FALLBACK_INDICES, situation, thought);
   }
 }
+

@@ -13,7 +13,7 @@ import { CenterPanel } from "./center/CenterPanel";
 import { EmailModal } from "./EmailModal";
 import { FavoritesModal } from "./FavoritesModal";
 import { HistoryModal } from "./HistoryModal";
-import { LeftPanel } from "./LeftPanel";
+import { LeftPanel } from "./left/LeftPanel";
 import { RecommendModal } from "./RecommendModal";
 import { RightPanel } from "./RightPanel";
 import { Button } from "./ui/button";
@@ -156,10 +156,9 @@ export function CBTSessionPage() {
     <div className="max-w-[1800px] mx-auto px-8 py-8">
       {/* Header */}
       <header className="text-center mb-8">
-        <h2 className="text-2xl text-slate-900 mb-2">🧠 마음생각고쳐쓰기</h2>
-        <p className="text-slate-600">
+        <h2 className="text-2xl text-slate-900 mb-2">
           간단히 실험해보세요, 정말 기분이 바뀌는지.
-        </p>
+        </h2>
 
         <div className="flex items-center justify-center gap-4 mt-4">
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-xl px-6 py-3 shadow-lg">

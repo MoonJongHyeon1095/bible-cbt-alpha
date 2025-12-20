@@ -316,7 +316,7 @@ export function RightPanel({
             ) && (
               <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-indigo-700">🎯 적용된 치료 기법:</span>
+                  <span className="text-indigo-700">🎯 적용된 기법:</span>
                   <span className="text-indigo-900">
                     {
                       alternativeThoughts.find(

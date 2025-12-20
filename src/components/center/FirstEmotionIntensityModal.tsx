@@ -18,20 +18,18 @@ interface FirstEmotionIntensityModalProps {
   onIntensityChange: (value: number) => void;
 
   /**
-   * ✅ 강도 측정(숫자 선택) 직후 바로 호출해서
-   * 자동사고 생성 API를 미리 시작할 수 있게 함
+   * ✅ 강도 측정(숫자 선택) 직후 바로 호출
    */
   onPrefetchThoughts?: () => void;
 
   /**
    * ✅ 마지막 단계(줄이고 싶나요 선택 후) Confirm
-   * 부모에서 여기서 emotionSet 전환 + 프리페치 대기/폴백 호출
    */
   onConfirm: () => void;
 
   /**
    * 모달 닫기 (옵션)
-   * - 너는 강제 진행 UX라 바깥클릭 막고 있어서, ‘취소’ 버튼을 두고 싶을 때만 씀
+   * - 강제 진행 UX라 바깥클릭 막고 있어서, ‘취소’ 버튼을 두고 싶을 때만 씀
    */
   onClose?: () => void;
 

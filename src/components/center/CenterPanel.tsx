@@ -592,13 +592,16 @@ export function CenterPanel({
                   ✨ 그러나 {selectedEmotionData.label}의 긍정적인 측면도
                   있습니다.
                 </h3>
-                <ul className="mt-2 space-y-2 list-disc pl-5">
+                <ul className="mt-2 space-y-2">
                   {selectedEmotionData.positive.map((item, idx) => (
                     <li
                       key={idx}
-                      className="text-slate-700 text-sm leading-relaxed"
+                      className="flex gap-2 text-slate-700 text-sm leading-relaxed"
                     >
-                      {item}
+                      <span className="mt-[0.35rem] select-none text-slate-500">
+                        •
+                      </span>
+                      <span className="flex-1">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -609,13 +612,16 @@ export function CenterPanel({
                 <h3 className="text-amber-900 text-sm font-semibold">
                   ⚠️ {selectedEmotionData.label}의 주의할 점
                 </h3>
-                <ul className="mt-2 space-y-2 list-disc pl-5">
-                  {selectedEmotionData.caution.map((item, idx) => (
+                <ul className="mt-2 space-y-2">
+                  {selectedEmotionData.positive.map((item, idx) => (
                     <li
                       key={idx}
-                      className="text-slate-700 text-sm leading-relaxed"
+                      className="flex gap-2 text-slate-700 text-sm leading-relaxed"
                     >
-                      {item}
+                      <span className="mt-[0.35rem] select-none text-slate-500">
+                        •
+                      </span>
+                      <span className="flex-1">{item}</span>
                     </li>
                   ))}
                 </ul>
