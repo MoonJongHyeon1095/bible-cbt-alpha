@@ -81,6 +81,43 @@ export default function App() {
     );
   }
 
+  // return (
+  //   <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+  //     <Navigation
+  //       currentPage={currentPage}
+  //       onNavigate={setCurrentPage}
+  //       user={user}
+  //       onLogout={handleLogout}
+  //       onShowAuth={() => setShowAuthModal(true)}
+  //     />
+
+  //     <main className="pb-16">{renderPage()}</main>
+
+  //     {/* Footer */}
+  //     <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-16">
+  //       <div className="max-w-[1800px] mx-auto px-8">
+  //         <div className="text-center mb-8">
+  //           <div className="inline-block bg-white border border-slate-200 shadow-sm rounded-2xl px-10 py-5 mb-6">
+  //             <p className="text-slate-500 text-sm mb-1">Copyright © 2025</p>
+  //             <p className="text-slate-800 text-lg tracking-wide">
+  //               617ALLIANCE
+  //             </p>
+  //           </div>
+  //         </div>
+
+  //         {/* 댓글 섹션 */}
+  //         <CommentSection />
+  //       </div>
+  //     </footer>
+
+  //     {/* 인증 모달 */}
+  //     <AuthModal
+  //       open={showAuthModal}
+  //       onClose={() => setShowAuthModal(false)}
+  //       onSuccess={handleAuthSuccess}
+  //     />
+  //   </div>
+  // );
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       <Navigation
@@ -93,8 +130,8 @@ export default function App() {
 
       <main className="pb-16">{renderPage()}</main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-16">
+      {/* Footer: 모바일에서는 숨김 */}
+      <footer className="hidden md:block border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-16">
         <div className="max-w-[1800px] mx-auto px-8">
           <div className="text-center mb-8">
             <div className="inline-block bg-white border border-slate-200 shadow-sm rounded-2xl px-10 py-5 mb-6">
@@ -105,12 +142,10 @@ export default function App() {
             </div>
           </div>
 
-          {/* 댓글 섹션 */}
           <CommentSection />
         </div>
       </footer>
 
-      {/* 인증 모달 */}
       <AuthModal
         open={showAuthModal}
         onClose={() => setShowAuthModal(false)}
