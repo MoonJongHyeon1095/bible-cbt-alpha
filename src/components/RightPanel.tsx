@@ -198,6 +198,9 @@ export function RightPanel({
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
       <div className="mb-4">
+        <div className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1.5 rounded-full mb-3 shadow-lg text-sm">
+          우측 (4~6) ✨
+        </div>
         <h2 className="text-slate-800 text-xl">대안사고 구성</h2>
         <p className="text-slate-600 text-sm mt-2">
           우리의 생각을 더 진실된 생각으로 바꾸면, 우리의 감정도 적절한 자리를
@@ -316,7 +319,7 @@ export function RightPanel({
             ) && (
               <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-indigo-700">🎯 적용된 기법:</span>
+                  <span className="text-indigo-700">🎯 적용된 치료 기법:</span>
                   <span className="text-indigo-900">
                     {
                       alternativeThoughts.find(
@@ -504,11 +507,11 @@ export function RightPanel({
                   <strong>기도의 방법:</strong>
                 </p>
                 <ol className="list-decimal list-inside space-y-2 text-slate-700 text-base leading-relaxed">
-                  <li>이 말씀을 따라 읽습니다.</li>
+                  <li>{bibleVerse.reference} 말씀을 따라 읽습니다.</li>
                   <li>
                     이 말씀을 읽고 "이대로 도와주시기를 바랍니다"라고 하십시오.
                   </li>
-                  <li>"예수님의 이름으로 기도합니다. 아멘"이라고 해보세요.</li>
+                  <li>기도문은 따라 읽기보다, 자신만의 말로 기도해보십시오.</li>
                 </ol>
               </div>
 

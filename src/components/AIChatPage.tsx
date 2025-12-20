@@ -1,13 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
-import { MessageSquare, Send, Bot, User } from 'lucide-react';
-import { callGeminiAPI } from '../lib/gemini';
+import { Bot, MessageSquare, Send, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
+import { Textarea } from "./ui/textarea";
 
 interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: string;
 }
@@ -15,19 +14,19 @@ interface Message {
 export function AIChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: '0',
-      role: 'assistant',
+      id: "0",
+      role: "assistant",
       content:
-        '안녕하세요! 저는 마음생각고쳐쓰기 상담 도우미입니다. 😊\n\n오늘 당신의 마음은 어떤가요? 무엇이든 편하게 이야기해주세요. 함께 감정을 탐색하고, 생각의 패턴을 이해하며, 더 나은 대안을 찾아갈 수 있습니다.',
+        "안녕하세요! 저는 마음생각고쳐쓰기 상담 도우미입니다. 😊\n\n오늘 당신의 마음은 어떤가요? 무엇이든 편하게 이야기해주세요. 함께 감정을 탐색하고, 생각의 패턴을 이해하며, 더 나은 대안을 찾아갈 수 있습니다.",
       timestamp: new Date().toISOString(),
     },
   ]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -39,13 +38,13 @@ export function AIChatPage() {
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      role: 'user',
+      role: "user",
       content: input.trim(),
       timestamp: new Date().toISOString(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    setInput('');
+    setInput("");
     setLoading(true);
 
     try {
@@ -57,31 +56,34 @@ export function AIChatPage() {
       // 대화 이력 구성
       const conversationHistory = messages
         .slice(-5)
-        .map((m) => `${m.role === 'user' ? '사용자' : 'AI'}: ${m.content}`)
-        .join('\n');
+        .map((m) => `${m.role === "user" ? "사용자" : "AI"}: ${m.content}`)
+        .join("\n");
 
       const prompt = `대화 이력:
 ${conversationHistory}
 사용자: ${userMessage.content}`;
- 
-      const response = await callGeminiAPI(prompt, systemPrompt);
+
+      //const response = await callGeminiAPI(prompt, systemPrompt);
+
+      const response = "미구현이니 기다려주길 바람 - 문종현";
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        role: 'assistant',
+        role: "assistant",
         content: response,
         timestamp: new Date().toISOString(),
       };
 
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      console.error('AI 응답 오류:', error);
+      console.error("AI 응답 오류:", error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: error instanceof Error 
-          ? error.message 
-          : '죄송합니다. 응답 생성 중 오류가 발생했습니다. 다시 시도해주세요.',
+        role: "assistant",
+        content:
+          error instanceof Error
+            ? error.message
+            : "죄송합니다. 응답 생성 중 오류가 발생했습니다. 다시 시도해주세요.",
         timestamp: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -91,7 +93,7 @@ ${conversationHistory}
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -104,7 +106,9 @@ ${conversationHistory}
           <MessageSquare className="size-8 text-blue-600" />
           AI 상담 채팅
         </h1>
-        <p className="text-slate-600">AI와 대화하며 감정을 탐색하고 통찰을 얻으세요.</p>
+        <p className="text-slate-600">
+          AI와 대화하며 감정을 탐색하고 통찰을 얻으세요.
+        </p>
       </div>
 
       {/* 메시지 영역 */}
@@ -113,17 +117,19 @@ ${conversationHistory}
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
+              className={`flex gap-3 ${
+                message.role === "user" ? "flex-row-reverse" : ""
+              }`}
             >
               {/* 아바타 */}
               <div
                 className={`flex-shrink-0 size-10 rounded-full flex items-center justify-center ${
-                  message.role === 'user'
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600'
-                    : 'bg-gradient-to-r from-blue-600 to-cyan-600'
+                  message.role === "user"
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600"
+                    : "bg-gradient-to-r from-blue-600 to-cyan-600"
                 }`}
               >
-                {message.role === 'user' ? (
+                {message.role === "user" ? (
                   <User className="size-6 text-white" />
                 ) : (
                   <Bot className="size-6 text-white" />
@@ -133,22 +139,24 @@ ${conversationHistory}
               {/* 메시지 */}
               <div
                 className={`flex-1 max-w-[70%] ${
-                  message.role === 'user' ? 'text-right' : ''
+                  message.role === "user" ? "text-right" : ""
                 }`}
               >
                 <div
                   className={`inline-block p-4 rounded-2xl ${
-                    message.role === 'user'
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                      : 'bg-white border border-slate-200 text-slate-800'
+                    message.role === "user"
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                      : "bg-white border border-slate-200 text-slate-800"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                  <p className="whitespace-pre-wrap leading-relaxed">
+                    {message.content}
+                  </p>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
-                  {new Date(message.timestamp).toLocaleTimeString('ko-KR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
+                  {new Date(message.timestamp).toLocaleTimeString("ko-KR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })}
                 </p>
               </div>
@@ -165,11 +173,11 @@ ${conversationHistory}
                   <div className="size-2 bg-slate-400 rounded-full animate-bounce" />
                   <div
                     className="size-2 bg-slate-400 rounded-full animate-bounce"
-                    style={{ animationDelay: '0.2s' }}
+                    style={{ animationDelay: "0.2s" }}
                   />
                   <div
                     className="size-2 bg-slate-400 rounded-full animate-bounce"
-                    style={{ animationDelay: '0.4s' }}
+                    style={{ animationDelay: "0.4s" }}
                   />
                 </div>
               </div>

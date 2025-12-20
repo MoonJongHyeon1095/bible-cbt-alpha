@@ -5,7 +5,6 @@ import { CBTSessionPage } from "./components/CBTSessionPage";
 import { CommentSection } from "./components/CommentSection";
 import { CommunityPage } from "./components/CommunityPage";
 import { DashboardPage } from "./components/DashboardPage";
-import { DevAIProviderToggle } from "./components/dev/DevAIProviderToggle";
 import { HelplinePage } from "./components/HelplinePage";
 import { Navigation } from "./components/Navigation";
 import { PatternsPage } from "./components/PatternsPage";
@@ -117,8 +116,6 @@ export default function App() {
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
       />
-
-      <DevAIProviderToggle />
     </div>
   );
 }
