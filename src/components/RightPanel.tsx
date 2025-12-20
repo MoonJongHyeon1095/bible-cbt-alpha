@@ -63,16 +63,6 @@ export function RightPanel({
   }>({});
   const [showFinalIntensity, setShowFinalIntensity] = useState(false);
 
-  // 번즈 5단계 제안 기법 상태
-  const [burnsAdvice, setBurnsAdvice] = useState<{
-    thoughtEmpathy: string;
-    emotionEmpathy: string;
-    iStatement: string;
-    question: string;
-    soothing: string;
-  } | null>(null);
-  const [burnsLoading, setBurnsLoading] = useState(false);
-
   // Step 4일 때 대안사고 생성
   useEffect(() => {
     if (
