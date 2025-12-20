@@ -1,7 +1,12 @@
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from './ui/dialog';
-import { Button } from './ui/button';
-import { Slider } from './ui/slider';
-import { Heart, Info } from 'lucide-react';
+import { Heart, Info } from "lucide-react";
+import { Button } from "./ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "./ui/dialog";
+import { Slider } from "./ui/slider";
 
 interface EmotionIntensityModalProps {
   open: boolean;
@@ -24,24 +29,23 @@ export function EmotionIntensityModal({
 }: EmotionIntensityModalProps) {
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent 
+      <DialogContent
         className="max-w-6xl bg-white border-2 border-indigo-200 shadow-2xl max-h-[90vh] overflow-y-auto"
         aria-describedby="emotion-target-description"
       >
         <DialogTitle className="sr-only">감정 강도 조절하기</DialogTitle>
         <DialogDescription id="emotion-target-description" className="sr-only">
-          {emotion} 감정을 {currentIntensity}점에서 목표 강도로 낮추어 건강하게 조절하는 과정입니다.
+          {emotion} 감정을 {currentIntensity}점에서 목표 강도로 낮추어 건강하게
+          조절하는 과정입니다.
         </DialogDescription>
-        
+
         <div className="space-y-8 py-6">
           {/* 헤더 */}
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full mb-4">
               <Heart className="size-8 text-white" />
             </div>
-            <h2 className="text-slate-900 text-3xl mb-2">
-              감정 강도 조절하기
-            </h2>
+            <h2 className="text-slate-900 text-3xl mb-2">감정 강도 조절하기</h2>
             <p className="text-slate-600 text-lg">
               {emotion} 감정을 건강하게 다루어봅시다
             </p>
@@ -53,18 +57,25 @@ export function EmotionIntensityModal({
               <Info className="size-6 text-blue-600 flex-shrink-0 mt-1" />
               <div className="space-y-2">
                 <h3 className="text-blue-900 text-xl">
-                  🎯 감정을 조절할 수 있다는 것을 아는 것만으로도 효과가 있습니다
+                  🎯 감정을 조절할 수 있다는 것은...
                 </h3>
                 <p className="text-blue-800 leading-relaxed">
-                  많은 사람들이 부정적인 감정에 압도되어 <strong>"나는 이 감정을 어쩔 수 없어"</strong>라고 생각합니다.
-                  하지만 심리학자 앨버트 엘리스(Albert Ellis)의 연구에 따르면, 
-                  <strong className="text-blue-900"> 감정이 조절 가능하다는 것을 인식하는 순간 이미 변화가 시작</strong>됩니다.
+                  많은 사람들이 부정적인 감정에 압도되어{" "}
+                  <strong>"나는 이 감정을 어쩔 수 없어"</strong>라고 생각합니다.
+                  하지만 심리학자 앨버트 엘리스(Albert Ellis)의 연구에 따르면,
+                  <strong className="text-blue-900">
+                    {" "}
+                    감정이 조절 가능하다는 것을 인식하는 순간 이미 변화가 시작
+                  </strong>
+                  됩니다.
                 </p>
                 <p className="text-blue-800 leading-relaxed">
-                  감정의 강도를 스스로 설정해보는 것은 <strong>"내가 이 감정의 주인"</strong>이라는 
-                  자기효능감(Self-efficacy)을 높여줍니다. 
-                  실제로 목표 강도를 설정한 사람들은 그렇지 않은 사람들보다 
-                  <strong> 감정 조절에 2배 이상 성공률</strong>이 높다는 연구 결과가 있습니다.
+                  감정의 강도를 스스로 설정해보는 것은{" "}
+                  <strong>"내가 이 감정의 주인"</strong>이라는
+                  자기효능감(Self-efficacy)을 높여줍니다. 실제로 목표 강도를
+                  설정한 사람들은 그렇지 않은 사람들보다
+                  <strong> 감정 조절에 2배 이상 성공률</strong>이 높다는 연구
+                  결과가 있습니다.
                 </p>
               </div>
             </div>
@@ -76,17 +87,19 @@ export function EmotionIntensityModal({
               <Info className="size-6 text-purple-600 flex-shrink-0 mt-1" />
               <div className="space-y-2">
                 <h3 className="text-purple-900 text-xl">
-                  💡 왜 "0"이 아니라 적절한 수준으로 낮추는 게 좋을까요?
+                  💡 하지만 그 감정 역시도 소중합니다.
                 </h3>
                 <p className="text-purple-800 leading-relaxed">
-                  부정적인 감정을 완전히 없애려고 하면 오히려 역효과가 납니다. 
-                  감정은 우리에게 중요한 신��를 보내주는 <strong>정보</strong>이기 때문입니다.
+                  부정적인 감정을 완전히 없애려고 하면 오히려 역효과가 납니다.
+                  감정은 우리에게 중요한 신호를 보내주는 <strong>정보</strong>
+                  이기 때문입니다.
                 </p>
                 <p className="text-purple-800 leading-relaxed">
-                  예를 들어, 100점 만점의 분노를 30-40점 정도로 낮추면, 
-                  <strong>여전히 문제를 인식하면서도 이성적으로 대처</strong>할 수 있게 됩니다. 
-                  감정이 너무 높으면 판단력이 흐려지지만, 적절한 수준이면 
-                  오히려 <strong>동기부여와 문제해결의 에너지</strong>가 됩니다.
+                  예를 들어, 100점 만점의 분노를 30-40점 정도로 낮추면,
+                  <strong>여전히 문제를 인식하면서도 이성적으로 대처</strong>할
+                  수 있게 됩니다. 감정이 너무 높으면 판단력이 흐려지지만, 적절한
+                  수준이면 오히려 <strong>동기부여와 문제해결의 에너지</strong>
+                  가 됩니다.
                 </p>
               </div>
             </div>
@@ -99,7 +112,8 @@ export function EmotionIntensityModal({
             </p>
             <div className="flex items-center justify-center">
               <div className="text-6xl font-bold text-red-600">
-                {currentIntensity}<span className="text-3xl text-slate-500">/100</span>
+                {currentIntensity}
+                <span className="text-3xl text-slate-500">/100</span>
               </div>
             </div>
           </div>
@@ -110,18 +124,22 @@ export function EmotionIntensityModal({
               <strong>얼마나 낮추면 편하실까요?</strong>
             </p>
             <p className="text-slate-600 text-sm mb-6">
-              저희는 강도를 줄일 기술이 몇 가지 있습니다. 만일 당신이 원하시면 강도를 줄일 수 있습니다. 
-              그러나 당신의 장점이 바로 그 감정에서 나오는 것이니, 적절하게 줄이면 좋겠습니다.
+              저희는 강도를 줄일 기술이 몇 가지 있습니다. 만일 당신이 원하시면
+              강도를 줄일 수 있습니다. 그러나 당신의 장점이 바로 그 감정에서
+              나오는 것이니, 적절하게 줄이면 좋겠습니다.
             </p>
-            
+
             <div className="space-y-6">
               <div className="text-center">
                 <div className="text-5xl font-bold text-green-600 mb-2">
-                  {targetIntensity}<span className="text-2xl text-slate-500">/100</span>
+                  {targetIntensity}
+                  <span className="text-2xl text-slate-500">/100</span>
                 </div>
                 <p className="text-slate-600">
                   {targetIntensity < currentIntensity * 0.3 && "크게 낮추기"}
-                  {targetIntensity >= currentIntensity * 0.3 && targetIntensity < currentIntensity * 0.6 && "중간 정도 낮추기"}
+                  {targetIntensity >= currentIntensity * 0.3 &&
+                    targetIntensity < currentIntensity * 0.6 &&
+                    "중간 정도 낮추기"}
                   {targetIntensity >= currentIntensity * 0.6 && "조금만 낮추기"}
                 </p>
               </div>

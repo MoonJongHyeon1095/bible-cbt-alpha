@@ -60,11 +60,6 @@ export function LeftPanel({
   const [selectedErrors2, setSelectedErrors2] = useState<number[]>([]);
 
   // Step 3일 때 번즈식 공감법 생성
-  // useEffect(() => {
-  //   if (step === 3 && currentPair && !burnsEmpathy && !empathyLoading) {
-  //     generateEmpathy();
-  //   }
-  // }, [step, currentPair]);
   useEffect(() => {
     if (step === 3 && currentPair && !burnsEmpathy && !empathyLoading) {
       generateEmpathy();
@@ -150,9 +145,6 @@ export function LeftPanel({
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
       <div className="mb-4">
-        <div className="inline-block bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-4 py-1.5 rounded-full mb-3 shadow-lg text-sm">
-          좌측 (3) 🔍
-        </div>
         <h2 className="text-slate-800 text-xl">인지오류 검토</h2>
         <p className="text-slate-600 text-sm mt-2">
           우리가 만약 우리 생각의 오류를 찾을 수 있다면, 굉장히 빠르게 우리의
@@ -224,52 +216,6 @@ export function LeftPanel({
 
                     {(() => {
                       const soothing = burnsEmpathy.soothing ?? "";
-                      const hasBullets = /\(1\)|\(2\)|\(3\)/.test(soothing);
-
-                      // ✅ (1)(2)(3) 포맷이면 기존 파서 사용
-                      if (hasBullets) {
-                        return (
-                          <div className="text-slate-700 leading-snug space-y-1 text-sm">
-                            {soothing
-                              .split(/\(1\)|\(2\)|\(3\)/)
-                              .map((part, idx) => {
-                                if (idx === 0) {
-                                  const mainText = part
-                                    .split("제 생각은,")[1]
-                                    ?.trim();
-                                  return mainText ? (
-                                    <p key={idx} className="text-blue-800">
-                                      <strong>제 생각은,</strong>
-                                    </p>
-                                  ) : null;
-                                } else if (idx <= 3) {
-                                  const content = part
-                                    .split("그 증거가")[0]
-                                    ?.trim();
-                                  if (!content) return null;
-                                  return (
-                                    <p key={idx} className="pl-3">
-                                      <strong className="text-blue-600">
-                                        ({idx})
-                                      </strong>{" "}
-                                      {content}
-                                    </p>
-                                  );
-                                } else {
-                                  const evidenceMatch =
-                                    part.match(/그 증거가 바로[^.]*\./);
-                                  return evidenceMatch ? (
-                                    <p key={idx} className="text-blue-800 mt-1">
-                                      <strong>{evidenceMatch[0]}</strong>
-                                    </p>
-                                  ) : null;
-                                }
-                              })}
-                          </div>
-                        );
-                      }
-
-                      // ✅ 일반 문장형 soothing이면 그냥 통째로 출력
                       return (
                         <p className="text-blue-800 text-sm leading-relaxed">
                           {soothing}
@@ -279,9 +225,9 @@ export function LeftPanel({
                   </div>
 
                   {/* 질문법 */}
-                  <p className="text-slate-800 leading-relaxed text-sm">
+                  {/* <p className="text-slate-800 leading-relaxed text-sm">
                     {burnsEmpathy.question}
-                  </p>
+                  </p> */}
                 </div>
 
                 {/* 목표 강도 설정 - 눈에 띄게 */}
@@ -397,7 +343,7 @@ export function LeftPanel({
                   className="w-full gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
                 >
                   <RefreshCw className="size-4" />
-                  여기에 없다 (다른 인지오류 분석)
+                  여기에 없습니다. (다른 인지오류 분석)
                 </Button>
 
                 <Button
@@ -416,9 +362,6 @@ export function LeftPanel({
         {step >= 4 && (
           <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
             <p className="text-green-800 mb-2">✓ 인지오류 검토 완료</p>
-            <p className="text-slate-700 mb-2">
-              감정과 생각을 깊이 다루었습니다.
-            </p>
             <p className="text-emerald-600">
               → 우측 패널에서 대안사고를 구성해주세요.
             </p>

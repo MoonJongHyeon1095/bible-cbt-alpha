@@ -198,9 +198,6 @@ export function RightPanel({
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
       <div className="mb-4">
-        <div className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1.5 rounded-full mb-3 shadow-lg text-sm">
-          우측 (4~6) ✨
-        </div>
         <h2 className="text-slate-800 text-xl">대안사고 구성</h2>
         <p className="text-slate-600 text-sm mt-2">
           우리의 생각을 더 진실된 생각으로 바꾸면, 우리의 감정도 적절한 자리를
@@ -343,74 +340,6 @@ export function RightPanel({
                 </div>
               </div>
             )}
-
-            {/* 번즈의 5단계 제안 기법 */}
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-5 rounded-lg border-2 border-emerald-300">
-              <h3 className="text-emerald-900 mb-3">
-                💬 번즈의 5단계 제안 기법
-              </h3>
-              <div className="space-y-3 text-sm text-slate-700">
-                <div className="bg-white p-3 rounded border border-emerald-200">
-                  <p className="text-emerald-800">
-                    <strong>1. 감정/사고 공감:</strong>
-                  </p>
-                  <p className="mt-1">
-                    당신의 생각과 감정을 충분히 이해합니다. 그런 상황에서 그렇게
-                    느끼는 것은 자연스러운 반응입니다.
-                  </p>
-                </div>
-                <div className="bg-white p-3 rounded border border-emerald-200">
-                  <p className="text-emerald-800">
-                    <strong>2. 재진술:</strong>
-                  </p>
-                  <p className="mt-1">
-                    당신의 경험을 다시 정리하자면, 이 상황이 당신에게{" "}
-                    {emotionThoughtPairs[0]?.emotion}을/를 불러일으켰습니다.
-                    {emotionThoughtPairs[0]?.intensity <= 20 &&
-                      " 살짝 불편하셨군요."}
-                    {emotionThoughtPairs[0]?.intensity > 20 &&
-                      emotionThoughtPairs[0]?.intensity <= 40 &&
-                      " 불편하셨군요."}
-                    {emotionThoughtPairs[0]?.intensity > 40 &&
-                      emotionThoughtPairs[0]?.intensity <= 60 &&
-                      " 상당히 불편하셨군요."}
-                    {emotionThoughtPairs[0]?.intensity > 60 &&
-                      emotionThoughtPairs[0]?.intensity <= 80 &&
-                      " 매우 고통스러우셨군요."}
-                    {emotionThoughtPairs[0]?.intensity > 80 &&
-                      " 극심하게 고통스러우셨군요."}{" "}
-                    그것이 정당한 이유가 있었습니다.
-                  </p>
-                </div>
-                <div className="bg-white p-3 rounded border border-emerald-200">
-                  <p className="text-emerald-800">
-                    <strong>3. 나 전달법:</strong>
-                  </p>
-                  <p className="mt-1">
-                    저는 당신이 선택한 대안사고가 인지오류를 바로잡고 더 건강한
-                    관점을 제시한다고 생각합니다.
-                  </p>
-                </div>
-                <div className="bg-white p-3 rounded border border-emerald-200">
-                  <p className="text-emerald-800">
-                    <strong>4. 달래기:</strong>
-                  </p>
-                  <p className="mt-1">
-                    당신이 이 과정을 함께 해준 것만으로도 당신은 자신의 마음을
-                    돌볼 줄 아는 성숙한 사람입니다.
-                  </p>
-                </div>
-                <div className="bg-white p-3 rounded border border-emerald-200">
-                  <p className="text-emerald-800">
-                    <strong>5. 재질문:</strong>
-                  </p>
-                  <p className="mt-1">
-                    더 궁금하신 게 있으신가요? 원하시면 아래 즐겨찾기 버튼을
-                    누르시고, 같은 질문으로 다른 답변을 검토할 수 있습니다.
-                  </p>
-                </div>
-              </div>
-            </div>
 
             {/* 다른 답변 검토 버튼 */}
             <div className="flex gap-2">

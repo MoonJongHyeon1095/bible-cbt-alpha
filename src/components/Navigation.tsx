@@ -1,16 +1,16 @@
-import { Button } from './ui/button';
-import { 
-  Brain, 
-  LayoutDashboard, 
-  MessageSquare, 
-  BookOpen, 
-  BookMarked, 
-  TrendingUp,
+import {
+  BookMarked,
+  BookOpen,
+  Brain,
+  LayoutDashboard,
   LifeBuoy,
-  LogOut,
   LogIn,
-  Mic
-} from 'lucide-react';
+  LogOut,
+  MessageSquare,
+  Mic,
+  TrendingUp,
+} from "lucide-react";
+import { Button } from "./ui/button";
 
 interface NavigationProps {
   currentPage: string;
@@ -20,17 +20,23 @@ interface NavigationProps {
   onShowAuth: () => void;
 }
 
-export function Navigation({ currentPage, onNavigate, user, onLogout, onShowAuth }: NavigationProps) {
+export function Navigation({
+  currentPage,
+  onNavigate,
+  user,
+  onLogout,
+  onShowAuth,
+}: NavigationProps) {
   const navItems = [
-    { id: 'cbt', label: '마음생각고쳐쓰기', icon: Brain },
-    { id: 'dashboard', label: '대시보드', icon: LayoutDashboard },
-    { id: 'ai-chat', label: 'AI 상담', icon: MessageSquare },
-    { id: 'prayer-notes', label: '기도 노트', icon: BookOpen },
-    { id: 'scripture-notes', label: '말씀 노트', icon: BookMarked },
-    { id: 'patterns', label: '나의 패턴', icon: TrendingUp },
-    { id: 'community', label: '커뮤니티', icon: MessageSquare },
-    { id: 'voice', label: '음성 입력', icon: Mic },
-    { id: 'helpline', label: '헬프라인', icon: LifeBuoy },
+    // { id: 'cbt', label: '마음생각고쳐쓰기', icon: Brain },
+    { id: "dashboard", label: "대시보드", icon: LayoutDashboard },
+    { id: "ai-chat", label: "AI 상담", icon: MessageSquare },
+    { id: "prayer-notes", label: "기도 노트", icon: BookOpen },
+    { id: "scripture-notes", label: "말씀 노트", icon: BookMarked },
+    { id: "patterns", label: "나의 패턴", icon: TrendingUp },
+    { id: "community", label: "커뮤니티", icon: MessageSquare },
+    { id: "voice", label: "음성 입력", icon: Mic },
+    { id: "helpline", label: "헬프라인", icon: LifeBuoy },
   ];
 
   return (
@@ -56,12 +62,12 @@ export function Navigation({ currentPage, onNavigate, user, onLogout, onShowAuth
                 <Button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
-                  variant={currentPage === item.id ? 'default' : 'ghost'}
+                  variant={currentPage === item.id ? "default" : "ghost"}
                   size="sm"
                   className={
                     currentPage === item.id
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
-                      : 'text-slate-700 hover:text-slate-900 hover:bg-purple-50'
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-purple-50"
                   }
                 >
                   <Icon className="size-4 mr-1.5" />
@@ -76,7 +82,9 @@ export function Navigation({ currentPage, onNavigate, user, onLogout, onShowAuth
             {user ? (
               <>
                 <div className="text-right mr-2">
-                  <p className="text-sm text-slate-900">{user.user_metadata?.name || '사용자'}</p>
+                  <p className="text-sm text-slate-900">
+                    {user.user_metadata?.name || "사용자"}
+                  </p>
                   <p className="text-xs text-slate-500">{user.email}</p>
                 </div>
                 <Button

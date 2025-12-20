@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { EmotionThoughtPair } from "../types";
-import { CenterPanel } from "./CenterPanel";
+import { CenterPanel } from "./center/CenterPanel";
 import { EmailModal } from "./EmailModal";
 import { FavoritesModal } from "./FavoritesModal";
 import { HistoryModal } from "./HistoryModal";
@@ -158,7 +158,7 @@ export function CBTSessionPage() {
       <header className="text-center mb-8">
         <h2 className="text-2xl text-slate-900 mb-2">🧠 마음생각고쳐쓰기</h2>
         <p className="text-slate-600">
-          간단히 실험해보세요, 정말 기분이 바뀌는지, 주변에 추천하고 싶은지.
+          간단히 실험해보세요, 정말 기분이 바뀌는지.
         </p>
 
         <div className="flex items-center justify-center gap-4 mt-4">
