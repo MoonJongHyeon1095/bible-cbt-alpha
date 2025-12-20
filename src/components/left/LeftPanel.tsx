@@ -213,7 +213,7 @@ export function LeftPanel({
   };
 
   return (
-    <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
+    <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col text-[15px] leading-6">
       <div className="mb-4">
         <h2 className="text-slate-800 text-xl">인지오류 검토</h2>
         <p className="text-slate-600 text-sm mt-2">
@@ -357,30 +357,29 @@ export function LeftPanel({
                           <p className="text-slate-500 text-sm mb-2">
                             {error.description}
                           </p>
-
+                          <br />
                           {/* 사용자 원본 글 인용 */}
                           <div className="bg-blue-50 border-l-4 border-blue-400 p-2 rounded mb-2">
                             <p className="text-xs text-blue-600 mb-1">
-                              📝 당신이 쓴 글:
+                              📝 당신이 쓴 글
                             </p>
                             <p className="text-sm text-blue-900 italic whitespace-pre-line">
                               "{error.userQuote}"
                             </p>
                           </div>
-
+                          <br />
                           {/* 구체적 분석 (문장 단위 개행) */}
-                          <div className="bg-amber-50 border-l-4 border-amber-400 p-2 rounded">
+                          <div className="text-base text-amber-950 leading-7">
                             <p className="text-xs text-amber-600 mb-1">
-                              🔍 분석:
+                              🔍 분석
                             </p>
 
-                            <div className="text-sm text-amber-900 leading-relaxed">
+                            <div className="text-base text-amber-950 leading-7 space-y-2">
                               {splitToSentences(error.analysis).map(
-                                (line, idx, arr) => (
-                                  <span key={idx}>
+                                (line, idx) => (
+                                  <p key={idx} className="whitespace-pre-line">
                                     {line}
-                                    {idx !== arr.length - 1 && <br />}
-                                  </span>
+                                  </p>
                                 )
                               )}
                             </div>

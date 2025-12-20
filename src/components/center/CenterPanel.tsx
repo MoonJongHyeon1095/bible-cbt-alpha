@@ -39,7 +39,6 @@ interface EmotionData {
 type PrefetchKey = string;
 
 function makePrefetchKey(emotion: string, input: string): PrefetchKey {
-  // input이 길어서 부담되면 slice/해시로 바꿔도 됨
   return `${emotion}::${input.trim()}`;
 }
 
@@ -54,15 +53,15 @@ export function CenterPanel({
   // ref for scrolling
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 랜덤 예시 8개
+  // ✅ 랜덤 예시 4개 (기존 8개 → 4개)
   const [randomExamples, setRandomExamples] = useState(() => {
     const shuffled = [...ALL_EXAMPLES].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 8);
+    return shuffled.slice(0, 4);
   });
 
   const refreshExamples = () => {
     const shuffled = [...ALL_EXAMPLES].sort(() => Math.random() - 0.5);
-    setRandomExamples(shuffled.slice(0, 8));
+    setRandomExamples(shuffled.slice(0, 4));
   };
 
   // 현재 선택된 감정
@@ -98,8 +97,6 @@ export function CenterPanel({
 
   /**
    * ✅ 프리페치 캐시
-   * - “강도 측정 직후” 바로 호출해서 시간을 벌고,
-   * - 모달 마지막 Confirm에서는 “프리페치가 있으면 그걸 기다리고 / 없으면 fallback 호출”
    */
   const prefetchPromiseRef = useRef<Promise<void> | null>(null);
   const prefetchKeyRef = useRef<PrefetchKey | null>(null);
@@ -120,7 +117,6 @@ export function CenterPanel({
     setSelectedEmotionData(emotionData);
     setSelectedEmotion(emotionData.label);
 
-    // 상세 확인 체크 초기화
     setEmotionDetailConfirmed(false);
 
     // 감정 바뀌면 이전 프리페치 무효화
@@ -140,16 +136,13 @@ export function CenterPanel({
   };
 
   /**
-   * ✅ 프리페치 시작: “강도 측정 끝나는 순간”에 호출됨
-   * - 같은 key로 이미 돌고 있으면 재사용
-   * - 완료되면 generatedThoughts를 미리 채워둠(단, UI 노출은 emotionSet 이후)
+   * ✅ 프리페치 시작
    */
   const startPrefetchThoughts = () => {
     if (!selectedEmotion || !userInput.trim()) return;
 
     const key = makePrefetchKey(selectedEmotion, userInput);
 
-    // 동일 키로 이미 프리페치가 진행 중이면 재사용
     if (prefetchKeyRef.current === key && prefetchPromiseRef.current) return;
 
     prefetchKeyRef.current = key;
@@ -162,10 +155,8 @@ export function CenterPanel({
         selectedEmotion
       );
 
-      // ✅ SDT 3개만 사용 (기존 흐름 유지)
       const thoughts = result.sdtThoughts.map((st) => st.thought);
 
-      // key 유지될 때만 반영
       if (prefetchKeyRef.current === key) {
         setGeneratedThoughts(thoughts);
         setSelectedThoughtIndex(null);
@@ -188,10 +179,7 @@ export function CenterPanel({
   };
 
   /**
-   * ✅ 모달 최종 Confirm (줄이고 싶나요 선택까지 끝난 시점)
-   * - 프리페치가 있으면 기다림
-   * - 없거나 무효면 fallback 호출
-   * - 이후 emotionSet=true로 “자동사고 선택 UI” 진입
+   * ✅ 모달 최종 Confirm
    */
   const finalizeEmotionAndShowThoughts = async () => {
     if (!selectedEmotion || !userInput.trim()) return;
@@ -201,17 +189,14 @@ export function CenterPanel({
     setEmotionSet(true);
     setError(null);
 
-    // 프리페치가 같은 key로 진행/완료 중이면 기다리기
     if (prefetchKeyRef.current === key && prefetchPromiseRef.current) {
       await prefetchPromiseRef.current;
 
-      // 스크롤
       if (containerRef.current) containerRef.current.scrollTop = 0;
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
-    // fallback: 프리페치가 없거나 무효화된 경우 여기서 호출
     setLoading(true);
     try {
       const result = await generateExtendedAutomaticThoughts(
@@ -328,23 +313,20 @@ export function CenterPanel({
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
       <div className="mb-4">
-        <h2 className="text-slate-800 text-xl">자동사고 체크</h2>
+        <h2 className="text-slate-800 text-xl">
+          오늘 당신에게 무슨 일이 있었는지 들려주세요.
+        </h2>
       </div>
 
-      {/* ✅ 감정 강도 모달
-          - Step1(강도 측정) 완료 순간에 onPrefetchThoughts()가 불림
-          - 마지막 Confirm에서 onConfirm()이 불리고, 여기서 finalize를 수행 */}
       <FirstEmotionIntensityModal
         open={showIntensityModal}
         emotion={selectedEmotion}
         intensity={emotionIntensity}
         onIntensityChange={setEmotionIntensity}
         onPrefetchThoughts={() => {
-          // ✅ 강도 측정 끝나자마자 API 호출 시작
           startPrefetchThoughts();
         }}
         onConfirm={async () => {
-          // 모달 닫고, 프리페치가 있으면 기다렸다가 Step2(생성결과)로 전환
           setShowIntensityModal(false);
           await finalizeEmotionAndShowThoughts();
         }}
@@ -357,10 +339,6 @@ export function CenterPanel({
         {step === 1 && (
           <div className="space-y-4">
             <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-blue-900 mb-2 text-lg">
-                오늘 당신에게 무슨 일이 있었는지 들려주신다면, 우리는 같이
-                감정을 만드는 생각을 다뤄갈 수 있습니다.
-              </p>
               <p className="text-slate-700 mb-2 text-base">
                 마음이 힘들었던 경험이나 불편했던 상황을 자유롭게 적어주세요.
               </p>
@@ -369,21 +347,24 @@ export function CenterPanel({
               </p>
             </div>
 
-            {/* 예시 버튼들 */}
+            {/* ✅ 예시 버튼들: 4개 + 세로 1열 */}
             <div className="space-y-2">
               <p className="text-slate-600 text-base">
                 또는 예시를 선택하세요:
               </p>
-              <div className="grid grid-cols-2 gap-2">
+
+              {/* ✅ grid-cols-2 → 세로 */}
+              <div className="space-y-2">
                 {randomExamples.map((example, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <button
                       onClick={() => handleExampleClick(example.text)}
-                      className="flex-1 text-left p-3 rounded-lg border border-slate-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-sm text-slate-700 leading-relaxed"
+                      className="flex-1 text-left p-4 rounded-lg border border-slate-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-[15px] text-slate-700 leading-6"
                     >
-                      <span className="text-lg mr-1">{example.emoji}</span>
-                      <span className="text-sm">{example.text}</span>
+                      <span className="text-lg mr-2">{example.emoji}</span>
+                      <span>{example.text}</span>
                     </button>
+
                     <button
                       onClick={() => {
                         const favorites = JSON.parse(
@@ -416,14 +397,15 @@ export function CenterPanel({
                         );
                         alert("즐겨찾기에 추가되었습니다!");
                       }}
-                      className="p-2 rounded-lg border border-yellow-300 hover:border-yellow-500 hover:bg-yellow-50 transition-all text-yellow-600 hover:text-yellow-700 flex-shrink-0"
+                      className="p-3 rounded-lg border border-yellow-300 hover:border-yellow-500 hover:bg-yellow-50 transition-all text-yellow-600 hover:text-yellow-700 flex-shrink-0"
                       title="즐겨찾기에 추가"
                     >
-                      <Star className="size-3.5" />
+                      <Star className="size-4" />
                     </button>
                   </div>
                 ))}
               </div>
+
               <button
                 onClick={refreshExamples}
                 className="w-full flex items-center justify-center gap-2 p-3 rounded-lg border-2 border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50 transition-all text-sm text-indigo-700"
@@ -511,15 +493,8 @@ export function CenterPanel({
           <div className="space-y-4">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border-2 border-blue-200">
               <h3 className="text-blue-900 mb-2 text-lg">
-                당신이 느낀 감정을 <strong>1가지</strong> 선택해주세요
+                당신이 느낀 감정을 <strong>1가지</strong> 선택해주세요.
               </h3>
-              <p className="text-slate-700 text-sm mb-1">
-                감정을 누르면, 해당 감정의 의미(긍정/주의)를 확인한 뒤 강도
-                설정으로 넘어갑니다.
-              </p>
-              <p className="text-blue-600 text-xs">
-                💡 강도 측정이 끝나는 즉시 자동사고를 미리 생성해둡니다.
-              </p>
             </div>
 
             {selectedEmotion && (
@@ -607,13 +582,13 @@ export function CenterPanel({
                 </ul>
               </div>
 
-              {/* 주의할 점 (✅ caution 사용) */}
+              {/* 주의할 점 (✅ caution 사용해야 함: 기존 버그 수정) */}
               <div className="rounded-lg border border-amber-300 bg-amber-50 p-3">
                 <h3 className="text-amber-900 text-sm font-semibold">
                   ⚠️ {selectedEmotionData.label}의 주의할 점
                 </h3>
                 <ul className="mt-2 space-y-2">
-                  {selectedEmotionData.positive.map((item, idx) => (
+                  {selectedEmotionData.caution.map((item, idx) => (
                     <li
                       key={idx}
                       className="flex gap-2 text-slate-700 text-sm leading-relaxed"
@@ -724,7 +699,6 @@ export function CenterPanel({
                 <p className="mb-2">{error}</p>
                 <Button
                   onClick={() => {
-                    // 다시 만들기: 캐시 리셋 후 새로 프리페치/호출
                     prefetchPromiseRef.current = null;
                     prefetchKeyRef.current = null;
                     startPrefetchThoughts();
@@ -737,7 +711,6 @@ export function CenterPanel({
               </div>
             ) : generatedThoughts.length > 0 ? (
               <>
-                {/* 재생성 버튼 */}
                 <div className="flex justify-end">
                   <Button
                     onClick={() => {
@@ -759,7 +732,6 @@ export function CenterPanel({
                   </Button>
                 </div>
 
-                {/* 즐겨찾기 목록 보기 */}
                 {!showFavorites ? (
                   <Button
                     onClick={loadFavorites}
@@ -835,7 +807,6 @@ export function CenterPanel({
                   </div>
                 )}
 
-                {/* 자동사고 리스트 */}
                 <div className="space-y-3">
                   {generatedThoughts.map((thought, index) => (
                     <div key={index} className="flex items-start gap-2">
@@ -880,7 +851,6 @@ export function CenterPanel({
                   ))}
                 </div>
 
-                {/* 직접 입력 칸 */}
                 <div className="border-t-2 border-slate-300 pt-4">
                   <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200 mb-3">
                     <p className="text-indigo-900 mb-2">

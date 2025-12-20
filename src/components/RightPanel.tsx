@@ -188,9 +188,6 @@ export function RightPanel({
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
       <div className="mb-4">
-        <div className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1.5 rounded-full mb-3 shadow-lg text-sm">
-          우측 (4~6) ✨
-        </div>
         <h2 className="text-slate-800 text-xl">대안사고 구성</h2>
         <p className="text-slate-600 text-sm mt-2">
           우리의 생각을 더 진실된 생각으로 바꾸면, 우리의 감정도 적절한 자리를
