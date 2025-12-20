@@ -1,15 +1,6 @@
 // src/lib/ai.ts
 import { getDevAIProvider } from "./devAiProvider";
 
-// gemini
-import {
-  generateContextualAlternativeThoughts as gemAlt,
-  generateBibleVerse as gemBible,
-  generateBurnsEmpathy as gemBurns,
-  analyzeCognitiveErrors as gemCog,
-  generateExtendedAutomaticThoughts as gemExt,
-} from "./gemini";
-
 // gpt
 import {
   generateContextualAlternativeThoughts as gptAlt,
@@ -133,3 +124,23 @@ export async function generateBurnsEmpathy(
         intensity
       ) as Promise<BurnsEmpathyResult>);
 }
+function gemExt(situation: string, emotion: string): Promise<ExtendedAutomaticThoughtsResult> {
+  throw new Error("Function not implemented.");
+}
+
+function gemCog(situation: string, thought: string): Promise<CognitiveErrorAnalysisResult> {
+  throw new Error("Function not implemented.");
+}
+
+function gemAlt(situation: string, emotion: string, thought: string, cognitiveErrors: string[]): Promise<AlternativeThoughtItem[]> {
+  throw new Error("Function not implemented.");
+}
+
+function gemBible(situation: string, emotion: string): Promise<BibleVerseResult> {
+  throw new Error("Function not implemented.");
+}
+
+function gemBurns(situation: string, emotion: string, thought: string, intensity: number): Promise<BurnsEmpathyResult> {
+  throw new Error("Function not implemented.");
+}
+

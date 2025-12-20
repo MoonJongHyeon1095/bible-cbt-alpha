@@ -12,7 +12,7 @@ import { PatternsPage } from "./components/PatternsPage";
 import { PrayerNotesPage } from "./components/PrayerNotesPage";
 import { ScriptureNotesPage } from "./components/ScriptureNotesPage";
 import { VoicePage } from "./components/VoicePage";
-import { authHelpers } from "./lib/supabase";
+import { authHelpers } from "./lib/supabase/auth";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("cbt");

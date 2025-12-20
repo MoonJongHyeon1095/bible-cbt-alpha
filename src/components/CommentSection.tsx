@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
-import { Star, Send, Loader2 } from 'lucide-react';
-import { projectId, publicAnonKey } from '../utils/supabase/info';
+// src/components/CommentSection.tsx
+import { Loader2, Send, Star } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ENV } from "../config/env"; // 경로 프로젝트에 맞게 조정 (예: "../../config/env")
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
+import { Textarea } from "./ui/textarea";
 
 interface Comment {
   id: string;
@@ -13,34 +14,40 @@ interface Comment {
   nickname?: string;
 }
 
-const SERVER_URL = `https://${projectId}.supabase.co/functions/v1/make-server-4ba10e96`;
+const API_BASE = ENV.API_BASE || ""; // same-origin이면 ""
 
 export function CommentSection() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [rating, setRating] = useState<number>(0);
   const [hoverRating, setHoverRating] = useState<number>(0);
-  const [comment, setComment] = useState<string>('');
-  const [nickname, setNickname] = useState<string>('');
+  const [comment, setComment] = useState<string>("");
+  const [nickname, setNickname] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
 
-  // 댓글 불러오기
   const fetchComments = async () => {
     try {
       setFetchLoading(true);
-      const response = await fetch(`${SERVER_URL}/comments`, {
-        method: 'GET',
+
+      const res = await fetch(`${API_BASE}/api/comments`, {
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${publicAnonKey}`,
+          "Content-Type": "application/json",
+          // (선택) 남용 방지용
+          // "x-api-key": import.meta.env.VITE_APP_API_KEY,
         },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setComments(data.comments || []);
+      const data = await res.json().catch(() => ({} as any));
+
+      if (!res.ok) {
+        console.error("댓글 불러오기 실패:", data);
+        return;
       }
+
+      setComments(Array.isArray(data?.comments) ? data.comments : []);
     } catch (error) {
-      console.error('댓글 불러오기 오류:', error);
+      console.error("댓글 불러오기 오류:", error);
     } finally {
       setFetchLoading(false);
     }
@@ -50,57 +57,69 @@ export function CommentSection() {
     fetchComments();
   }, []);
 
-  // 댓글 제출
   const handleSubmit = async () => {
-    if (rating === 0) {
-      alert('별점을 선택해주세요!');
+    const trimmed = comment.trim();
+    const nick = nickname.trim() || "익명";
+
+    if (rating < 1 || rating > 5) {
+      alert("별점을 선택해주세요!");
       return;
     }
-    if (!comment.trim()) {
-      alert('댓글 내용을 입력해주세요!');
+    if (!trimmed) {
+      alert("댓글 내용을 입력해주세요!");
       return;
     }
 
     try {
       setLoading(true);
-      const response = await fetch(`${SERVER_URL}/comments`, {
-        method: 'POST',
+
+      const res = await fetch(`${API_BASE}/api/comments`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${publicAnonKey}`,
+          "Content-Type": "application/json",
+          // (선택) 남용 방지용
+          // "x-api-key": import.meta.env.VITE_APP_API_KEY,
         },
         body: JSON.stringify({
           rating,
-          comment: comment.trim(),
-          nickname: nickname.trim() || '익명',
+          comment: trimmed,
+          nickname: nick,
         }),
       });
 
-      if (response.ok) {
-        // 댓글 초기화
-        setRating(0);
-        setComment('');
-        setNickname('');
-        // 댓글 목록 새로고침
-        await fetchComments();
-        alert('댓글이 등록되었습니다! 감사합니다 🙏');
-      } else {
-        alert('댓글 등록에 실패했습니다.');
+      const data = await res.json().catch(() => ({} as any));
+
+      if (!res.ok) {
+        const msg = data?.error || "댓글 등록에 실패했습니다.";
+        alert(msg);
+        console.error("댓글 제출 실패:", data);
+        return;
       }
+
+      // ✅ 성공: UI 초기화 + 목록 갱신
+      setRating(0);
+      setHoverRating(0);
+      setComment("");
+      setNickname("");
+
+      await fetchComments();
+      alert("댓글이 등록되었습니다! 감사합니다 🙏");
     } catch (error) {
-      console.error('댓글 제출 오류:', error);
-      alert('댓글 등록 중 오류가 발생했습니다.');
+      console.error("댓글 제출 오류:", error);
+      alert("댓글 등록 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
   };
 
-  // 평균 별점 계산
-  const averageRating = comments.length > 0
-    ? (comments.reduce((sum, c) => sum + c.rating, 0) / comments.length).toFixed(1)
-    : '0.0';
+  const averageRating = useMemo(() => {
+    if (comments.length === 0) return "0.0";
+    const avg =
+      comments.reduce((sum, c) => sum + (Number(c.rating) || 0), 0) /
+      comments.length;
+    return avg.toFixed(1);
+  }, [comments]);
 
-  // 날짜 포맷팅
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -109,15 +128,15 @@ export function CommentSection() {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return '방금 전';
+    if (minutes < 1) return "방금 전";
     if (minutes < 60) return `${minutes}분 전`;
     if (hours < 24) return `${hours}시간 전`;
     if (days < 7) return `${days}일 전`;
-    
-    return date.toLocaleDateString('ko-KR', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -138,7 +157,7 @@ export function CommentSection() {
       {/* 댓글 작성 폼 */}
       <Card className="bg-white/90 border-slate-200 shadow-sm p-6">
         <h3 className="text-slate-900 mb-4">후기 작성하기</h3>
-        
+
         {/* 별점 선택 */}
         <div className="mb-4">
           <p className="text-slate-600 text-sm mb-2">별점을 선택해주세요</p>
@@ -150,12 +169,13 @@ export function CommentSection() {
                 onMouseEnter={() => setHoverRating(star)}
                 onMouseLeave={() => setHoverRating(0)}
                 className="transition-transform hover:scale-110"
+                type="button"
               >
                 <Star
                   className={`size-8 ${
                     star <= (hoverRating || rating)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-slate-300'
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-slate-300"
                   }`}
                 />
               </button>
@@ -168,7 +188,7 @@ export function CommentSection() {
           </div>
         </div>
 
-        {/* 닉네임 입력 (선택) */}
+        {/* 닉네임 입력 */}
         <div className="mb-4">
           <input
             type="text"
@@ -176,7 +196,7 @@ export function CommentSection() {
             onChange={(e) => setNickname(e.target.value)}
             placeholder="닉네임 (선택사항, 미입력시 '익명')"
             className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:outline-none"
-            maxLength={20}
+            maxLength={30} // ✅ 서버 검증과 동일
           />
         </div>
 
@@ -187,10 +207,10 @@ export function CommentSection() {
             onChange={(e) => setComment(e.target.value)}
             placeholder="어떤 점이 좋았나요? 솔직한 후기를 남겨주세요 😊"
             className="min-h-[120px] bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 resize-none"
-            maxLength={500}
+            maxLength={1000} // ✅ 서버 검증과 동일
           />
           <div className="text-right text-slate-500 text-sm mt-1">
-            {comment.length}/500
+            {comment.length}/1000
           </div>
         </div>
 
@@ -217,7 +237,7 @@ export function CommentSection() {
       {/* 댓글 목록 */}
       <div className="space-y-4">
         <h3 className="text-slate-900 text-lg">후기 목록</h3>
-        
+
         {fetchLoading ? (
           <Card className="bg-white/90 border-slate-200 shadow-sm p-8 text-center">
             <Loader2 className="size-8 animate-spin text-indigo-500 mx-auto mb-2" />
@@ -226,7 +246,9 @@ export function CommentSection() {
         ) : comments.length === 0 ? (
           <Card className="bg-white/90 border-slate-200 shadow-sm p-8 text-center">
             <p className="text-slate-600">아직 등록된 후기가 없습니다.</p>
-            <p className="text-slate-500 text-sm mt-2">첫 번째 후기를 남겨주세요! 🎉</p>
+            <p className="text-slate-500 text-sm mt-2">
+              첫 번째 후기를 남겨주세요! 🎉
+            </p>
           </Card>
         ) : (
           comments.map((c) => (
@@ -237,21 +259,25 @@ export function CommentSection() {
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-slate-900">{c.nickname || '익명'}</span>
+                    <span className="text-slate-900">
+                      {c.nickname || "익명"}
+                    </span>
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
                           className={`size-4 ${
-                            i < c.rating
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-slate-300'
+                            i < (Number(c.rating) || 0)
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-slate-300"
                           }`}
                         />
                       ))}
                     </div>
                   </div>
-                  <p className="text-slate-500 text-sm">{formatDate(c.timestamp)}</p>
+                  <p className="text-slate-500 text-sm">
+                    {formatDate(c.timestamp)}
+                  </p>
                 </div>
               </div>
               <p className="text-slate-700 whitespace-pre-wrap">{c.comment}</p>
@@ -263,7 +289,8 @@ export function CommentSection() {
       {/* 면책 조항 */}
       <div className="text-center mt-8">
         <p className="text-slate-400 text-xs">
-          이 치료기법은 일반적인 인지행동치료 원리를 기반으로 AI를 활용하여 생성되었음을 알려드립니다.
+          이 치료기법은 일반적인 인지행동치료 원리를 기반으로 AI를 활용하여
+          생성되었음을 알려드립니다.
         </p>
       </div>
     </div>

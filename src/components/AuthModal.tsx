@@ -1,16 +1,16 @@
-import { useState } from 'react';
+import { Lock, LogIn, Mail, User, UserPlus } from "lucide-react";
+import { useState } from "react";
+import { authHelpers } from "../lib/supabase/auth";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { authHelpers } from '../lib/supabase';
-import { LogIn, UserPlus, Mail, Lock, User } from 'lucide-react';
+} from "./ui/dialog";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 interface AuthModalProps {
   open: boolean;
@@ -19,24 +19,24 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      if (mode === 'signup') {
+      if (mode === "signup") {
         const { error } = await authHelpers.signUp(email, password, name);
         if (error) throw error;
-        alert('회원가입이 완료되었습니다! 로그인해주세요.');
-        setMode('signin');
+        alert("회원가입이 완료되었습니다! 로그인해주세요.");
+        setMode("signin");
       } else {
         const { error } = await authHelpers.signIn(email, password);
         if (error) throw error;
@@ -44,7 +44,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
         onClose();
       }
     } catch (err: any) {
-      setError(err.message || '오류가 발생했습니다.');
+      setError(err.message || "오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -57,20 +57,20 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
       if (error) throw error;
       // OAuth 리다이렉트가 처리됨
     } catch (err: any) {
-      setError(err.message || '구글 로그인 실패');
+      setError(err.message || "구글 로그인 실패");
       setLoading(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent 
+      <DialogContent
         className="max-w-md bg-white border-2 border-purple-200"
         aria-describedby="auth-description"
       >
         <DialogHeader>
           <DialogTitle className="text-2xl text-purple-900 flex items-center gap-2">
-            {mode === 'signin' ? (
+            {mode === "signin" ? (
               <>
                 <LogIn className="size-6 text-purple-600" />
                 로그인
@@ -83,16 +83,19 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
             )}
           </DialogTitle>
           <DialogDescription id="auth-description" className="text-purple-700">
-            {mode === 'signin' 
-              ? '계정에 로그인하여 데이터를 동기화하세요.' 
-              : '새 계정을 만들어 시작하세요.'}
+            {mode === "signin"
+              ? "계정에 로그인하여 데이터를 동기화하세요."
+              : "새 계정을 만들어 시작하세요."}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          {mode === 'signup' && (
+          {mode === "signup" && (
             <div>
-              <Label htmlFor="name" className="text-slate-700 flex items-center gap-2 mb-2">
+              <Label
+                htmlFor="name"
+                className="text-slate-700 flex items-center gap-2 mb-2"
+              >
                 <User className="size-4" />
                 이름
               </Label>
@@ -109,7 +112,10 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
           )}
 
           <div>
-            <Label htmlFor="email" className="text-slate-700 flex items-center gap-2 mb-2">
+            <Label
+              htmlFor="email"
+              className="text-slate-700 flex items-center gap-2 mb-2"
+            >
               <Mail className="size-4" />
               이메일
             </Label>
@@ -125,7 +131,10 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
           </div>
 
           <div>
-            <Label htmlFor="password" className="text-slate-700 flex items-center gap-2 mb-2">
+            <Label
+              htmlFor="password"
+              className="text-slate-700 flex items-center gap-2 mb-2"
+            >
               <Lock className="size-4" />
               비밀번호
             </Label>
@@ -139,7 +148,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
               minLength={6}
               className="border-purple-200 focus:border-purple-400"
             />
-            {mode === 'signup' && (
+            {mode === "signup" && (
               <p className="text-xs text-slate-500 mt-1">최소 6자 이상</p>
             )}
           </div>
@@ -155,7 +164,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
             disabled={loading}
             className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
           >
-            {loading ? '처리 중...' : mode === 'signin' ? '로그인' : '회원가입'}
+            {loading ? "처리 중..." : mode === "signin" ? "로그인" : "회원가입"}
           </Button>
 
           <div className="relative">
@@ -198,10 +207,12 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
           <div className="text-center">
             <button
               type="button"
-              onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
               className="text-sm text-purple-600 hover:text-purple-700 underline"
             >
-              {mode === 'signin' ? '계정이 없으신가요? 회원가입' : '이미 계정이 있으신가요? 로그인'}
+              {mode === "signin"
+                ? "계정이 없으신가요? 회원가입"
+                : "이미 계정이 있으신가요? 로그인"}
             </button>
           </div>
         </form>
