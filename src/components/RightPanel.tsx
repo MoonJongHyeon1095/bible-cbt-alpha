@@ -271,7 +271,7 @@ export function RightPanel({
                         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-indigo-700 text-base">
-                              🎯 치료 기법:
+                              🎯
                             </span>
                             <span className="text-indigo-900 font-semibold">
                               {item.technique}
@@ -306,7 +306,7 @@ export function RightPanel({
             ) && (
               <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-indigo-700">🎯 적용된 치료 기법:</span>
+                  <span className="text-indigo-700">🎯 적용된 기법:</span>
                   <span className="text-indigo-900">
                     {
                       alternativeThoughts.find(
@@ -496,9 +496,10 @@ export function RightPanel({
                 <ol className="list-decimal list-inside space-y-2 text-slate-700 text-base leading-relaxed">
                   <li>{bibleVerse.reference} 말씀을 따라 읽습니다.</li>
                   <li>
-                    이 말씀을 읽고 "이대로 도와주시기를 바랍니다"라고 하십시오.
+                    이 말씀을 읽고 "하나님의 뜻을 알려주시기를 바랍니다"라고
+                    기도하십시오.
                   </li>
-                  <li>기도문은 따라 읽기보다, 자신만의 말로 기도해보십시오.</li>
+                  <li>기도문을 자신의 말로 바꾸어 기도해보십시오.</li>
                 </ol>
               </div>
 
