@@ -1,13 +1,14 @@
+// src/components/right/RightPanel.tsx
 import { Loader2, RefreshCw, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   generateBibleVerse,
   generateContextualAlternativeThoughts,
-} from "../lib/ai";
-import type { EmotionThoughtPair } from "../types";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { Slider } from "./ui/slider";
+} from "../../lib/ai";
+import type { EmotionThoughtPair } from "../../types";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import { Slider } from "../ui/slider";
 
 interface RightPanelProps {
   step: number;

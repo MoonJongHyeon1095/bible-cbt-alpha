@@ -6,7 +6,7 @@ import { EmailModal } from "./EmailModal";
 import { FavoritesModal } from "./FavoritesModal";
 import { HistoryModal } from "./HistoryModal";
 import { LeftPanel } from "./left/LeftPanel";
-import { RightPanel } from "./RightPanel";
+import { RightPanel } from "./right/RightPanel";
 import { ToolDock } from "./tool/ToolDock";
 
 export function CBTSessionPage() {
