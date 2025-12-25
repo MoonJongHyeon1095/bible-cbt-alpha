@@ -6,6 +6,7 @@ import {
   generateContextualAlternativeThoughts,
 } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
+import { CbtMode } from "../header/ModePicker";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Slider } from "../ui/slider";
@@ -21,6 +22,7 @@ interface RightPanelProps {
   onComplete: () => void;
   onRestartWithSameInput?: () => void;
   onNext: () => void;
+  mode: CbtMode;
 }
 
 export function RightPanel({

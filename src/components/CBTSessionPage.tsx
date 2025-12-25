@@ -4,12 +4,13 @@ import type { EmotionThoughtPair } from "../types";
 import { CenterPanel } from "./center/CenterPanel";
 import { EmailModal } from "./EmailModal";
 import { FavoritesModal } from "./FavoritesModal";
+import { CbtMode } from "./header/ModePicker";
 import { HistoryModal } from "./HistoryModal";
 import { LeftPanel } from "./left/LeftPanel";
 import { RightPanel } from "./right/RightPanel";
 import { ToolDock } from "./tool/ToolDock";
 
-export function CBTSessionPage() {
+export function CBTSessionPage({ mode }: { mode: CbtMode }) {
   const [step, setStep] = useState<number>(1);
   const [userInput, setUserInput] = useState<string>("");
 
@@ -98,6 +99,7 @@ export function CBTSessionPage() {
             onInputChange={setUserInput}
             onSetEmotionThoughtPairs={setEmotionThoughtPairs}
             onNext={handleNext}
+            mode={mode}
           />
         </div>
       );
@@ -114,6 +116,7 @@ export function CBTSessionPage() {
             onSetPositiveReframes={setPositiveReframes}
             onSelectCognitiveErrors={setSelectedCognitiveErrors}
             onNext={handleNext}
+            mode={mode}
           />
         </div>
       );
@@ -132,6 +135,7 @@ export function CBTSessionPage() {
           onComplete={resetAll}
           onRestartWithSameInput={restartWithSameInput}
           onNext={handleNext}
+          mode={mode}
         />
       </div>
     );

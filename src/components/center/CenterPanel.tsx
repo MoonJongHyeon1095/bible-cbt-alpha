@@ -10,6 +10,7 @@ import {
 import { useMemo, useRef, useState } from "react";
 import { generateExtendedAutomaticThoughts } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
+import { CbtMode } from "../header/ModePicker";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Textarea } from "../ui/textarea";
@@ -24,6 +25,7 @@ interface CenterPanelProps {
   onInputChange: (input: string) => void;
   onSetEmotionThoughtPairs: (pairs: EmotionThoughtPair[]) => void;
   onNext: () => void;
+  mode: CbtMode;
 }
 
 interface EmotionData {
@@ -49,7 +51,10 @@ export function CenterPanel({
   onInputChange,
   onSetEmotionThoughtPairs,
   onNext,
+  mode,
 }: CenterPanelProps) {
+  const isDeep = mode.detailMode === "deep";
+
   // ref for scrolling
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -112,31 +117,25 @@ export function CenterPanel({
     onInputChange(example);
   };
 
-  // 감정 선택 → 상세 화면
-  const handleEmotionSelect = (emotionData: EmotionData) => {
-    setSelectedEmotionData(emotionData);
-    setSelectedEmotion(emotionData.label);
-
+  // ✅ 공통: 감정 바뀔 때 상태 리셋(프리페치 무효화 포함)
+  const resetForNewEmotion = () => {
     setEmotionDetailConfirmed(false);
 
     // 감정 바뀌면 이전 프리페치 무효화
     prefetchPromiseRef.current = null;
     prefetchKeyRef.current = null;
 
-    setShowEmotionDetail(true);
-  };
+    // 자동사고 화면 관련 초기화
+    setGeneratedThoughts([]);
+    setSelectedThoughtIndex(null);
+    setCustomThought("");
+    setShowFavorites(false);
 
-  // 상세 확인 후 강도 모달로
-  const handleSelectThisEmotion = () => {
-    if (!selectedEmotionData) return;
-    if (!emotionDetailConfirmed) return;
-
-    setShowEmotionDetail(false);
-    setShowIntensityModal(true);
+    setError(null);
   };
 
   /**
-   * ✅ 프리페치 시작
+   * ✅ 프리페치 시작 (deep에서 강도 모달 열리기 전에 미리 생성)
    */
   const startPrefetchThoughts = () => {
     if (!selectedEmotion || !userInput.trim()) return;
@@ -179,16 +178,19 @@ export function CenterPanel({
   };
 
   /**
-   * ✅ 모달 최종 Confirm
+   * ✅ 자동사고 생성/표시
+   * - 핵심: emotionOverride를 받아 state race를 제거
    */
-  const finalizeEmotionAndShowThoughts = async () => {
-    if (!selectedEmotion || !userInput.trim()) return;
+  const finalizeEmotionAndShowThoughts = async (emotionOverride?: string) => {
+    const emotion = emotionOverride ?? selectedEmotion;
+    if (!emotion || !userInput.trim()) return;
 
-    const key = makePrefetchKey(selectedEmotion, userInput);
+    const key = makePrefetchKey(emotion, userInput);
 
     setEmotionSet(true);
     setError(null);
 
+    // ✅ deep 흐름: prefetch 결과가 이미 있으면 그것을 기다려 사용
     if (prefetchKeyRef.current === key && prefetchPromiseRef.current) {
       await prefetchPromiseRef.current;
 
@@ -201,7 +203,7 @@ export function CenterPanel({
     try {
       const result = await generateExtendedAutomaticThoughts(
         userInput,
-        selectedEmotion
+        emotion
       );
       const thoughts = result.sdtThoughts.map((st) => st.thought);
       setGeneratedThoughts(thoughts);
@@ -216,6 +218,53 @@ export function CenterPanel({
 
     if (containerRef.current) containerRef.current.scrollTop = 0;
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  /**
+   * 감정 선택:
+   * - lite/deep 모두 감정상세 화면은 보여준다.
+   */
+  const handleEmotionSelect = (emotionData: EmotionData) => {
+    if (!userInput.trim()) {
+      alert("먼저 Step 1에서 내용을 입력해주세요.");
+      return;
+    }
+
+    setSelectedEmotionData(emotionData);
+    setSelectedEmotion(emotionData.label);
+    resetForNewEmotion();
+
+    // ✅ lite/deep 공통: 상세 화면 보여주기
+    setShowEmotionDetail(true);
+  };
+
+  /**
+   * 감정 상세에서 "이 감정 다루기" 클릭
+   * - deep: 강도 모달(다이얼)로 이동
+   * - lite: 강도 모달 생략, 바로 생성
+   */
+  const handleSelectThisEmotion = async () => {
+    if (!selectedEmotionData) return;
+    if (!emotionDetailConfirmed) return;
+
+    const emotionLabel = selectedEmotionData.label;
+
+    setShowEmotionDetail(false);
+
+    if (isDeep) {
+      // ✅ deep: 강도 모달 열기 (여기서 prefetch 시작은 모달 쪽에서)
+      setShowIntensityModal(true);
+      return;
+    }
+
+    // ✅ lite: 강도 모달 생략
+    setShowIntensityModal(false);
+
+    // lite 기본 강도 (원하면 30~50 등 조정)
+    setEmotionIntensity(50);
+
+    // ✅ 바로 자동사고 생성 (emotionOverride로 state race 방지)
+    await finalizeEmotionAndShowThoughts(emotionLabel);
   };
 
   // 자동사고 선택
@@ -319,7 +368,8 @@ export function CenterPanel({
       </div>
 
       <FirstEmotionIntensityModal
-        open={showIntensityModal}
+        // ✅ deep일 때만 실제로 열리게 방지
+        open={isDeep && showIntensityModal}
         emotion={selectedEmotion}
         intensity={emotionIntensity}
         onIntensityChange={setEmotionIntensity}
@@ -353,7 +403,6 @@ export function CenterPanel({
                 또는 예시를 선택하세요:
               </p>
 
-              {/* ✅ grid-cols-2 → 세로 */}
               <div className="space-y-2">
                 {randomExamples.map((example, i) => (
                   <div key={i} className="flex items-start gap-2">
@@ -543,7 +592,7 @@ export function CenterPanel({
           </div>
         )}
 
-        {/* Step 2: 감정 상세 */}
+        {/* Step 2: 감정 상세 (lite/deep 공통으로 보여줌) */}
         {step === 2 &&
           !emotionSet &&
           showEmotionDetail &&
@@ -582,7 +631,7 @@ export function CenterPanel({
                 </ul>
               </div>
 
-              {/* 주의할 점 (✅ caution 사용해야 함: 기존 버그 수정) */}
+              {/* 주의할 점 */}
               <div className="rounded-lg border border-amber-300 bg-amber-50 p-3">
                 <h3 className="text-amber-900 text-sm font-semibold">
                   ⚠️ {selectedEmotionData.label}의 주의할 점
@@ -649,6 +698,7 @@ export function CenterPanel({
                 >
                   다른 감정 보기
                 </Button>
+
                 <Button
                   onClick={handleSelectThisEmotion}
                   disabled={!emotionDetailConfirmed}
@@ -716,7 +766,9 @@ export function CenterPanel({
                     onClick={() => {
                       prefetchPromiseRef.current = null;
                       prefetchKeyRef.current = null;
-                      startPrefetchThoughts();
+
+                      // ✅ lite에서도 "다시 만들기"가 동작하도록 직접 생성 호출
+                      void finalizeEmotionAndShowThoughts(selectedEmotion);
                     }}
                     variant="outline"
                     size="sm"

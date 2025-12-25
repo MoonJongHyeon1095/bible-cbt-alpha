@@ -9,25 +9,26 @@ export type CbtMode = {
   toneMode: "normal" | "christian";
 };
 
-const CBT_MODE_STORAGE_KEY = "cbt-mode";
-
-type ModePickerProps = {
-  storageKey?: string; // 기본: "cbt-mode"
-  defaultMode?: CbtMode; // 기본: { lite, normal } (✅ 변경)
-  onChange?: (mode: CbtMode) => void;
-};
-
 type PopoverPos = { top: number; left: number };
 
+type ModePickerProps = {
+  // ✅ controlled
+  value: CbtMode;
+  onChange: (mode: CbtMode) => void;
+
+  // (선택) 초기화 버튼용 기본값
+  defaultMode?: CbtMode;
+};
+
 export function ModePicker({
-  storageKey = CBT_MODE_STORAGE_KEY,
-  defaultMode = { detailMode: "lite", toneMode: "normal" }, // ✅ 기본값: 비활성화(lite/일반)
+  value,
   onChange,
+  defaultMode = { detailMode: "lite", toneMode: "normal" },
 }: ModePickerProps) {
   const [show, setShow] = useState(false);
-  const [mode, setMode] = useState<CbtMode>(defaultMode);
 
   const rootRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLElement | null>(null);
 
   const POP_W = 320;
   const GAP = 8;
@@ -35,58 +36,26 @@ export function ModePicker({
 
   const [pos, setPos] = useState<PopoverPos>({ top: 0, left: 0 });
 
-  const anchorRef = useRef<HTMLElement | null>(null);
-
   const calcPosFromEl = (el: HTMLElement): PopoverPos => {
     const r = el.getBoundingClientRect();
     const vw = window.innerWidth;
 
+    // 오른쪽 기준 정렬(아이콘 버튼 오른쪽 끝에 맞추고, popover 폭만큼 왼쪽으로)
     let left = r.right - POP_W;
     left = Math.max(MARGIN, Math.min(left, vw - POP_W - MARGIN));
 
+    // 버튼 아래로
     const top = r.bottom + GAP;
     return { top, left };
   };
-
-  // ✅ 새로고침/재진입 시 선택값 복원
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as Partial<CbtMode>;
-      setMode((prev) => ({
-        detailMode:
-          parsed.detailMode === "deep" || parsed.detailMode === "lite"
-            ? parsed.detailMode
-            : prev.detailMode,
-        toneMode:
-          parsed.toneMode === "christian" || parsed.toneMode === "normal"
-            ? parsed.toneMode
-            : prev.toneMode,
-      }));
-    } catch {
-      // ignore
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ✅ 변경 즉시 저장 + 상위 콜백
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(mode));
-    } catch {
-      // ignore
-    }
-    onChange?.(mode);
-  }, [mode, storageKey, onChange]);
 
   // ✅ 바깥 클릭 시 닫기
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
       if (!show) return;
-      const el = rootRef.current;
-      if (!el) return;
-      if (e.target instanceof Node && !el.contains(e.target)) setShow(false);
+      const root = rootRef.current;
+      if (!root) return;
+      if (e.target instanceof Node && !root.contains(e.target)) setShow(false);
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
@@ -112,9 +81,8 @@ export function ModePicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
 
-  // ✅ “활성화” 토글 상태(derived)
-  const deepEnabled = mode.detailMode === "deep";
-  const christianEnabled = mode.toneMode === "christian";
+  const deepEnabled = value.detailMode === "deep";
+  const christianEnabled = value.toneMode === "christian";
 
   const subtitle = useMemo(() => {
     const detail = deepEnabled ? "심화" : "Lite";
@@ -176,10 +144,10 @@ export function ModePicker({
               description="더 깊이 있는 단계들을 제공합니다."
               checked={deepEnabled}
               onChange={(next) =>
-                setMode((prev) => ({
-                  ...prev,
+                onChange({
+                  ...value,
                   detailMode: next ? "deep" : "lite",
-                }))
+                })
               }
             />
           </div>
@@ -190,10 +158,10 @@ export function ModePicker({
               description="기독교 콘텐츠를 포함합니다."
               checked={christianEnabled}
               onChange={(next) =>
-                setMode((prev) => ({
-                  ...prev,
+                onChange({
+                  ...value,
                   toneMode: next ? "christian" : "normal",
-                }))
+                })
               }
             />
           </div>
@@ -202,7 +170,7 @@ export function ModePicker({
             <button
               type="button"
               className="hover:text-slate-700"
-              onClick={() => setMode(defaultMode)}
+              onClick={() => onChange(defaultMode)}
               title="기본값으로 초기화"
             >
               초기화

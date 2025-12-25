@@ -7,6 +7,7 @@ import {
   generateBurnsEmpathy,
 } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
+import { CbtMode } from "../header/ModePicker";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { EmotionIntensityModal } from "./EmotionIntensityModal";
@@ -19,6 +20,7 @@ interface LeftPanelProps {
   onSetPositiveReframes: (reframes: { [emotion: string]: string }) => void;
   onSelectCognitiveErrors: (errors: string[]) => void;
   onNext: () => void;
+  mode: CbtMode;
 }
 
 type BurnsEmpathyShape = {
