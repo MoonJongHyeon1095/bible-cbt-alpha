@@ -1,5 +1,5 @@
 // src/components/center/FirstEmotionIntensityModal.tsx
-import { Heart, Minus, Plus, Sparkles } from "lucide-react";
+import { Heart, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import {
@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Slider } from "../ui/slider";
-import { EMOTION_BENEFITS, EMOTION_WARNINGS } from "./constants/emotions";
 
 interface FirstEmotionIntensityModalProps {
   open: boolean;
@@ -18,24 +17,16 @@ interface FirstEmotionIntensityModalProps {
   onIntensityChange: (value: number) => void;
 
   /**
-   * ✅ 강도 측정(숫자 선택) 직후 바로 호출
+   * ✅ 강도 측정 직후, 자동사고 생성 prefetch를 "딱 1번" 시작
    */
   onPrefetchThoughts?: () => void;
 
   /**
-   * ✅ 마지막 단계(줄이고 싶나요 선택 후) Confirm
+   * ✅ 마지막 단계 Confirm
    */
   onConfirm: () => void;
 
-  /**
-   * 모달 닫기 (옵션)
-   * - 강제 진행 UX라 바깥클릭 막고 있어서, ‘취소’ 버튼을 두고 싶을 때만 씀
-   */
   onClose?: () => void;
-
-  /**
-   * 부모에서 프리페치/호출 로딩 중 표시용
-   */
   isLoading?: boolean;
 }
 
@@ -49,19 +40,15 @@ export function FirstEmotionIntensityModal({
   onClose,
   isLoading,
 }: FirstEmotionIntensityModalProps) {
-  // 0: 설명, 1: 강도 측정, 2: 긍정 측면, 3: 줄이기 선택
+  // 0: 설명, 1: 강도 측정, 2: 줄이기 선택
   const [modalStep, setModalStep] = useState(0);
   const [wantsToReduce, setWantsToReduce] = useState<boolean | null>(null);
 
   // ✅ 강도 측정 완료 순간에 프리페치를 “딱 1번만” 호출
   const prefetchFiredRef = useRef(false);
 
-  const benefits = EMOTION_BENEFITS[emotion] || [];
-  const warnings = EMOTION_WARNINGS[emotion] || [];
-
   useEffect(() => {
     if (!open) return;
-    // 모달 열릴 때 초기화
     setModalStep(0);
     setWantsToReduce(null);
     prefetchFiredRef.current = false;
@@ -77,17 +64,16 @@ export function FirstEmotionIntensityModal({
   };
 
   const handleNext = () => {
-    // step 0 -> 1
     if (modalStep === 0) {
       setModalStep(1);
       return;
     }
 
-    // step 1 -> 2 (강도 측정 완료)
+    // step 1 -> step 2 (강도 측정 완료)
     if (modalStep === 1) {
       if (intensity <= 0) return;
 
-      // ✅ 여기서 프리페치 시작
+      // ✅ 여기서 prefetch 시작
       if (!prefetchFiredRef.current) {
         prefetchFiredRef.current = true;
         onPrefetchThoughts?.();
@@ -97,16 +83,9 @@ export function FirstEmotionIntensityModal({
       return;
     }
 
-    // step 2 -> 3
+    // step 2 -> confirm
     if (modalStep === 2) {
-      setModalStep(3);
-      return;
-    }
-
-    // step 3 -> confirm
-    if (modalStep === 3) {
       if (wantsToReduce === null) return;
-      // wantsToReduce는 지금 API로 안 보내도 된다고 했으니 그냥 UI 흐름만 유지
       onConfirm();
     }
   };
@@ -194,7 +173,6 @@ export function FirstEmotionIntensityModal({
                 </p>
 
                 <div className="space-y-6">
-                  {/* 현재 강도 표시 */}
                   <div className="text-center">
                     <div className="inline-block bg-white rounded-2xl px-12 py-8 shadow-lg border-2 border-rose-400">
                       <div className="text-7xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
@@ -208,7 +186,6 @@ export function FirstEmotionIntensityModal({
                     </div>
                   </div>
 
-                  {/* 슬라이더 */}
                   <div className="px-4">
                     <Slider
                       value={[intensity]}
@@ -247,7 +224,6 @@ export function FirstEmotionIntensityModal({
                   : `${emotion} ${intensity}점으로 계속하기 →`}
               </Button>
 
-              {/* ✅ 안내: 여기서부터 자동사고 생성이 백그라운드로 시작됨 */}
               {!prefetchFiredRef.current ? null : (
                 <div className="text-center text-sm text-slate-500">
                   {isLoading
@@ -261,89 +237,6 @@ export function FirstEmotionIntensityModal({
           {/* Step 2 */}
           {modalStep === 2 && (
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-8 space-y-4">
-                <div className="flex items-start gap-3">
-                  <Plus className="size-8 text-purple-600 flex-shrink-0 mt-1" />
-                  <div className="space-y-3 flex-1">
-                    <h3 className="text-purple-900 text-2xl">
-                      당신이 "{emotion}"을 느낀다면, 혹시 이런 측면이 강한
-                      사람이 아닐까요?
-                    </h3>
-
-                    <div className="space-y-3">
-                      {benefits.map((benefit, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-white rounded-lg p-4 border border-green-200"
-                        >
-                          <p className="text-slate-800 leading-relaxed text-base">
-                            <span className="text-green-600 mr-2">
-                              {idx + 1}.
-                            </span>
-                            {benefit}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-5 border-2 border-green-300 mt-4">
-                      <p className="text-green-900 leading-relaxed text-lg">
-                        <strong>💚 이 감정을 느끼는 당신은</strong> 위와 같은
-                        가치들을 소중히 여기는 사람입니다. 이것은{" "}
-                        <strong>당신의 강점</strong>입니다.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 주의할 점 */}
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 space-y-4">
-                <div className="flex items-start gap-3 mb-3">
-                  <Minus className="size-7 text-amber-600 flex-shrink-0 mt-1" />
-                  <div className="space-y-2">
-                    <h3 className="text-amber-900 text-xl font-semibold">
-                      ⚠️ "{emotion}"이 너무 커질 때 생길 수 있는 점
-                    </h3>
-                    <p className="text-slate-700 text-base">
-                      감정은 신호지만, 너무 커지면 나를 소모시키기도 합니다.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {warnings.map((w, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white rounded-lg p-4 border border-amber-200"
-                    >
-                      <p className="text-slate-800 leading-relaxed text-base">
-                        <span className="text-amber-600 mr-2">{idx + 1}.</span>
-                        {w}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Button
-                onClick={handleNext}
-                className="w-full py-7 text-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-              >
-                다음 →
-              </Button>
-
-              <div className="text-center text-sm text-slate-500">
-                {isLoading
-                  ? "자동사고를 준비 중입니다…"
-                  : "자동사고를 미리 준비해두고 있어요."}
-              </div>
-            </div>
-          )}
-
-          {/* Step 3 */}
-          {modalStep === 3 && (
-            <div className="space-y-6">
               <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-6">
                 <h3 className="text-slate-900 text-xl font-semibold mb-2">
                   마지막으로 한 가지 더 물어볼게요.
@@ -352,7 +245,7 @@ export function FirstEmotionIntensityModal({
                   지금 느끼는 <strong>{emotion}</strong>을(를) 조금이라도 줄이고
                   싶나요?
                 </p>
-                <br />
+
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <button
                     type="button"

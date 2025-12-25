@@ -17,6 +17,7 @@ import { Textarea } from "../ui/textarea";
 import { EMOTIONS } from "./constants/emotions";
 import { ALL_EXAMPLES } from "./constants/examples";
 import { FirstEmotionIntensityModal } from "./FirstEmotionIntensityModal";
+import { LoadingInsightCard } from "./LoadingInsightCard";
 
 interface CenterPanelProps {
   step: number;
@@ -252,7 +253,7 @@ export function CenterPanel({
     setShowEmotionDetail(false);
 
     if (isDeep) {
-      // ✅ deep: 강도 모달 열기 (여기서 prefetch 시작은 모달 쪽에서)
+      // ✅ deep: 강도 모달 열기 (prefetch는 모달 step1 완료 시점에)
       setShowIntensityModal(true);
       return;
     }
@@ -260,7 +261,7 @@ export function CenterPanel({
     // ✅ lite: 강도 모달 생략
     setShowIntensityModal(false);
 
-    // lite 기본 강도 (원하면 30~50 등 조정)
+    // lite 기본 강도
     setEmotionIntensity(50);
 
     // ✅ 바로 자동사고 생성 (emotionOverride로 state race 방지)
@@ -344,6 +345,9 @@ export function CenterPanel({
     setCustomThought(favorite.thought);
     setSelectedThoughtIndex(999);
     setShowFavorites(false);
+
+    // ✅ 즐겨찾기에는 emotionData가 없을 수 있으니 null 유지
+    // setSelectedEmotionData(null);
 
     if (containerRef.current) containerRef.current.scrollTop = 0;
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -592,7 +596,7 @@ export function CenterPanel({
           </div>
         )}
 
-        {/* Step 2: 감정 상세 (lite/deep 공통으로 보여줌) */}
+        {/* Step 2: 감정 상세 */}
         {step === 2 &&
           !emotionSet &&
           showEmotionDetail &&
@@ -725,12 +729,9 @@ export function CenterPanel({
         {step === 2 && emotionSet && (
           <div className="space-y-4">
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <p className="text-blue-900 mb-2">
-                <strong>{selectedEmotion}</strong> (강도: {emotionIntensity})
-              </p>
               <p className="text-slate-700">
-                이 감정 뒤에 숨어있을 수 있는 생각들입니다.{" "}
-                <strong>가장 잘 맞는 것을 1개 골라주세요.</strong>
+                <strong>{selectedEmotion}</strong> 뒤에 숨어있을 수 있는
+                생각들입니다. <strong>가장 잘 맞는 것을 1개 골라주세요.</strong>
                 <br />
                 만약 없으면 <strong>다시 만들기</strong>를 누르시거나{" "}
                 <strong>직접 적어주세요.</strong>
@@ -741,8 +742,17 @@ export function CenterPanel({
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="size-8 animate-spin text-blue-600 mb-4" />
                 <p className="text-slate-600">
-                  당신의 마음을 분석하고 있습니다...
+                  당신의 마음을 살펴보고 있습니다...
                 </p>
+
+                {/* ✅ 로딩 중일 때: “모달 step2에서 날린 블록”을 여기(로딩 밑)에 표시 */}
+                {/* emotionData 없으면 굳이 안 보이게 처리 */}
+                {selectedEmotionData ? (
+                  <LoadingInsightCard
+                    emotion={selectedEmotion}
+                    emotionData={selectedEmotionData}
+                  />
+                ) : null}
               </div>
             ) : error ? (
               <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">

@@ -27,10 +27,6 @@ interface NavigationProps {
   onChangeMode: (mode: CbtMode) => void;
 }
 
-/**
- * ✅ Tailwind md 분기(CSS)가 꼬여도 "절대 동시에 뜨지 않게" JS matchMedia로 분기
- * - desktop 기준: min-width 768px (Tailwind md 기본과 동일)
- */
 function useIsDesktop(breakpointPx = 768) {
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") return true;
