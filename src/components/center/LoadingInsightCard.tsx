@@ -21,8 +21,6 @@ export function LoadingInsightCard({ emotion, emotionData }: Props) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // ✅ "샤르륵" 체감되게: 아주 짧은 지연 후 트리거
-    // rAF만으로는 타이밍상 바로 켜져서 체감이 안 될 때가 많음
     const t = setTimeout(() => setMounted(true), 30);
     return () => clearTimeout(t);
   }, []);
