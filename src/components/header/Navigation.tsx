@@ -69,7 +69,7 @@ export function Navigation({
       // { id: "ai-chat", label: "AI 상담", icon: MessageSquare },
       { id: "prayer-notes", label: "기도 노트", icon: BookOpen },
       { id: "scripture-notes", label: "말씀 노트", icon: BookMarked },
-      { id: "patterns", label: "감정 메모", icon: TrendingUp },
+      { id: "patterns", label: "감정 노트", icon: TrendingUp },
       { id: "community", label: "커뮤니티", icon: MessageSquare },
       { id: "helpline", label: "헬프라인", icon: LifeBuoy },
     ],

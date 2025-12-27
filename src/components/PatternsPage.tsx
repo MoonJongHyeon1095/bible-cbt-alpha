@@ -163,18 +163,16 @@ export function PatternsPage() {
         <div>
           <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
             <TrendingUp className="size-8 text-indigo-600" />
-            감정 메모
+            감정 노트
           </h1>
-          <p className="text-slate-600">
-            반복되는 감정 패턴을 인식하고 관리하세요.
-          </p>
+          <p className="text-slate-600">반복되는 감정 패턴을 기록하세요.</p>
         </div>
         {!isCreating && (
           <Button
             onClick={() => setIsCreating(true)}
             className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
           >
-            <Plus className="size-5 mr-2" />새 패턴 추가
+            <Plus className="size-5 mr-2" />새 감정패턴 추가
           </Button>
         )}
       </div>
@@ -183,13 +181,13 @@ export function PatternsPage() {
       {isCreating && (
         <Card className="p-6 mb-6 bg-indigo-50 border-2 border-indigo-200">
           <h3 className="text-lg text-slate-900 mb-4">
-            {editingId ? "패턴 수정" : "새 패턴 추가"}
+            {editingId ? "감정패턴 수정" : "새 감정패턴 추가"}
           </h3>
           <div className="space-y-4">
             <div>
               <label className="text-sm text-slate-700 mb-2 block flex items-center gap-2">
                 <AlertCircle className="size-4" />
-                패턴 제목 (간단하게)
+                감정패턴 제목 (간단하게)
               </label>
               <Input
                 value={title}

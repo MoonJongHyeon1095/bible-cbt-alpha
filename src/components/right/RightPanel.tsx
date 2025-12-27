@@ -37,7 +37,7 @@ export function RightPanel({
   onRestartWithSameInput,
   onNext,
 }: RightPanelProps) {
-  // 대안사고 생성 상태 (치료 기법 포함)
+  // 대안사고 생성 상태
   const [alternativeThoughts, setAlternativeThoughts] = useState<
     Array<{
       thought: string;

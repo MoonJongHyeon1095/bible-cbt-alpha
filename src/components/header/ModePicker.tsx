@@ -1,5 +1,5 @@
 // src/components/header/ModePicker.tsx
-import { Filter } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { ToggleRow } from "../ui/mode-switch";
@@ -40,11 +40,9 @@ export function ModePicker({
     const r = el.getBoundingClientRect();
     const vw = window.innerWidth;
 
-    // 오른쪽 기준 정렬(아이콘 버튼 오른쪽 끝에 맞추고, popover 폭만큼 왼쪽으로)
     let left = r.right - POP_W;
     left = Math.max(MARGIN, Math.min(left, vw - POP_W - MARGIN));
 
-    // 버튼 아래로
     const top = r.bottom + GAP;
     return { top, left };
   };
@@ -55,13 +53,15 @@ export function ModePicker({
       if (!show) return;
       const root = rootRef.current;
       if (!root) return;
-      if (e.target instanceof Node && !root.contains(e.target)) setShow(false);
+      if (e.target instanceof Node && !root.contains(e.target)) {
+        setShow(false);
+      }
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
   }, [show]);
 
-  // ✅ 열려 있을 때 스크롤/리사이즈 시 anchor 기준으로 다시 붙이기
+  // ✅ 열려 있을 때 스크롤/리사이즈 시 anchor 기준 재계산
   useEffect(() => {
     if (!show) return;
 
@@ -78,7 +78,6 @@ export function ModePicker({
       window.removeEventListener("resize", onAny);
       window.removeEventListener("scroll", onAny, true);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
 
   const deepEnabled = value.detailMode === "deep";
@@ -95,8 +94,8 @@ export function ModePicker({
       <Button
         variant="outline"
         size="icon"
-        aria-label="모드 설정"
-        title={`모드 설정 (${subtitle})`}
+        aria-label="세션 모드 설정"
+        title={`세션 모드 설정 (${subtitle})`}
         onClick={(e) => {
           const el = e.currentTarget as unknown as HTMLElement;
           const next = !show;
@@ -110,7 +109,8 @@ export function ModePicker({
           }
         }}
       >
-        <Filter className="size-5" />
+        {/* ✅ 아이콘 변경 */}
+        <SlidersHorizontal className="size-5" />
       </Button>
 
       {show && (
@@ -125,7 +125,7 @@ export function ModePicker({
         >
           <div className="flex items-center justify-between mb-1">
             <div className="text-sm font-semibold text-slate-800">
-              모드 설정
+              세션 모드 설정
             </div>
             <button
               type="button"
@@ -141,7 +141,7 @@ export function ModePicker({
           <div className="mt-2 rounded-lg border border-slate-100 px-3">
             <ToggleRow
               label="심화 모드 활성화"
-              description="더 깊이 있는 단계들을 제공합니다."
+              description="더 많은 단계와 깊이 있는 성찰을 제공합니다."
               checked={deepEnabled}
               onChange={(next) =>
                 onChange({
@@ -155,7 +155,7 @@ export function ModePicker({
           <div className="mt-3 rounded-lg border border-slate-100 px-3">
             <ToggleRow
               label="기독교 모드 활성화"
-              description="기독교 콘텐츠를 포함합니다."
+              description="성경 말씀과 기독교적 관점을 포함합니다."
               checked={christianEnabled}
               onChange={(next) =>
                 onChange({
@@ -173,7 +173,7 @@ export function ModePicker({
               onClick={() => onChange(defaultMode)}
               title="기본값으로 초기화"
             >
-              초기화
+              기본 설정으로 초기화
             </button>
           </div>
         </div>
