@@ -3,6 +3,7 @@ export * from "./alternative";
 export * from "./bible";
 export * from "./burns";
 export * from "./client";
-export * from "./cognitive";
+export * from "./cognitiveAnalysis";
+export * from "./cognitiveRank";
 export * from "./thoughts";
 

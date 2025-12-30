@@ -219,7 +219,7 @@ export function RightPanel({
                 골라주세요.
               </p>
               <p className="text-purple-700 text-sm">
-                각 대안사고에는 심리치료 기법이 적용되어 있습니다.
+                각 대안사고는 널리 사용되는 심리기법이 적용되어 있습니다.
               </p>
             </div>
 

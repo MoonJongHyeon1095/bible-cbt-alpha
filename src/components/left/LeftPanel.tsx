@@ -1,16 +1,18 @@
 // src/components/left/LeftPanel.tsx
-import { Check, Loader2, RefreshCw } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  analyzeCognitiveErrors,
-  CognitiveErrorAnalysisResult,
+  analyzeCognitiveErrorDetails,
+  COGNITIVE_ERRORS,
+  type ErrorIndex,
   generateBurnsEmpathy,
+  rankCognitiveErrors,
 } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
-import { CbtMode } from "../header/ModePicker";
-import { Button } from "../ui/button";
+import type { CbtMode } from "../header/ModePicker";
 import { Card } from "../ui/card";
+import { CognitiveErrorPickerCard } from "./CognitiveErrorPickerCard";
 import { EmotionIntensityModal } from "./EmotionIntensityModal";
+import { EmpathyCard } from "./EmpathyCard";
 
 interface LeftPanelProps {
   step: number;
@@ -31,28 +33,16 @@ type BurnsEmpathyShape = {
   soothing: string;
 };
 
-function splitToSentences(text: string): string[] {
-  if (!text) return [];
+type RankItem = {
+  index: ErrorIndex;
+  reason: string;
+  evidenceQuote?: string;
+};
 
-  const decoded = text
-    .replace(/\\r\\n/g, "\n")
-    .replace(/\\n/g, "\n")
-    .replace(/\\t/g, "\t");
-
-  const normalized = decoded
-    .replace(/\r\n/g, "\n")
-    .replace(/\u00a0/g, " ")
-    .replace(/[ \t]+/g, " ")
-    .replace(/ *\n */g, "\n")
-    .trim();
-
-  const parts = normalized
-    .split(/(?<=[.!?])\s+(?=[^)\]"'”’\s])/g)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  return parts.length ? parts : [normalized];
-}
+type DetailItem = {
+  index: ErrorIndex;
+  analysis: string;
+};
 
 export function LeftPanel({
   step,
@@ -64,36 +54,41 @@ export function LeftPanel({
   onNext,
   mode,
 }: LeftPanelProps) {
-  // 현재 처리 중인 감정-자동사고 쌍 (현재는 1개만)
   const currentPair =
     emotionThoughtPairs.length > 0 ? emotionThoughtPairs[0] : null;
 
   const isLite = mode.detailMode === "lite";
 
-  // 번즈식 공감법 결과
+  // 1) Burns 공감
   const [burnsEmpathy, setBurnsEmpathy] = useState<BurnsEmpathyShape | null>(
     null
   );
   const [empathyLoading, setEmpathyLoading] = useState(false);
   const [empathyError, setEmpathyError] = useState<string | null>(null);
 
-  // 목표 감정 강도
+  // 2) 목표 감정 강도
   const [targetIntensity, setTargetIntensity] = useState(30);
   const [intensitySet, setIntensitySet] = useState(false);
   const [showIntensityModal, setShowIntensityModal] = useState(false);
 
-  // 인지오류 분석 결과
-  const [cognitiveErrors, setCognitiveErrors] =
-    useState<CognitiveErrorAnalysisResult | null>(null);
-  const [errorsLoading, setErrorsLoading] = useState(false);
-  const [errorsError, setErrorsError] = useState<string | null>(null);
+  // 2.a 랭킹
+  const [ranked, setRanked] = useState<RankItem[] | null>(null);
+  const [rankLoading, setRankLoading] = useState(false);
+  const [rankError, setRankError] = useState<string | null>(null);
 
-  // 인지오류 선택 (10개 중 2개 직접 선택)
-  const [selectedErrors2, setSelectedErrors2] = useState<number[]>([]);
+  // 2.b 상세(후보만)
+  const [detailByIndex, setDetailByIndex] = useState<
+    Partial<Record<ErrorIndex, DetailItem>>
+  >({});
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
-  /**
-   * ✅ "현재 페어"가 바뀌면 기존 결과를 리셋
-   */
+  // 후보 3개
+  const [candidate3, setCandidate3] = useState<ErrorIndex[]>([]);
+
+  // 선택(최대 2개)
+  const [selected, setSelected] = useState<ErrorIndex[]>([]);
+
   const pairKey = useMemo(() => {
     if (!currentPair) return "";
     return `${currentPair.emotion}::${currentPair.thought}::${currentPair.intensity}`;
@@ -105,7 +100,6 @@ export function LeftPanel({
     if (!pairKey) return;
 
     if (lastPairKeyRef.current && lastPairKeyRef.current !== pairKey) {
-      // 페어가 바뀌었다면 전체 리셋
       setBurnsEmpathy(null);
       setEmpathyError(null);
       setEmpathyLoading(false);
@@ -114,29 +108,45 @@ export function LeftPanel({
       setIntensitySet(false);
       setShowIntensityModal(false);
 
-      setCognitiveErrors(null);
-      setErrorsError(null);
-      setErrorsLoading(false);
+      setRanked(null);
+      setRankLoading(false);
+      setRankError(null);
 
-      setSelectedErrors2([]);
+      setDetailByIndex({});
+      setDetailLoading(false);
+      setDetailError(null);
+
+      setCandidate3([]);
+      setSelected([]);
     }
+
     lastPairKeyRef.current = pairKey;
   }, [pairKey]);
 
-  /**
-   * ✅ Step 3 진입 시:
-   * - 공감문 생성 API 호출
-   * - 공감문 생성이 성공하면 인지오류 분석도 "프리페치"로 같이 호출
-   */
+  const isStale = useCallback(
+    (keyAtStart: string) => lastPairKeyRef.current !== keyAtStart,
+    []
+  );
+
+  // Step3 진입: Burns 시작
   useEffect(() => {
     if (step === 3 && currentPair && !burnsEmpathy && !empathyLoading) {
-      void generateEmpathyAndPrefetchErrors();
+      void generateEmpathy();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, currentPair, burnsEmpathy, empathyLoading]);
 
-  const generateEmpathyAndPrefetchErrors = async () => {
+  // Step3 진입: 랭킹 시작(독립적으로)
+  useEffect(() => {
+    if (step === 3 && currentPair && !ranked && !rankLoading) {
+      void runRankThenKickoffTop3Details();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, currentPair, ranked, rankLoading]);
+
+  const generateEmpathy = useCallback(async () => {
     if (!currentPair) return;
+    const keyAtStart = pairKey;
 
     setEmpathyLoading(true);
     setEmpathyError(null);
@@ -148,74 +158,168 @@ export function LeftPanel({
         currentPair.thought,
         currentPair.intensity
       );
+      if (isStale(keyAtStart)) return;
+
       setBurnsEmpathy(result);
-
-      // 목표 강도 초기화 (현재 강도의 60%로 설정)
       setTargetIntensity(Math.round(currentPair.intensity * 0.6));
-
-      // ✅ 공감문이 뜬 직후, 인지오류도 미리 분석 시작 (모달 동안 뒤에서 돌리기)
-      if (!cognitiveErrors && !errorsLoading) {
-        void analyzeErrors();
-      }
-
-      // ✅ LITE 모드에서도 "자동으로" 다음 UI로 넘기지 않는다.
-      // (공감문 먼저 보여주고, 사용자가 버튼으로 넘어가게)
     } catch (err) {
+      if (isStale(keyAtStart)) return;
       setEmpathyError(
         err instanceof Error ? err.message : "오류가 발생했습니다."
       );
     } finally {
+      if (isStale(keyAtStart)) return;
       setEmpathyLoading(false);
     }
-  };
+  }, [currentPair, isStale, pairKey, userInput]);
 
-  // ✅ 목표 강도 설정 완료: 이제는 API 호출 없이 "표시 단계"만 전환
-  const handleIntensitySet = () => {
+  const handleIntensitySet = useCallback(() => {
     setIntensitySet(true);
-  };
+  }, []);
 
-  // 인지오류 분석 (프리페치/재생성 버튼에서 재사용)
-  const analyzeErrors = async () => {
+  const runRankThenKickoffTop3Details = useCallback(async () => {
     if (!currentPair) return;
+    const keyAtStart = pairKey;
 
-    setErrorsLoading(true);
-    setErrorsError(null);
+    setRankLoading(true);
+    setRankError(null);
+    setDetailError(null);
 
     try {
-      const result = await analyzeCognitiveErrors(
-        userInput,
-        currentPair.thought
-      );
-      setCognitiveErrors(result);
+      const r = await rankCognitiveErrors(userInput, currentPair.thought);
+      if (isStale(keyAtStart)) return;
+
+      setRanked(r.ranked);
+
+      setDetailByIndex({});
+      setSelected([]);
+
+      const top3 = r.ranked.map((x) => x.index).slice(0, 3);
+      setCandidate3(top3);
+
+      if (top3.length > 0) {
+        void fetchDetails(top3);
+      }
     } catch (err) {
-      setErrorsError(
-        err instanceof Error ? err.message : "오류가 발생했습니다."
-      );
-      console.error("인지오류 분석 오류:", err);
+      if (isStale(keyAtStart)) return;
+      setRankError(err instanceof Error ? err.message : "오류가 발생했습니다.");
     } finally {
-      setErrorsLoading(false);
+      if (isStale(keyAtStart)) return;
+      setRankLoading(false);
     }
-  };
+  }, [currentPair, isStale, pairKey, userInput]);
 
-  // 인지오류 2개 선택 토글
-  const toggleError2 = (index: number) => {
-    if (selectedErrors2.includes(index)) {
-      setSelectedErrors2(selectedErrors2.filter((i) => i !== index));
-    } else if (selectedErrors2.length < 2) {
-      setSelectedErrors2([...selectedErrors2, index]);
+  const fetchDetails = useCallback(
+    async (candidates: ErrorIndex[]) => {
+      if (!currentPair) return;
+      if (candidates.length === 0) return;
+
+      const keyAtStart = pairKey;
+
+      setDetailLoading(true);
+      setDetailError(null);
+
+      try {
+        const detail = await analyzeCognitiveErrorDetails(
+          userInput,
+          currentPair.thought,
+          candidates
+        );
+
+        if (isStale(keyAtStart)) return;
+
+        setDetailByIndex((prev) => {
+          const next = { ...prev };
+          for (const e of detail.errors) {
+            next[e.index] = e;
+          }
+          return next;
+        });
+      } catch (err) {
+        if (isStale(keyAtStart)) return;
+        setDetailError(
+          err instanceof Error ? err.message : "오류가 발생했습니다."
+        );
+      } finally {
+        if (isStale(keyAtStart)) return;
+        setDetailLoading(false);
+      }
+    },
+    [currentPair, isStale, pairKey, userInput]
+  );
+
+  const rerollCandidates = useCallback(async () => {
+    if (!currentPair) return;
+
+    if (!ranked || ranked.length === 0) {
+      await runRankThenKickoffTop3Details();
+      return;
     }
-  };
 
-  // 최종 2개 선택 완료 → Step 4로
-  const handleConfirm2Errors = () => {
-    if (cognitiveErrors) {
-      const finalErrors = selectedErrors2.map(
-        (i) => cognitiveErrors.errors[i].title
+    const exclude = new Set<ErrorIndex>();
+    for (const idx of selected) exclude.add(idx);
+    for (const k of Object.keys(detailByIndex)) {
+      exclude.add(Number(k) as ErrorIndex);
+    }
+
+    const next: ErrorIndex[] = [];
+    for (const item of ranked) {
+      if (next.length >= 3) break;
+      if (exclude.has(item.index)) continue;
+      next.push(item.index);
+    }
+
+    if (next.length === 0) {
+      setDetailError(
+        "더 이상 새로운 후보가 없습니다. 다시 분석하려면 새 랭킹을 만들어야 해요."
       );
-      onSelectCognitiveErrors(finalErrors);
-      onNext();
+      return;
     }
-  };
+
+    setCandidate3(next);
+    void fetchDetails(next);
+  }, [
+    currentPair,
+    ranked,
+    selected,
+    detailByIndex,
+    fetchDetails,
+    runRankThenKickoffTop3Details,
+  ]);
+
+  const toggleSelect = useCallback((idx: ErrorIndex) => {
+    setSelected((prev) => {
+      if (prev.includes(idx)) return prev.filter((x) => x !== idx);
+      if (prev.length >= 2) return prev;
+      return [...prev, idx];
+    });
+  }, []);
+
+  const handleConfirm2Errors = useCallback(() => {
+    if (selected.length !== 2) return;
+    const titles = selected.map((idx) => COGNITIVE_ERRORS[idx - 1].title);
+    onSelectCognitiveErrors(titles);
+    onNext();
+  }, [onNext, onSelectCognitiveErrors, selected]);
+
+  const uiIndices: ErrorIndex[] = useMemo(() => {
+    const set = new Set<ErrorIndex>();
+    const out: ErrorIndex[] = [];
+
+    for (const idx of selected) {
+      if (set.has(idx)) continue;
+      set.add(idx);
+      out.push(idx);
+    }
+
+    for (const idx of candidate3) {
+      if (set.has(idx)) continue;
+      set.add(idx);
+      out.push(idx);
+    }
+
+    return out;
+  }, [selected, candidate3]);
 
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col text-[15px] leading-6">
@@ -236,225 +340,40 @@ export function LeftPanel({
           </div>
         )}
 
-        {/* Step 3: 번즈식 공감법 + 목표 강도 설정 */}
         {step === 3 && currentPair && !intensitySet && (
-          <div className="space-y-6">
-            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-              <p className="text-green-800 mb-2">
-                <strong>{currentPair.emotion}의 문장</strong>
-              </p>
-              <p className="text-slate-700 italic mb-1">
-                "{currentPair.thought}"
-              </p>
-            </div>
-
-            {empathyLoading ? (
-              <div className="flex flex-col items-center justify-center py-8">
-                <Loader2 className="size-8 animate-spin text-green-600 mb-4" />
-                <p className="text-slate-600">
-                  당신의 마음을 헤아리고 있습니다...
-                </p>
-              </div>
-            ) : empathyError ? (
-              <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">
-                <p className="mb-2">{empathyError}</p>
-                <Button
-                  onClick={() => void generateEmpathyAndPrefetchErrors()}
-                  variant="outline"
-                  size="sm"
-                >
-                  다시 시도
-                </Button>
-              </div>
-            ) : burnsEmpathy ? (
-              <>
-                <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-300 space-y-2">
-                  <p className="text-slate-800 leading-relaxed text-sm">
-                    {burnsEmpathy.thoughtEmpathy}
-                  </p>
-                  <p className="text-slate-800 leading-relaxed text-sm">
-                    {burnsEmpathy.emotionEmpathy}
-                  </p>
-                  <p className="text-slate-800 leading-relaxed text-sm">
-                    {burnsEmpathy.iStatement}
-                  </p>
-
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-3">
-                    <p className="text-blue-900 text-sm mb-1">
-                      💝 제가 발견한 당신의 모습
-                    </p>
-                    <p className="text-blue-800 text-sm leading-relaxed">
-                      {burnsEmpathy.soothing ?? ""}
-                    </p>
-                  </div>
-                </div>
-
-                {/* ✅ deep 모드: 기존대로 모달 */}
-                {!isLite && (
-                  <Button
-                    onClick={() => setShowIntensityModal(true)}
-                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-5 text-base shadow-lg"
-                  >
-                    💭 감정 강도 조절하기
-                  </Button>
-                )}
-
-                {/* ✅ lite 모드: 모달은 없고, 공감문을 보여준 뒤 사용자가 넘어감 */}
-                {isLite && (
-                  <Button
-                    onClick={handleIntensitySet}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white py-5 text-base shadow-lg"
-                  >
-                    다음 단계로 이동
-                  </Button>
-                )}
-
-                {/* (선택) lite에서 분석 프리페치 상태를 살짝 보여주고 싶으면:
-                    {errorsLoading && <p className="text-xs text-slate-500 text-center">인지오류 분석을 준비 중...</p>}
-                */}
-              </>
-            ) : null}
-          </div>
+          <EmpathyCard
+            currentPair={currentPair}
+            mode={mode}
+            burnsEmpathy={burnsEmpathy}
+            empathyLoading={empathyLoading}
+            empathyError={empathyError}
+            onRetry={() => void generateEmpathy()}
+            onOpenIntensityModal={() => setShowIntensityModal(true)}
+            onLiteNext={handleIntensitySet}
+            showCognitivePreparingHint={rankLoading || detailLoading}
+          />
         )}
 
-        {/* Step 3: 인지오류 10개 중 2개 선택 */}
-        {step === 3 && intensitySet && (
-          <div className="space-y-4">
-            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-              <p className="text-green-800 text-sm mb-1">
-                <strong>{currentPair?.emotion}</strong>
-              </p>
-              <p className="text-slate-700 text-sm">
-                이 감정에 담긴 인지오류를 찾아봅시다.{" "}
-                <strong>2가지를 선택</strong>해주세요.
-              </p>
-            </div>
-
-            {errorsLoading ? (
-              <div className="flex flex-col items-center justify-center py-8">
-                <Loader2 className="size-8 animate-spin text-green-600 mb-4" />
-                <p className="text-slate-600">
-                  인지오류를 분석하고 있습니다...
-                </p>
-              </div>
-            ) : errorsError ? (
-              <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">
-                <p className="mb-2">{errorsError}</p>
-                <Button
-                  onClick={() => void analyzeErrors()}
-                  variant="outline"
-                  size="sm"
-                >
-                  다시 시도
-                </Button>
-              </div>
-            ) : cognitiveErrors ? (
-              <>
-                <div className="space-y-3 max-h-[350px] overflow-y-auto">
-                  {cognitiveErrors.errors.map((error, index) => (
-                    <button
-                      key={index}
-                      onClick={() => toggleError2(index)}
-                      className={`w-full text-left p-4 rounded-lg border-2 transition-all relative ${
-                        selectedErrors2.includes(index)
-                          ? "border-green-600 bg-green-50"
-                          : "border-slate-200 hover:border-green-300 bg-white"
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span
-                          className={`flex-shrink-0 w-6 h-6 rounded-full text-white flex items-center justify-center text-sm ${
-                            selectedErrors2.includes(index)
-                              ? "bg-green-600"
-                              : "bg-slate-400"
-                          }`}
-                        >
-                          {index + 1}
-                        </span>
-
-                        <div className="flex-1">
-                          <p className="text-slate-800 mb-1">{error.title}</p>
-                          <p className="text-slate-500 text-sm mb-2">
-                            {error.description}
-                          </p>
-                          <br />
-                          {/* 사용자 원본 글 인용 */}
-                          <div className="bg-blue-50 border-l-4 border-blue-400 p-2 rounded mb-2">
-                            <p className="text-xs text-blue-600 mb-1">
-                              📝 당신이 쓴 글
-                            </p>
-                            <p className="text-sm text-blue-900 italic whitespace-pre-line">
-                              "{error.userQuote}"
-                            </p>
-                          </div>
-                          <br />
-                          {/* 구체적 분석 (문장 단위 개행) */}
-                          <div className="text-base text-amber-950 leading-7">
-                            <p className="text-xs text-amber-600 mb-1">
-                              🔍 분석
-                            </p>
-
-                            <div className="text-base text-amber-950 leading-7 space-y-2">
-                              {splitToSentences(error.analysis).map(
-                                (line, idx) => (
-                                  <p key={idx} className="whitespace-pre-line">
-                                    {line}
-                                  </p>
-                                )
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {selectedErrors2.includes(index) && (
-                          <Check className="size-5 text-green-600 flex-shrink-0" />
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-                {selectedErrors2.length > 0 && (
-                  <div className="bg-green-50 p-3 rounded-lg text-center text-green-800">
-                    {selectedErrors2.length} / 2개 선택됨
-                  </div>
-                )}
-
-                <Button
-                  onClick={() => {
-                    setSelectedErrors2([]);
-                    void analyzeErrors();
-                  }}
-                  variant="outline"
-                  className="w-full gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
-                >
-                  <RefreshCw className="size-4" />
-                  여기에 없습니다. (다른 인지오류 분석)
-                </Button>
-
-                <Button
-                  onClick={handleConfirm2Errors}
-                  disabled={selectedErrors2.length !== 2}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                >
-                  다음 단계로 이동
-                </Button>
-              </>
-            ) : (
-              <div className="bg-slate-100 border border-slate-200 rounded-lg p-4 text-slate-700">
-                <p className="text-sm mb-3">
-                  인지오류 분석 결과가 아직 없습니다. 아래 버튼으로 분석을
-                  시작할 수 있습니다.
-                </p>
-                <Button onClick={() => void analyzeErrors()} className="w-full">
-                  인지오류 분석 시작
-                </Button>
-              </div>
-            )}
-          </div>
+        {step === 3 && intensitySet && currentPair && (
+          <CognitiveErrorPickerCard
+            emotionLabel={currentPair.emotion}
+            thoughtText={currentPair.thought}
+            COGNITIVE_ERRORS={COGNITIVE_ERRORS}
+            ranked={ranked}
+            rankLoading={rankLoading}
+            rankError={rankError}
+            detailByIndex={detailByIndex}
+            detailLoading={detailLoading}
+            detailError={detailError}
+            uiIndices={uiIndices}
+            selected={selected}
+            onRetryRank={() => void runRankThenKickoffTop3Details()}
+            onReroll={() => void rerollCandidates()}
+            onToggleSelect={toggleSelect}
+            onConfirm={handleConfirm2Errors}
+          />
         )}
 
-        {/* Step 4 이상: 완료 */}
         {step >= 4 && (
           <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
             <p className="text-green-800 mb-2">✓ 인지오류 검토 완료</p>
@@ -465,7 +384,6 @@ export function LeftPanel({
         )}
       </div>
 
-      {/* 감정 강도 모달 (deep 모드에서만) */}
       {currentPair && !isLite && (
         <EmotionIntensityModal
           open={showIntensityModal}
