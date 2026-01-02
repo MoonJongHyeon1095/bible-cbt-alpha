@@ -167,7 +167,7 @@ import { useEffect, useState } from "react";
 import { AIChatPage } from "./components/AIChatPage";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
-import { CommentSection } from "./components/CommentSection";
+import { CommentSection } from "./components/comment/CommentSection";
 import { CommunityPage } from "./components/CommunityPage";
 import { DashboardPage } from "./components/DashboardPage";
 import { Navigation } from "./components/header/Navigation";

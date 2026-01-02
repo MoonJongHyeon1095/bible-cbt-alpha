@@ -1,10 +1,10 @@
 // src/components/CommentSection.tsx
 import { Loader2, Send, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { ENV } from "../config/env"; // 경로 프로젝트에 맞게 조정 (예: "../../config/env")
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { Textarea } from "./ui/textarea";
+import { ENV } from "../../config/env"; // 경로 프로젝트에 맞게 조정 (예: "../../config/env")
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import { Textarea } from "../ui/textarea";
 
 interface Comment {
   id: string;

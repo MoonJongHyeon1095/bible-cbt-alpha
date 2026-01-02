@@ -8,7 +8,6 @@ import {
   LogIn,
   LogOut,
   Menu,
-  MessageSquare,
   TrendingUp,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -70,7 +69,8 @@ export function Navigation({
       { id: "prayer-notes", label: "기도 노트", icon: BookOpen },
       { id: "scripture-notes", label: "말씀 노트", icon: BookMarked },
       { id: "patterns", label: "감정 노트", icon: TrendingUp },
-      { id: "community", label: "커뮤니티", icon: MessageSquare },
+      // 익명 커뮤니티 비활성화
+      // { id: "community", label: "커뮤니티", icon: MessageSquare },
       { id: "helpline", label: "헬프라인", icon: LifeBuoy },
     ],
     []
