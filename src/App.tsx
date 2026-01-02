@@ -164,16 +164,16 @@
 
 // src/App.tsx
 import { useEffect, useState } from "react";
-import { AIChatPage } from "./components/AIChatPage";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
+import { AIChatPage } from "./components/chat/AIChatPage";
 import { CommentSection } from "./components/comment/CommentSection";
 import { CommunityPage } from "./components/CommunityPage";
 import { DashboardPage } from "./components/DashboardPage";
 import { Navigation } from "./components/header/Navigation";
 import { HelplinePage } from "./components/HelplinePage";
 import { PatternsPage } from "./components/PatternsPage";
-import { PrayerNotesPage } from "./components/PrayerNotesPage";
+import { PrayerNotesPage } from "./components/prayer-note/PrayerNotesPage";
 import { ScriptureNotesPage } from "./components/ScriptureNotesPage";
 import { VoicePage } from "./components/VoicePage";
 import { authHelpers } from "./lib/supabase/auth";

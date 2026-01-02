@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
-import { Input } from './ui/input';
-import { BookOpen, Plus, Trash2, Edit2, Save, X } from 'lucide-react';
+// src/components/prayer-note/PrayerNotesPage.tsx
+import { BookOpen, Edit2, Plus, Save, Trash2, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
 
 interface PrayerNote {
   id: string;
@@ -17,33 +18,33 @@ export function PrayerNotesPage() {
   const [notes, setNotes] = useState<PrayerNote[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [tags, setTags] = useState('');
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [tags, setTags] = useState("");
 
   useEffect(() => {
     loadNotes();
   }, []);
 
   const loadNotes = () => {
-    const saved = localStorage.getItem('prayer_notes');
+    const saved = localStorage.getItem("prayer_notes");
     if (saved) {
       try {
         setNotes(JSON.parse(saved));
       } catch (e) {
-        console.error('기도 노트 로드 실패:', e);
+        console.error("기도 노트 로드 실패:", e);
       }
     }
   };
 
   const saveNotes = (updatedNotes: PrayerNote[]) => {
-    localStorage.setItem('prayer_notes', JSON.stringify(updatedNotes));
+    localStorage.setItem("prayer_notes", JSON.stringify(updatedNotes));
     setNotes(updatedNotes);
   };
 
   const handleCreate = () => {
     if (!title.trim() || !content.trim()) {
-      alert('제목과 내용을 입력해주세요.');
+      alert("제목과 내용을 입력해주세요.");
       return;
     }
 
@@ -53,7 +54,7 @@ export function PrayerNotesPage() {
       content: content.trim(),
       timestamp: new Date().toISOString(),
       tags: tags
-        .split(',')
+        .split(",")
         .map((t) => t.trim())
         .filter((t) => t),
     };
@@ -65,7 +66,7 @@ export function PrayerNotesPage() {
 
   const handleUpdate = (id: string) => {
     if (!title.trim() || !content.trim()) {
-      alert('제목과 내용을 입력해주세요.');
+      alert("제목과 내용을 입력해주세요.");
       return;
     }
 
@@ -76,7 +77,7 @@ export function PrayerNotesPage() {
             title: title.trim(),
             content: content.trim(),
             tags: tags
-              .split(',')
+              .split(",")
               .map((t) => t.trim())
               .filter((t) => t),
           }
@@ -88,7 +89,7 @@ export function PrayerNotesPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm('이 기도 노트를 삭제하시겠습니까?')) return;
+    if (!confirm("이 기도 노트를 삭제하시겠습니까?")) return;
     const updated = notes.filter((note) => note.id !== id);
     saveNotes(updated);
   };
@@ -97,26 +98,26 @@ export function PrayerNotesPage() {
     setEditingId(note.id);
     setTitle(note.title);
     setContent(note.content);
-    setTags(note.tags.join(', '));
+    setTags(note.tags.join(", "));
     setIsCreating(true);
   };
 
   const resetForm = () => {
     setIsCreating(false);
     setEditingId(null);
-    setTitle('');
-    setContent('');
-    setTags('');
+    setTitle("");
+    setContent("");
+    setTags("");
   };
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return date.toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -128,15 +129,16 @@ export function PrayerNotesPage() {
             <BookOpen className="size-8 text-purple-600" />
             기도 노트
           </h1>
-          <p className="text-slate-600">당신의 기도 제목과 응답을 기록하세요.</p>
+          <p className="text-slate-600">
+            당신의 기도 제목과 응답을 기록하세요.
+          </p>
         </div>
         {!isCreating && (
           <Button
             onClick={() => setIsCreating(true)}
             className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
           >
-            <Plus className="size-5 mr-2" />
-            새 기도 노트
+            <Plus className="size-5 mr-2" />새 기도 노트
           </Button>
         )}
       </div>
@@ -145,7 +147,7 @@ export function PrayerNotesPage() {
       {isCreating && (
         <Card className="p-6 mb-6 bg-purple-50 border-2 border-purple-200">
           <h3 className="text-lg text-slate-900 mb-4">
-            {editingId ? '기도 노트 수정' : '새 기도 노트 작성'}
+            {editingId ? "기도 노트 수정" : "새 기도 노트 작성"}
           </h3>
           <div className="space-y-4">
             <div>
@@ -182,11 +184,13 @@ export function PrayerNotesPage() {
 
             <div className="flex gap-2">
               <Button
-                onClick={() => (editingId ? handleUpdate(editingId) : handleCreate())}
+                onClick={() =>
+                  editingId ? handleUpdate(editingId) : handleCreate()
+                }
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 <Save className="size-4 mr-2" />
-                {editingId ? '수정 완료' : '저장'}
+                {editingId ? "수정 완료" : "저장"}
               </Button>
               <Button onClick={resetForm} variant="outline">
                 <X className="size-4 mr-2" />
@@ -201,7 +205,9 @@ export function PrayerNotesPage() {
       {notes.length === 0 ? (
         <Card className="p-12 text-center">
           <BookOpen className="size-16 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500 text-lg mb-2">아직 기도 노트가 없습니다.</p>
+          <p className="text-slate-500 text-lg mb-2">
+            아직 기도 노트가 없습니다.
+          </p>
           <p className="text-slate-400">첫 번째 기도 노트를 작성해보세요.</p>
         </Card>
       ) : (
@@ -212,7 +218,9 @@ export function PrayerNotesPage() {
               className="p-5 hover:shadow-lg transition-shadow bg-white border-purple-100"
             >
               <div className="flex items-start justify-between mb-3">
-                <h3 className="text-lg text-slate-900 flex-1 mr-2">{note.title}</h3>
+                <h3 className="text-lg text-slate-900 flex-1 mr-2">
+                  {note.title}
+                </h3>
                 <div className="flex gap-1">
                   <button
                     onClick={() => handleEdit(note)}
@@ -248,7 +256,9 @@ export function PrayerNotesPage() {
                 </div>
               )}
 
-              <p className="text-xs text-slate-400">{formatDate(note.timestamp)}</p>
+              <p className="text-xs text-slate-400">
+                {formatDate(note.timestamp)}
+              </p>
             </Card>
           ))}
         </div>
