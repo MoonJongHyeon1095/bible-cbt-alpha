@@ -90,7 +90,7 @@ export default function App() {
         return <AIChatPage />;
 
       case "prayer-notes":
-        return <PrayerNotesPage />;
+        return <PrayerNotesPage user={user} />;
 
       case "scripture-notes":
         return <ScriptureNotesPage />;

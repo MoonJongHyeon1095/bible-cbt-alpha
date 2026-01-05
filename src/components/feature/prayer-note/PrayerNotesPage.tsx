@@ -5,6 +5,8 @@ import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
+import { supabase } from "../../../lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 interface PrayerNote {
   id: string;
@@ -14,19 +16,62 @@ interface PrayerNote {
   tags: string[];
 }
 
-export function PrayerNotesPage() {
+interface PrayerNotesPageProps {
+  user: User | null;
+}
+
+export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
   const [notes, setNotes] = useState<PrayerNote[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadNotes();
-  }, []);
+  }, [user]);
 
-  const loadNotes = () => {
+  const parseTags = (raw: string) =>
+    raw
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t);
+
+  const loadNotes = async () => {
+    // 로그인 사용자: Supabase에서 로드
+    if (user) {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("prayer_notes")
+          .select("id, title, content, tags, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const mapped =
+          data?.map((row) => ({
+            id: String(row.id),
+            title: row.title ?? "",
+            content: row.content ?? "",
+            tags: Array.isArray(row.tags) ? row.tags : [],
+            timestamp: row.created_at ?? "",
+          })) ?? [];
+
+        setNotes(mapped);
+        return;
+      } catch (e) {
+        console.error("기도 노트 로드 실패:", e);
+        alert("기도 노트를 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // 비로그인: 로컬 저장소
     const saved = localStorage.getItem("prayer_notes");
     if (saved) {
       try {
@@ -37,36 +82,117 @@ export function PrayerNotesPage() {
     }
   };
 
-  const saveNotes = (updatedNotes: PrayerNote[]) => {
+  const saveNotesLocally = (updatedNotes: PrayerNote[]) => {
     localStorage.setItem("prayer_notes", JSON.stringify(updatedNotes));
     setNotes(updatedNotes);
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!title.trim() || !content.trim()) {
       alert("제목과 내용을 입력해주세요.");
       return;
     }
 
+    const tagList = parseTags(tags);
+
+    // 로그인 상태: Supabase에 저장
+    if (user) {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("prayer_notes")
+          .insert({
+            user_id: user.id,
+            title: title.trim(),
+            content: content.trim(),
+            tags: tagList,
+          })
+          .select("id, title, content, tags, created_at")
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const newNote: PrayerNote = {
+            id: String(data.id),
+            title: data.title ?? "",
+            content: data.content ?? "",
+            tags: Array.isArray(data.tags) ? data.tags : [],
+            timestamp: data.created_at ?? new Date().toISOString(),
+          };
+          setNotes((prev) => [newNote, ...prev]);
+        }
+      } catch (e) {
+        console.error("기도 노트 저장 실패:", e);
+        alert("기도 노트를 저장하지 못했습니다.");
+        return;
+      } finally {
+        setLoading(false);
+        resetForm();
+      }
+      return;
+    }
+
+    // 비로그인: 로컬 저장
     const newNote: PrayerNote = {
       id: Date.now().toString(),
       title: title.trim(),
       content: content.trim(),
       timestamp: new Date().toISOString(),
-      tags: tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter((t) => t),
+      tags: tagList,
     };
 
     const updated = [newNote, ...notes];
-    saveNotes(updated);
+    saveNotesLocally(updated);
     resetForm();
   };
 
-  const handleUpdate = (id: string) => {
+  const handleUpdate = async (id: string) => {
     if (!title.trim() || !content.trim()) {
       alert("제목과 내용을 입력해주세요.");
+      return;
+    }
+
+    const tagList = parseTags(tags);
+
+    // 로그인 상태: Supabase 업데이트
+    if (user) {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("prayer_notes")
+          .update({
+            title: title.trim(),
+            content: content.trim(),
+            tags: tagList,
+          })
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .select("id, title, content, tags, created_at")
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const updated = notes.map((note) =>
+            note.id === id
+              ? {
+                  id: String(data.id),
+                  title: data.title ?? "",
+                  content: data.content ?? "",
+                  tags: Array.isArray(data.tags) ? data.tags : [],
+                  timestamp: data.created_at ?? note.timestamp,
+                }
+              : note
+          );
+          setNotes(updated);
+        }
+      } catch (e) {
+        console.error("기도 노트 수정 실패:", e);
+        alert("기도 노트를 수정하지 못했습니다.");
+        return;
+      } finally {
+        setLoading(false);
+        resetForm();
+      }
       return;
     }
 
@@ -76,22 +202,42 @@ export function PrayerNotesPage() {
             ...note,
             title: title.trim(),
             content: content.trim(),
-            tags: tags
-              .split(",")
-              .map((t) => t.trim())
-              .filter((t) => t),
+            tags: tagList,
           }
         : note
     );
 
-    saveNotes(updated);
+    saveNotesLocally(updated);
     resetForm();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("이 기도 노트를 삭제하시겠습니까?")) return;
+
+    if (user) {
+      try {
+        setLoading(true);
+        const { error } = await supabase
+          .from("prayer_notes")
+          .delete()
+          .eq("id", id)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } catch (e) {
+        console.error("기도 노트 삭제 실패:", e);
+        alert("기도 노트를 삭제하지 못했습니다.");
+        return;
+      } finally {
+        setLoading(false);
+      }
+    }
+
     const updated = notes.filter((note) => note.id !== id);
-    saveNotes(updated);
+    if (user) {
+      setNotes(updated);
+    } else {
+      saveNotesLocally(updated);
+    }
   };
 
   const handleEdit = (note: PrayerNote) => {
@@ -130,7 +276,9 @@ export function PrayerNotesPage() {
             기도 노트
           </h1>
           <p className="text-slate-600">
-            당신의 기도 제목과 응답을 기록하세요.
+            {user
+              ? "로그인 상태에서 작성한 노트는 Supabase에 안전하게 저장됩니다."
+              : "로그인 시 기도 노트를 Supabase에 저장할 수 있습니다."}
           </p>
         </div>
         {!isCreating && (
@@ -187,6 +335,7 @@ export function PrayerNotesPage() {
                 onClick={() =>
                   editingId ? handleUpdate(editingId) : handleCreate()
                 }
+                disabled={loading}
                 className="bg-purple-600 hover:bg-purple-700"
               >
                 <Save className="size-4 mr-2" />
@@ -202,7 +351,14 @@ export function PrayerNotesPage() {
       )}
 
       {/* 노트 목록 */}
-      {notes.length === 0 ? (
+      {loading ? (
+        <Card className="p-12 text-center">
+          <BookOpen className="size-16 text-slate-300 mx-auto mb-4 animate-pulse" />
+          <p className="text-slate-500 text-lg mb-2">
+            기도 노트를 불러오는 중입니다...
+          </p>
+        </Card>
+      ) : notes.length === 0 ? (
         <Card className="p-12 text-center">
           <BookOpen className="size-16 text-slate-300 mx-auto mb-4" />
           <p className="text-slate-500 text-lg mb-2">

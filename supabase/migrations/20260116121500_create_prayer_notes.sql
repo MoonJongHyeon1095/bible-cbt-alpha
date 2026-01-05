@@ -1,4 +1,4 @@
--- supabase/migrations/prayer_notes.sql
+-- supabase/migrations/20260116121500_create_prayer_notes.sql
 create table if not exists public.prayer_notes (
   id bigserial primary key,
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -25,7 +25,7 @@ create trigger set_prayer_notes_updated_at
 before update on public.prayer_notes
 for each row execute function public.set_updated_at();
 
--- RLS (권장: 강제)
+-- RLS 설정
 alter table public.prayer_notes enable row level security;
 alter table public.prayer_notes force row level security;
 
