@@ -82,6 +82,8 @@ export function Navigation({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const goHome = () => go("cbt");
+
   return (
     <nav className="bg-white border-b-2 border-purple-100 shadow-sm sticky top-0 z-50">
       {isDesktop ? (
@@ -91,7 +93,11 @@ export function Navigation({
         <div className="max-w-[1800px] mx-auto px-8 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={goHome}
+              className="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-xl"
+            >
               <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-2 rounded-xl">
                 <Brain className="size-6" />
               </div>
@@ -99,7 +105,7 @@ export function Navigation({
                 <h1 className="text-lg text-slate-900">마음생각고쳐쓰기</h1>
                 <p className="text-xs text-slate-500">by 617ALLIANCE</p>
               </div>
-            </div>
+            </button>
 
             {/* Navigation Items */}
             <div className="flex items-center gap-2 flex-wrap">
@@ -167,7 +173,11 @@ export function Navigation({
         <div className="max-w-[1800px] mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             {/* 모바일 로고 */}
-            <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={goHome}
+              className="flex items-center gap-2 min-w-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-xl"
+            >
               <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-2 rounded-xl shrink-0">
                 <Brain className="size-5" />
               </div>
@@ -179,7 +189,7 @@ export function Navigation({
                   by 617ALLIANCE
                 </div>
               </div>
-            </div>
+            </button>
 
             <div className="flex items-center gap-2">
               {/* ✅ 모드 설정 (controlled) */}
