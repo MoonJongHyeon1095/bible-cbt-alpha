@@ -15,13 +15,14 @@ import { Navigation } from "./components/header/Navigation";
 import { authHelpers } from "./lib/supabase/auth";
 
 import type { CbtMode } from "./components/header/ModePicker";
+import type { User } from "@supabase/supabase-js";
 
 const CBT_MODE_STORAGE_KEY = "cbt-mode";
 const DEFAULT_MODE: CbtMode = { detailMode: "lite", toneMode: "normal" };
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("cbt");
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -93,7 +94,7 @@ export default function App() {
         return <PrayerNotesPage user={user} />;
 
       case "scripture-notes":
-        return <ScriptureNotesPage />;
+        return <ScriptureNotesPage user={user} />;
 
       case "patterns":
         return <PatternsPage />;

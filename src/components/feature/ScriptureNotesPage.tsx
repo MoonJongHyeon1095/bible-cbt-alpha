@@ -396,6 +396,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                 onClick={() =>
                   editingId ? handleUpdate(editingId) : handleCreate()
                 }
+                disabled={loading}
                 className="bg-amber-600 hover:bg-amber-700"
               >
                 <Save className="size-4 mr-2" />
@@ -411,7 +412,14 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
       )}
 
       {/* 노트 목록 */}
-      {displayedNotes.length === 0 ? (
+      {loading ? (
+        <Card className="p-12 text-center">
+          <BookMarked className="size-16 text-slate-300 mx-auto mb-4 animate-pulse" />
+          <p className="text-slate-500 text-lg mb-2">
+            말씀 노트를 불러오는 중입니다...
+          </p>
+        </Card>
+      ) : displayedNotes.length === 0 ? (
         <Card className="p-12 text-center">
           <BookMarked className="size-16 text-slate-300 mx-auto mb-4" />
           <p className="text-slate-500 text-lg mb-2">
