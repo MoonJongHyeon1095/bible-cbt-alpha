@@ -59,6 +59,7 @@ export function RightPanel({
   const isDeepNormal = isDeep && !isChristian;
 
   const hasSelectedThought = Boolean(selectedAlternativeThought);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const hasAnyIntensity = useMemo(
     () => emotionThoughtPairs.some((p) => p.intensity != null),
@@ -386,6 +387,18 @@ export function RightPanel({
   const shouldShowDial =
     isDeep && hasAnyIntensity && (isDeepNormal || showFinalIntensity);
 
+  const scrollToTop = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    // 단계 변화나 영역 전환 시 스크롤을 상단으로
+    scrollToTop();
+  }, [step, showBibleResult, showFinalArea, hasSelectedThought]);
+
   const header = useMemo(() => {
     if (step < 4) {
       return {
@@ -436,7 +449,7 @@ export function RightPanel({
         <p className="text-slate-600 text-sm mt-1">{header.desc}</p>
       </div>
 
-      <div className="flex-1 space-y-6 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 space-y-6 overflow-y-auto">
         {showStep3Placeholder && (
           <div className="flex items-center justify-center h-full">
             <p className="text-slate-500">인지오류 검토를 완료해주세요.</p>
