@@ -70,14 +70,14 @@ export function VoicePage() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(transcript).then(() => {
-      alert("텍스트가 클립보드에 복사되었습니다!");
+      toast.success("텍스트가 클립보드에 복사되었습니다!");
     });
   };
 
   const handleUseCBT = () => {
     // CBT 페이지로 이동하면서 텍스트 전달
     localStorage.setItem("voice_input_text", transcript);
-    alert("CBT 세션으로 이동합니다. 입력된 텍스트를 사용할 수 있습니다.");
+    toast.info("CBT 세션으로 이동합니다. 입력된 텍스트를 사용할 수 있습니다.");
   };
 
   return (

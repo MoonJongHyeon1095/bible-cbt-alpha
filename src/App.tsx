@@ -13,6 +13,7 @@ import { VoicePage } from "./components/feature/VoicePage";
 import { CommentSection } from "./components/footer/CommentSection";
 import { Navigation } from "./components/header/Navigation";
 import { authHelpers } from "./lib/supabase/auth";
+import { toast } from "sonner";
 import { Toaster } from "./components/ui/sonner";
 
 import type { User } from "@supabase/supabase-js";
@@ -73,7 +74,7 @@ export default function App() {
   const handleLogout = async () => {
     await authHelpers.signOut();
     setUser(null);
-    alert("로그아웃되었습니다.");
+    toast.success("로그아웃되었습니다.");
   };
 
   const handleAuthSuccess = () => {

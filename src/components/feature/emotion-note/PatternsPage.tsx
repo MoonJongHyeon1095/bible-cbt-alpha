@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../../lib/supabase/client";
+import { toast } from "sonner";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
@@ -90,7 +91,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
         return;
       } catch (e) {
         console.error("패턴 로드 실패:", e);
-        alert("감정 노트를 불러오지 못했습니다.");
+        toast.error("감정 노트를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -115,7 +116,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
   const handleCreate = async () => {
     if (!title.trim() || !trigger.trim()) {
-      alert("제목과 트리거를 입력해주세요.");
+      toast.error("제목과 트리거를 입력해주세요.");
       return;
     }
 
@@ -156,7 +157,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
         }
       } catch (e) {
         console.error("패턴 저장 실패:", e);
-        alert("감정 노트를 저장하지 못했습니다.");
+        toast.error("감정 노트를 저장하지 못했습니다.");
         return;
       } finally {
         setLoading(false);
@@ -184,7 +185,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
   const handleUpdate = async (id: string) => {
     if (!title.trim() || !trigger.trim()) {
-      alert("제목과 트리거를 입력해주세요.");
+      toast.error("제목과 트리거를 입력해주세요.");
       return;
     }
 
@@ -230,7 +231,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
         }
       } catch (e) {
         console.error("패턴 수정 실패:", e);
-        alert("감정 노트를 수정하지 못했습니다.");
+        toast.error("감정 노트를 수정하지 못했습니다.");
         return;
       } finally {
         setLoading(false);
@@ -271,7 +272,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
         if (error) throw error;
       } catch (e) {
         console.error("패턴 삭제 실패:", e);
-        alert("감정 노트를 삭제하지 못했습니다.");
+        toast.error("감정 노트를 삭제하지 못했습니다.");
         return;
       } finally {
         setLoading(false);
@@ -326,7 +327,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
         }
       } catch (e) {
         console.error("발생 횟수 증가 실패:", e);
-        alert("발생 횟수를 업데이트하지 못했습니다.");
+        toast.error("발생 횟수를 업데이트하지 못했습니다.");
       } finally {
         setLoading(false);
       }

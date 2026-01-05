@@ -6,6 +6,7 @@ import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import { supabase } from "../../../lib/supabase/client";
+import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 
 interface PrayerNote {
@@ -72,7 +73,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
         return;
       } catch (e) {
         console.error("기도 노트 로드 실패:", e);
-        alert("기도 노트를 불러오지 못했습니다.");
+        toast.error("기도 노트를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -96,7 +97,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
 
   const handleCreate = async () => {
     if (!title.trim() || !content.trim()) {
-      alert("제목과 내용을 입력해주세요.");
+      toast.error("제목과 내용을 입력해주세요.");
       return;
     }
 
@@ -130,7 +131,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
         }
       } catch (e) {
         console.error("기도 노트 저장 실패:", e);
-        alert("기도 노트를 저장하지 못했습니다.");
+        toast.error("기도 노트를 저장하지 못했습니다.");
         return;
       } finally {
         setLoading(false);
@@ -155,7 +156,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
 
   const handleUpdate = async (id: string) => {
     if (!title.trim() || !content.trim()) {
-      alert("제목과 내용을 입력해주세요.");
+      toast.error("제목과 내용을 입력해주세요.");
       return;
     }
 
@@ -194,7 +195,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
         }
       } catch (e) {
         console.error("기도 노트 수정 실패:", e);
-        alert("기도 노트를 수정하지 못했습니다.");
+        toast.error("기도 노트를 수정하지 못했습니다.");
         return;
       } finally {
         setLoading(false);
@@ -232,7 +233,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
         if (error) throw error;
       } catch (e) {
         console.error("기도 노트 삭제 실패:", e);
-        alert("기도 노트를 삭제하지 못했습니다.");
+        toast.error("기도 노트를 삭제하지 못했습니다.");
         return;
       } finally {
         setLoading(false);

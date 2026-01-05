@@ -10,6 +10,7 @@ import {
 import { useMemo, useRef, useState } from "react";
 import { generateExtendedAutomaticThoughts } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
+import { toast } from "sonner";
 import { CbtMode } from "../header/ModePicker";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -231,7 +232,7 @@ export function CenterPanel({
    */
   const handleEmotionSelect = (emotionData: EmotionData) => {
     if (!userInput.trim()) {
-      alert("먼저 Step 1에서 내용을 입력해주세요.");
+      toast.error("먼저 Step 1에서 내용을 입력해주세요.");
       return;
     }
 
@@ -318,12 +319,12 @@ export function CenterPanel({
     );
 
     if (exists) {
-      alert("이미 즐겨찾기에 있습니다.");
+      toast.info("이미 즐겨찾기에 있습니다.");
       return;
     }
 
     if (favorites.length >= 20) {
-      alert("최대 20개까지 저장할 수 있습니다.");
+      toast.warning("최대 20개까지 저장할 수 있습니다.");
       return;
     }
 
@@ -337,7 +338,7 @@ export function CenterPanel({
 
     favorites.unshift(newFavorite);
     localStorage.setItem("cbt-thought-favorites", JSON.stringify(favorites));
-    alert("자동사고가 즐겨찾기에 추가되었습니다!");
+    toast.success("자동사고가 즐겨찾기에 추가되었습니다!");
   };
 
   // 즐겨찾기에서 자동사고 불러오기
@@ -458,7 +459,7 @@ export function CenterPanel({
               <button
                 onClick={() => {
                   if (!userInput.trim()) {
-                    alert("먼저 내용을 입력해주세요.");
+                    toast.error("먼저 내용을 입력해주세요.");
                     return;
                   }
 
@@ -467,12 +468,12 @@ export function CenterPanel({
                   );
 
                   if (favorites.some((f: any) => f.text === userInput)) {
-                    alert("이미 즐겨찾기에 있습니다.");
+                    toast.info("이미 즐겨찾기에 있습니다.");
                     return;
                   }
 
                   if (favorites.length >= 10) {
-                    alert("최대 10개까지 저장할 수 있습니다.");
+                    toast.warning("최대 10개까지 저장할 수 있습니다.");
                     return;
                   }
 
@@ -486,7 +487,7 @@ export function CenterPanel({
                     "cbt-favorites",
                     JSON.stringify(favorites)
                   );
-                  alert("즐겨찾기에 추가되었습니다!");
+                  toast.success("즐겨찾기에 추가되었습니다!");
                 }}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-yellow-300 hover:border-yellow-500 hover:bg-yellow-50 transition-all text-yellow-600 hover:text-yellow-700 text-sm"
                 title="즐겨찾기에 추가"

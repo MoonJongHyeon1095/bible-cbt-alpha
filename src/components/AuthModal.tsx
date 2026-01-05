@@ -1,6 +1,7 @@
 import { Lock, LogIn, Mail, User, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { authHelpers } from "../lib/supabase/auth";
+import { toast } from "sonner";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -35,7 +36,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
       if (mode === "signup") {
         const { error } = await authHelpers.signUp(email, password, name);
         if (error) throw error;
-        alert("회원가입이 완료되었습니다! 로그인해주세요.");
+        toast.success("회원가입이 완료되었습니다! 로그인해주세요.");
         setMode("signin");
       } else {
         const { error } = await authHelpers.signIn(email, password);

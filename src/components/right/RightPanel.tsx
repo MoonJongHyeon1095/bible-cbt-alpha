@@ -198,7 +198,7 @@ export function RightPanel({
         if (error) throw error;
       } catch (e) {
         console.error("히스토리 저장 실패:", e);
-        alert("세션 기록을 저장하지 못했습니다.");
+        toast.error("세션 기록을 저장하지 못했습니다.");
         return;
       }
     } else {
@@ -406,12 +406,12 @@ export function RightPanel({
                   );
 
                   if (exists) {
-                    alert("이미 즐겨찾기에 있습니다.");
+                    toast.info("이미 즐겨찾기에 있습니다.");
                     return;
                   }
 
                   if (favorites.length >= 10) {
-                    alert("최대 10개까지 저장할 수 있습니다.");
+                    toast.warning("최대 10개까지 저장할 수 있습니다.");
                     return;
                   }
 
@@ -426,7 +426,7 @@ export function RightPanel({
                     "cbt-favorites",
                     JSON.stringify(favorites)
                   );
-                  alert("즐겨찾기에 추가되었습니다!");
+                  toast.success("즐겨찾기에 추가되었습니다!");
                 }}
                 variant="outline"
                 className="gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
@@ -476,12 +476,12 @@ export function RightPanel({
                     );
 
                     if (exists) {
-                      alert("이미 즐겨찾기에 있습니다.");
+                      toast.info("이미 즐겨찾기에 있습니다.");
                       return;
                     }
 
                     if (favorites.length >= 10) {
-                      alert("최대 10개까지 저장할 수 있습니다.");
+                      toast.warning("최대 10개까지 저장할 수 있습니다.");
                       return;
                     }
 
@@ -496,7 +496,7 @@ export function RightPanel({
                       "cbt-favorites",
                       JSON.stringify(favorites)
                     );
-                    alert("즐겨찾기에 추가되었습니다!");
+                    toast.success("즐겨찾기에 추가되었습니다!");
                   }}
                   variant="outline"
                   className="w-full gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
@@ -577,7 +577,7 @@ export function RightPanel({
                     );
 
                     if (bibleVerses.length >= 20) {
-                      alert("최대 20개까지 저장할 수 있습니다.");
+                      toast.warning("최대 20개까지 저장할 수 있습니다.");
                       return;
                     }
 
@@ -593,7 +593,7 @@ export function RightPanel({
                       "cbt-bible-favorites",
                       JSON.stringify(bibleVerses)
                     );
-                    alert("말씀이 즐겨찾기에 저장되었습니다!");
+                    toast.success("말씀이 즐겨찾기에 저장되었습니다!");
                   }}
                   variant="outline"
                   className="gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
@@ -628,17 +628,13 @@ export function RightPanel({
                       navigator.clipboard
                         .writeText(text)
                         .then(() => {
-                          alert(
-                            "말씀이 클립보드에 복사되었습니다!\n카카오톡에서 붙여넣기 해주세요."
-                          );
+                          toast.success("말씀이 클립보드에 복사되었습니다! 카카오톡에서 붙여넣기 해주세요.");
                         })
                         .catch(() => {
-                          alert(
-                            "복사 실패. 말씀을 직접 복사해주세요:\n\n" + text
-                          );
+                          toast.error("복사에 실패했습니다. 말씀을 직접 복사해주세요.");
                         });
                     } else {
-                      alert("복사할 텍스트:\n\n" + text);
+                      toast.info("클립보드가 지원되지 않습니다. 텍스트를 직접 복사해주세요.");
                     }
                   }}
                   variant="outline"

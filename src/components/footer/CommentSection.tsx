@@ -1,6 +1,7 @@
 // src/components/footer/CommentSection.tsx
 import { Loader2, Send, Star } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { ENV } from "../../config/env"; // 경로 프로젝트에 맞게 조정 (예: "../../config/env")
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -62,11 +63,11 @@ export function CommentSection() {
     const nick = nickname.trim() || "익명";
 
     if (rating < 1 || rating > 5) {
-      alert("별점을 선택해주세요!");
+      toast.error("별점을 선택해주세요!");
       return;
     }
     if (!trimmed) {
-      alert("댓글 내용을 입력해주세요!");
+      toast.error("댓글 내용을 입력해주세요!");
       return;
     }
 
@@ -91,7 +92,7 @@ export function CommentSection() {
 
       if (!res.ok) {
         const msg = data?.error || "댓글 등록에 실패했습니다.";
-        alert(msg);
+        toast.error(msg);
         console.error("댓글 제출 실패:", data);
         return;
       }
@@ -103,10 +104,10 @@ export function CommentSection() {
       setNickname("");
 
       await fetchComments();
-      alert("댓글이 등록되었습니다! 감사합니다 🙏");
+      toast.success("댓글이 등록되었습니다! 감사합니다 🙏");
     } catch (error) {
       console.error("댓글 제출 오류:", error);
-      alert("댓글 등록 중 오류가 발생했습니다.");
+      toast.error("댓글 등록 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }

@@ -2,6 +2,7 @@ import type { User } from "@supabase/supabase-js";
 import { BookMarked, Edit2, Plus, Save, Star, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../../lib/supabase/client";
+import { toast } from "sonner";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
@@ -69,7 +70,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
         return;
       } catch (e) {
         console.error("말씀 노트 로드 실패:", e);
-        alert("말씀 노트를 불러오지 못했습니다.");
+        toast.error("말씀 노트를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -94,7 +95,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
 
   const handleCreate = async () => {
     if (!reference.trim() || !verse.trim()) {
-      alert("성경 구절과 말씀을 입력해주세요.");
+      toast.error("성경 구절과 말씀을 입력해주세요.");
       return;
     }
 
@@ -127,7 +128,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
         }
       } catch (e) {
         console.error("말씀 노트 저장 실패:", e);
-        alert("말씀 노트를 저장하지 못했습니다.");
+        toast.error("말씀 노트를 저장하지 못했습니다.");
         return;
       } finally {
         setLoading(false);
@@ -152,7 +153,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
 
   const handleUpdate = async (id: string) => {
     if (!reference.trim() || !verse.trim()) {
-      alert("성경 구절과 말씀을 입력해주세요.");
+      toast.error("성경 구절과 말씀을 입력해주세요.");
       return;
     }
 
@@ -190,7 +191,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
         }
       } catch (e) {
         console.error("말씀 노트 수정 실패:", e);
-        alert("말씀 노트를 수정하지 못했습니다.");
+        toast.error("말씀 노트를 수정하지 못했습니다.");
         return;
       } finally {
         setLoading(false);
@@ -228,7 +229,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
         if (error) throw error;
       } catch (e) {
         console.error("말씀 노트 삭제 실패:", e);
-        alert("말씀 노트를 삭제하지 못했습니다.");
+        toast.error("말씀 노트를 삭제하지 못했습니다.");
         return;
       } finally {
         setLoading(false);
@@ -277,7 +278,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
         }
       } catch (e) {
         console.error("즐겨찾기 토글 실패:", e);
-        alert("즐겨찾기를 변경하지 못했습니다.");
+        toast.error("즐겨찾기를 변경하지 못했습니다.");
       } finally {
         setLoading(false);
       }

@@ -10,6 +10,7 @@ import {
 } from "../ui/dialog";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase/client";
+import { toast } from "sonner";
 import type { SessionHistory } from "../../types/sessionHistory";
 
 interface HistoryModalProps {
@@ -68,7 +69,7 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
         return;
       } catch (e) {
         console.error("히스토리 로드 실패:", e);
-        alert("세션 기록을 불러오지 못했습니다.");
+        toast.error("세션 기록을 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -102,7 +103,7 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
         if (error) throw error;
       } catch (e) {
         console.error("히스토리 삭제 실패:", e);
-        alert("세션 기록을 삭제하지 못했습니다.");
+        toast.error("세션 기록을 삭제하지 못했습니다.");
       } finally {
         setLoading(false);
       }

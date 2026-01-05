@@ -1,5 +1,6 @@
 import { AlertCircle, Heart, MessageSquare, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Textarea } from "../ui/textarea";
@@ -58,7 +59,7 @@ export function CommunityPage() {
 
   const handleCreate = () => {
     if (!content.trim()) {
-      alert("내용을 입력해주세요.");
+      toast.error("내용을 입력해주세요.");
       return;
     }
 

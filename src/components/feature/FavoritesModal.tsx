@@ -1,6 +1,7 @@
 import { Plus, Star, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -59,7 +60,7 @@ export function FavoritesModal({
     if (!newFavoriteText.trim()) return;
 
     if (favorites.length >= MAX_FAVORITES) {
-      alert(`최대 ${MAX_FAVORITES}개까지 저장할 수 있습니다.`);
+      toast.warning(`최대 ${MAX_FAVORITES}개까지 저장할 수 있습니다.`);
       return;
     }
 

@@ -13,6 +13,7 @@ import { Input } from "../ui/input";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase/client";
 import type { SessionHistory } from "../../types/sessionHistory";
+import { toast } from "sonner";
 
 interface EmailModalProps {
   open: boolean;
@@ -39,7 +40,7 @@ export function EmailModal({ open, onClose, user, sessionData }: EmailModalProps
 
   const handleSendEmail = async () => {
     if (!email || !agreedToPrivacy) {
-      alert("이메일을 입력하고 개인정보 처리방침에 동의해주세요.");
+      toast.error("이메일을 입력하고 개인정보 처리방침에 동의해주세요.");
       return;
     }
 
