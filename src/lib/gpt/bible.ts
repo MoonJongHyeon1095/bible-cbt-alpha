@@ -91,7 +91,6 @@ ${emotion}
     if (!jsonText) throw new Error("No JSON object in LLM output");
 
     const parsed = JSON.parse(jsonText) as LlmResponseShape;
-    console.log("Parsed Bible LLM response:", parsed);
 
     // ✅ result로 오든, 루트로 오든 수용
     const r = (parsed.result ?? parsed) as Partial<BibleResult>;

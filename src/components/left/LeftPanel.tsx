@@ -94,6 +94,38 @@ export function LeftPanel({
     return `${currentPair.emotion}::${currentPair.thought}::${currentPair.intensity}`;
   }, [currentPair]);
 
+  const header = useMemo(() => {
+    if (step < 3) {
+      return {
+        badge: "STEP 3 · 준비 중",
+        title: "인지오류 검토 단계로 곧 이동해요.",
+        desc: "감정과 자동사고를 먼저 선택해주세요.",
+      };
+    }
+
+    if (step === 3 && !intensitySet) {
+      return {
+        badge: "STEP 3 · 공감 및 목표",
+        title: "생각 속 오류를 함께 찾아볼까요?",
+        desc: "AI가 제안한 오류를 검토하고 맞다고 느끼는 것을 선택하세요.",
+      };
+    }
+
+    if (step === 3 && intensitySet) {
+      return {
+        badge: "STEP 3 · 인지오류 검토",
+        title: "생각 속 오류를 함께 찾아볼까요?",
+        desc: "AI가 제안한 오류를 검토하고 맞다고 느끼는 것을 선택하세요.",
+      };
+    }
+
+    return {
+      badge: "STEP 4 · 대안사고 준비",
+      title: "이제 대안사고를 만들 준비가 되었어요.",
+      desc: "선택한 오류를 바탕으로 오른쪽에서 대안사고를 확인하세요.",
+    };
+  }, [step, intensitySet]);
+
   const lastPairKeyRef = useRef<string>("");
 
   useEffect(() => {
@@ -324,12 +356,12 @@ export function LeftPanel({
 
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col text-[15px] leading-6">
-      <div className="mb-4">
-        <h2 className="text-slate-800 text-xl">인지오류 검토</h2>
-        <p className="text-slate-600 text-sm mt-2">
-          우리가 만약 우리 생각의 오류를 찾을 수 있다면, 굉장히 빠르게 우리의
-          감정이 달라지는 것을 볼 수 있습니다.
-        </p>
+      <div className="mb-4 space-y-2">
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
+          {header.badge}
+        </div>
+        <h2 className="text-slate-800 text-xl">{header.title}</h2>
+        <p className="text-slate-600 text-sm mt-1">{header.desc}</p>
       </div>
 
       <div className="flex-1 space-y-6 overflow-y-auto">

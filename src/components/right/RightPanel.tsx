@@ -312,21 +312,54 @@ export function RightPanel({
   const shouldShowDial =
     isDeep && hasAnyIntensity && (isDeepNormal || showFinalIntensity);
 
+  const header = useMemo(() => {
+    if (step < 4) {
+      return {
+        badge: "STEP 3 · 준비 중",
+        title: "대안사고 단계가 곧 열립니다.",
+        desc: "인지오류를 먼저 검토해주세요.",
+      };
+    }
+
+    if (step === 4 && !hasSelectedThought) {
+      return {
+        badge: "STEP 4 · 대안사고",
+        title: "어떤 대안사고가 가장 마음에 와닿나요?",
+        desc: "가장 힘이 되는 생각을 골라주세요.",
+      };
+    }
+
+    if (wantsBibleVerse === true) {
+      return {
+        badge: "STEP 5 · 말씀",
+        title: "위로가 될 말씀과 기도문을 살펴볼까요?",
+        desc: "말씀을 읽고 마음에 와닿는 부분을 기억해두세요.",
+      };
+    }
+
+    if (showFinalArea) {
+      return {
+        badge: "STEP 5 · 마무리",
+        title: "세션을 마무리하며 감정 변화를 기록해볼까요?",
+        desc: "감정 강도를 남기고 세션을 저장할 수 있어요.",
+      };
+    }
+
+    return {
+      badge: "STEP 4 · 선택 완료",
+      title: "선택을 확인하고 다음으로 넘어갈까요?",
+      desc: "필요하면 말씀 보기 여부를 선택한 뒤 진행하세요.",
+    };
+  }, [step, hasSelectedThought, wantsBibleVerse, showFinalArea]);
+
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
       <div className="mb-4 space-y-2">
         <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
-          {step < 4
-            ? "STEP 3 · 준비 중"
-            : step === 4
-            ? "STEP 4 · 대안사고"
-            : "STEP 5 · 마무리"}
+          {header.badge}
         </div>
-        <h2 className="text-slate-800 text-xl">대안사고 구성</h2>
-        <p className="text-slate-600 text-sm mt-2">
-          우리의 생각을 더 진실된 생각으로 바꾸면, 우리의 감정도 적절한 자리를
-          찾아갑니다.
-        </p>
+        <h2 className="text-slate-800 text-xl">{header.title}</h2>
+        <p className="text-slate-600 text-sm mt-1">{header.desc}</p>
       </div>
 
       <div className="flex-1 space-y-6 overflow-y-auto">
@@ -524,7 +557,11 @@ export function RightPanel({
   );
 }
 
-function PeaceMessage({ className = "text-blue-900 mb-3" }: { className?: string }) {
+function PeaceMessage({
+  className = "text-blue-900 mb-3",
+}: {
+  className?: string;
+}) {
   return (
     <p className={className}>
       세션이 만족스러우셨을지 모르겠습니다. 다만 우리는 진심으로, 당신의 평안을
