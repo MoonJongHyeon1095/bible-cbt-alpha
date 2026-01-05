@@ -91,7 +91,12 @@ export function FirstEmotionIntensityModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose?.();
+      }}
+    >
       <DialogContent
         className="max-w-[98vw] w-[2000px] bg-white border-2 border-pink-200 shadow-2xl max-h-[95vh] overflow-y-auto"
         onPointerDownOutside={(e: { preventDefault: () => any }) =>
