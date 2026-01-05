@@ -1,6 +1,5 @@
 // src/components/left/LeftPanel.tsx
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
 import {
   analyzeCognitiveErrorDetails,
   COGNITIVE_ERRORS,
@@ -260,31 +259,26 @@ export function LeftPanel({
 
     const exclude = new Set<ErrorIndex>();
     for (const idx of selected) exclude.add(idx);
-
-    // 선택된 것만 제외하고 상위 3개를 다시 표시
-    const refill: ErrorIndex[] = [];
-    for (const item of ranked) {
-      if (exclude.has(item.index)) continue;
-      refill.push(item.index);
-      if (refill.length >= 3) break;
+    for (const k of Object.keys(detailByIndex)) {
+      exclude.add(Number(k) as ErrorIndex);
     }
 
-    if (refill.length === 0) {
-      toast.info("표시할 후보가 없습니다. 선택을 일부 해제해보세요.");
+    const next: ErrorIndex[] = [];
+    for (const item of ranked) {
+      if (next.length >= 3) break;
+      if (exclude.has(item.index)) continue;
+      next.push(item.index);
+    }
+
+    if (next.length === 0) {
+      setDetailError(
+        "더 이상 새로운 후보가 없습니다. 다시 분석하려면 새 랭킹을 만들어야 해요."
+      );
       return;
     }
 
-    // 기존 상세를 제거해 스피너를 다시 보여주고, 새 상세를 요청
-    setDetailByIndex((prev) => {
-      const next = { ...prev };
-      for (const idx of refill) {
-        delete next[idx];
-      }
-      return next;
-    });
-
-    setCandidate3(refill);
-    void fetchDetails(refill);
+    setCandidate3(next);
+    void fetchDetails(next);
   }, [
     currentPair,
     ranked,
@@ -331,9 +325,6 @@ export function LeftPanel({
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col text-[15px] leading-6">
       <div className="mb-4">
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
-          {step < 3 ? "STEP 2 · 준비 중" : "STEP 3 · 인지오류 검토"}
-        </div>
         <h2 className="text-slate-800 text-xl">인지오류 검토</h2>
         <p className="text-slate-600 text-sm mt-2">
           우리가 만약 우리 생각의 오류를 찾을 수 있다면, 굉장히 빠르게 우리의
