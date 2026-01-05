@@ -1,3 +1,8 @@
+export interface SelectedCognitiveError {
+  title: string;
+  detail?: string;
+}
+
 export interface SessionHistory {
   id: string;
   timestamp: string;
@@ -7,7 +12,7 @@ export interface SessionHistory {
     intensity: number | null;
     thought: string;
   }>;
-  selectedCognitiveErrors: string[];
+  selectedCognitiveErrors: SelectedCognitiveError[];
   selectedAlternativeThought: string;
   positiveReframes: { [emotion: string]: string };
   bibleVerse?: {

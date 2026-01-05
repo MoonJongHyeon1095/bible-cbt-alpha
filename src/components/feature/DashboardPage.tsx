@@ -17,19 +17,35 @@ import {
   YAxis,
 } from "recharts";
 import { supabase } from "../../lib/supabase/client";
+import type {
+  SelectedCognitiveError,
+  SessionHistory,
+} from "../../types/sessionHistory";
 import { Card } from "../ui/card";
 
-interface SessionHistory {
-  id: string;
-  timestamp: string;
-  emotionThoughtPairs: Array<{
-    emotion: string;
-    intensity: number | null;
-    thought: string;
-  }>;
-  selectedCognitiveErrors: string[];
-  detailMode?: "lite" | "deep";
-}
+const normalizeSelectedCognitiveErrors = (
+  value: any
+): SelectedCognitiveError[] => {
+  if (!Array.isArray(value)) return [];
+  const out: SelectedCognitiveError[] = [];
+  value.forEach((item) => {
+    if (typeof item === "string") {
+      const title = item.trim();
+      if (title) out.push({ title });
+      return;
+    }
+    if (item && typeof item.title === "string") {
+      out.push({
+        title: item.title,
+        detail:
+          typeof item.detail === "string" && item.detail.trim()
+            ? item.detail
+            : undefined,
+      });
+    }
+  });
+  return out;
+};
 
 export function DashboardPage({ user }: { user: User | null }) {
   const [histories, setHistories] = useState<SessionHistory[]>([]);
@@ -51,7 +67,18 @@ export function DashboardPage({ user }: { user: User | null }) {
     if (!saved) return;
 
     try {
-      const parsed = JSON.parse(saved);
+      const parsed = (JSON.parse(saved) as SessionHistory[]).map(
+        (item: any) => ({
+          ...item,
+          selectedCognitiveErrors: normalizeSelectedCognitiveErrors(
+            item.selectedCognitiveErrors
+          ),
+          userInput: item.userInput ?? "",
+          selectedAlternativeThought: item.selectedAlternativeThought ?? "",
+          positiveReframes: item.positiveReframes ?? {},
+          bibleVerse: item.bibleVerse ?? null,
+        })
+      );
       setHistories(parsed);
       processEmotionTrends(parsed);
       processTopEmotions(parsed);
@@ -66,7 +93,7 @@ export function DashboardPage({ user }: { user: User | null }) {
       const { data, error } = await supabase
         .from("session_history")
         .select(
-          "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors"
+          "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors, selected_alternative_thought, positive_reframes, bible_verse"
         )
         .eq("user_id", user?.id)
         .order("timestamp", { ascending: false })
@@ -85,9 +112,14 @@ export function DashboardPage({ user }: { user: User | null }) {
                 thought: p.thought,
               }))
             : [],
-          selectedCognitiveErrors: Array.isArray(row.selected_cognitive_errors)
-            ? row.selected_cognitive_errors
-            : [],
+          selectedCognitiveErrors: normalizeSelectedCognitiveErrors(
+            row.selected_cognitive_errors
+          ),
+          userInput: row.user_input ?? "",
+          selectedAlternativeThought: row.selected_alternative_thought ?? "",
+          positiveReframes:
+            (row.positive_reframes as Record<string, string>) ?? {},
+          bibleVerse: row.bible_verse ?? null,
         })) ?? [];
 
       setHistories(mapped);
@@ -149,7 +181,7 @@ export function DashboardPage({ user }: { user: User | null }) {
 
     data.forEach((session) => {
       session.selectedCognitiveErrors.forEach((error) => {
-        const shortName = error.split(":")[0].trim();
+        const shortName = error.title.split(":")[0].trim();
         errorCount[shortName] = (errorCount[shortName] || 0) + 1;
       });
     });

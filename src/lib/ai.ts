@@ -103,7 +103,7 @@ export async function generateContextualAlternativeThoughts(
   situation: string,
   emotion: string,
   thought: string,
-  cognitiveErrors: string[]
+  cognitiveErrors: Array<string | { title: string; detail?: string }>
 ): Promise<AlternativeThoughtItem[]> {
   return gptGenerateContextualAlternativeThoughts(
     situation,

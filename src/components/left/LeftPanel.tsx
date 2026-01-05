@@ -8,6 +8,7 @@ import {
   rankCognitiveErrors,
 } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
+import type { SelectedCognitiveError } from "../../types/sessionHistory";
 import type { CbtMode } from "../header/ModePicker";
 import { Card } from "../ui/card";
 import { CognitiveErrorPickerCard } from "./CognitiveErrorPickerCard";
@@ -20,7 +21,7 @@ interface LeftPanelProps {
   userInput: string;
   positiveReframes: { [emotion: string]: string };
   onSetPositiveReframes: (reframes: { [emotion: string]: string }) => void;
-  onSelectCognitiveErrors: (errors: string[]) => void;
+  onSelectCognitiveErrors: (errors: SelectedCognitiveError[]) => void;
   onNext: () => void;
   mode: CbtMode;
 }
@@ -330,10 +331,15 @@ export function LeftPanel({
 
   const handleConfirm2Errors = useCallback(() => {
     if (selected.length !== 2) return;
-    const titles = selected.map((idx) => COGNITIVE_ERRORS[idx - 1].title);
-    onSelectCognitiveErrors(titles);
+
+    const payload: SelectedCognitiveError[] = selected.map((idx) => ({
+      title: COGNITIVE_ERRORS[idx - 1].title,
+      detail: detailByIndex[idx]?.analysis,
+    }));
+
+    onSelectCognitiveErrors(payload);
     onNext();
-  }, [onNext, onSelectCognitiveErrors, selected]);
+  }, [detailByIndex, onNext, onSelectCognitiveErrors, selected]);
 
   const uiIndices: ErrorIndex[] = useMemo(() => {
     const set = new Set<ErrorIndex>();
@@ -353,6 +359,12 @@ export function LeftPanel({
 
     return out;
   }, [selected, candidate3]);
+
+  const canConfirmSelection = useMemo(() => {
+    if (selected.length !== 2) return false;
+    const allDetailsReady = selected.every((idx) => detailByIndex[idx]);
+    return allDetailsReady && !detailLoading && !rankLoading;
+  }, [detailByIndex, detailLoading, rankLoading, selected]);
 
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col text-[15px] leading-6">
@@ -398,6 +410,7 @@ export function LeftPanel({
             detailError={detailError}
             uiIndices={uiIndices}
             selected={selected}
+            canConfirm={canConfirmSelection}
             onRetryRank={() => void runRankThenKickoffTop3Details()}
             onReroll={() => void rerollCandidates()}
             onToggleSelect={toggleSelect}

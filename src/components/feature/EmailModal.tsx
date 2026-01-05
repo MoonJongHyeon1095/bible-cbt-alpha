@@ -12,7 +12,10 @@ import {
 import { Input } from "../ui/input";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase/client";
-import type { SessionHistory } from "../../types/sessionHistory";
+import type {
+  SelectedCognitiveError,
+  SessionHistory,
+} from "../../types/sessionHistory";
 import { toast } from "sonner";
 
 interface EmailModalProps {
@@ -26,7 +29,7 @@ interface EmailModalProps {
       intensity: number | null;
       thought: string;
     }>;
-    selectedCognitiveErrors: string[];
+    selectedCognitiveErrors: SelectedCognitiveError[];
     selectedAlternativeThought: string;
     positiveReframes: { [emotion: string]: string };
   };
@@ -73,8 +76,12 @@ ${
 
 ⚠️ 인지오류:
 ${
-  sessionData.selectedCognitiveErrors.map((e) => `• ${e}`).join("\n") ||
-  "(없음)"
+  sessionData.selectedCognitiveErrors
+    .map((e) => {
+      const detail = e.detail ? `\n    - ${e.detail}` : "";
+      return `• ${e.title}${detail}`;
+    })
+    .join("\n") || "(없음)"
 }
 
 💡 대안사고:

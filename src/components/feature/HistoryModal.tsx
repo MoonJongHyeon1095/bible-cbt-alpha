@@ -11,13 +11,40 @@ import {
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase/client";
 import { toast } from "sonner";
-import type { SessionHistory } from "../../types/sessionHistory";
+import type {
+  SelectedCognitiveError,
+  SessionHistory,
+} from "../../types/sessionHistory";
 
 interface HistoryModalProps {
   open: boolean;
   onClose: () => void;
   user: User | null;
 }
+
+const normalizeSelectedCognitiveErrors = (
+  value: any
+): SelectedCognitiveError[] => {
+  if (!Array.isArray(value)) return [];
+  const out: SelectedCognitiveError[] = [];
+  value.forEach((item) => {
+    if (typeof item === "string") {
+      const title = item.trim();
+      if (title) out.push({ title });
+      return;
+    }
+    if (item && typeof item.title === "string") {
+      out.push({
+        title: item.title,
+        detail:
+          typeof item.detail === "string" && item.detail.trim()
+            ? item.detail
+            : undefined,
+      });
+    }
+  });
+  return out;
+};
 
 export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
   const [histories, setHistories] = useState<SessionHistory[]>([]);
@@ -54,11 +81,9 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
             emotionThoughtPairs: Array.isArray(row.emotion_thought_pairs)
               ? row.emotion_thought_pairs
               : [],
-            selectedCognitiveErrors: Array.isArray(
+            selectedCognitiveErrors: normalizeSelectedCognitiveErrors(
               row.selected_cognitive_errors
-            )
-              ? row.selected_cognitive_errors
-              : [],
+            ),
             selectedAlternativeThought: row.selected_alternative_thought ?? "",
             positiveReframes:
               (row.positive_reframes as Record<string, string>) ?? {},
@@ -79,7 +104,12 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
     const saved = localStorage.getItem("cbt_history");
     if (saved) {
       try {
-        const parsed: SessionHistory[] = JSON.parse(saved);
+        const parsed: SessionHistory[] = JSON.parse(saved).map((item: any) => ({
+          ...item,
+          selectedCognitiveErrors: normalizeSelectedCognitiveErrors(
+            item.selectedCognitiveErrors
+          ),
+        }));
         setHistories(parsed);
       } catch (e) {
         console.error("히스토리 로드 실패:", e);
@@ -205,9 +235,14 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
                           <div className="space-y-1">
                             {history.selectedCognitiveErrors.map(
                               (error, idx) => (
-                                <p key={idx} className="text-sm text-slate-300">
-                                  • {error}
-                                </p>
+                                <div key={idx} className="text-sm text-slate-300">
+                                  <p>• {error.title}</p>
+                                  {error.detail && (
+                                    <p className="text-xs text-slate-400 mt-1">
+                                      └ {error.detail}
+                                    </p>
+                                  )}
+                                </div>
                               )
                             )}
                           </div>

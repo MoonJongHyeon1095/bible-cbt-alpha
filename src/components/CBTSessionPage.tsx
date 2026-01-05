@@ -1,6 +1,7 @@
 // src/components/CBTSessionPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import type { EmotionThoughtPair } from "../types";
+import type { SelectedCognitiveError } from "../types/sessionHistory";
 import { CenterPanel } from "./center/CenterPanel";
 import { EmailModal } from "./feature/EmailModal";
 import { FavoritesModal } from "./feature/FavoritesModal";
@@ -25,7 +26,7 @@ export function CBTSessionPage({
     EmotionThoughtPair[]
   >([]);
   const [selectedCognitiveErrors, setSelectedCognitiveErrors] = useState<
-    string[]
+    SelectedCognitiveError[]
   >([]);
   const [selectedAlternativeThought, setSelectedAlternativeThought] =
     useState<string>("");

@@ -9,7 +9,10 @@ import {
 } from "../../lib/ai";
 import { supabase } from "../../lib/supabase/client";
 import type { EmotionThoughtPair } from "../../types";
-import type { SessionHistory } from "../../types/sessionHistory";
+import type {
+  SelectedCognitiveError,
+  SessionHistory,
+} from "../../types/sessionHistory";
 import type { CbtMode } from "../header/ModePicker";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -28,7 +31,7 @@ interface RightPanelProps {
   emotionThoughtPairs: EmotionThoughtPair[];
   userInput: string;
   positiveReframes: { [emotion: string]: string };
-  selectedCognitiveErrors: string[];
+  selectedCognitiveErrors: SelectedCognitiveError[];
   selectedAlternativeThought: string;
   onSetSelectedAlternativeThought: (thought: string) => void;
   onComplete: () => void;
@@ -168,7 +171,6 @@ export function RightPanel({
     try {
       const emotions = emotionThoughtPairs.map((p) => p.emotion).join(", ");
       const firstPair = emotionThoughtPairs[0];
-
       const thoughts = await generateContextualAlternativeThoughts(
         userInput,
         emotions,
