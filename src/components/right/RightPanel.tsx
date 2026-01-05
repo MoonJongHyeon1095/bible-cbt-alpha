@@ -21,7 +21,6 @@ import { AlternativeThoughtIntroCard } from "./AlternativeThoughtIntroCard";
 import { AlternativeThoughtQuoteCard } from "./AlternativeThoughtQuoteCard";
 import { BibleOfferCard } from "./BibleOfferCard";
 import { BibleVerseCard } from "./BibleVerseCard";
-import { FavoritesAndRetryRow } from "./FavoritesAndRetryRow";
 import { FinalIntensityCard } from "./FinalIntensityCard";
 import { SelectedThoughtCard } from "./SelectedThoughtCard";
 import type { AlternativeThought, BibleVerseResult } from "./types";
@@ -76,6 +75,8 @@ export function RightPanel({
   const [bibleVerse, setBibleVerse] = useState<BibleVerseResult | null>(null);
   const [bibleLoading, setBibleLoading] = useState(false);
   const [bibleError, setBibleError] = useState<string | null>(null);
+  const [savingScripture, setSavingScripture] = useState(false);
+  const [savingPrayer, setSavingPrayer] = useState(false);
 
   const [finalIntensities, setFinalIntensities] = useState<
     Record<string, number>
@@ -95,30 +96,6 @@ export function RightPanel({
       if (pair.intensity != null) initial[pair.emotion] = pair.intensity;
     }
     setFinalIntensities(initial);
-  };
-
-  const saveQuestionToFavorites = () => {
-    const favorites = JSON.parse(localStorage.getItem("cbt-favorites") || "[]");
-    const exists = favorites.some((f: any) => f.text === userInput);
-
-    if (exists) {
-      toast.info("이미 즐겨찾기에 있습니다.");
-      return;
-    }
-    if (favorites.length >= 10) {
-      toast.warning("최대 10개까지 저장할 수 있습니다.");
-      return;
-    }
-
-    const newFavorite = {
-      id: Date.now().toString(),
-      text: userInput,
-      createdAt: Date.now(),
-    };
-
-    favorites.unshift(newFavorite);
-    localStorage.setItem("cbt-favorites", JSON.stringify(favorites));
-    toast.success("즐겨찾기에 추가되었습니다!");
   };
 
   useEffect(() => {
@@ -300,6 +277,101 @@ export function RightPanel({
     onComplete();
   };
 
+  const primaryEmotion = emotionThoughtPairs[0]?.emotion ?? "";
+
+  const handleSaveScripture = async () => {
+    if (!bibleVerse) return;
+
+    const now = new Date().toISOString();
+
+    if (!user) {
+      try {
+        const existingRaw = localStorage.getItem("scripture_notes");
+        const existing = existingRaw ? JSON.parse(existingRaw) : [];
+        const newNote = {
+          id: Date.now().toString(),
+          reference: bibleVerse.reference,
+          verse: bibleVerse.verse,
+          reflection: "",
+          favorite: false,
+          timestamp: now,
+        };
+        const updated = [newNote, ...existing];
+        localStorage.setItem("scripture_notes", JSON.stringify(updated));
+        toast.success("말씀 노트에 저장되었습니다.");
+      } catch (e) {
+        console.error("말씀 노트 로컬 저장 실패:", e);
+        toast.error("말씀을 저장하지 못했습니다.");
+      }
+      return;
+    }
+
+    setSavingScripture(true);
+    try {
+      const { error } = await supabase.from("scripture_notes").insert({
+        user_id: user.id,
+        reference: bibleVerse.reference,
+        verse: bibleVerse.verse,
+        reflection: "",
+      });
+      if (error) throw error;
+      toast.success("말씀 노트에 저장되었습니다.");
+    } catch (e) {
+      console.error("말씀 노트 저장 실패:", e);
+      toast.error("말씀 노트를 저장하지 못했습니다.");
+    } finally {
+      setSavingScripture(false);
+    }
+  };
+
+  const handleSavePrayer = async () => {
+    if (!bibleVerse) return;
+
+    const now = new Date().toISOString();
+    const title = primaryEmotion
+      ? `${primaryEmotion}에 대한 기도`
+      : "기도 노트";
+    const tags = primaryEmotion ? [primaryEmotion] : [];
+
+    if (!user) {
+      try {
+        const existingRaw = localStorage.getItem("prayer_notes");
+        const existing = existingRaw ? JSON.parse(existingRaw) : [];
+        const newNote = {
+          id: Date.now().toString(),
+          title,
+          content: bibleVerse.prayer,
+          tags,
+          timestamp: now,
+        };
+        const updated = [newNote, ...existing];
+        localStorage.setItem("prayer_notes", JSON.stringify(updated));
+        toast.success("기도 노트에 저장되었습니다.");
+      } catch (e) {
+        console.error("기도 노트 로컬 저장 실패:", e);
+        toast.error("기도 노트를 저장하지 못했습니다.");
+      }
+      return;
+    }
+
+    setSavingPrayer(true);
+    try {
+      const { error } = await supabase.from("prayer_notes").insert({
+        user_id: user.id,
+        title,
+        content: bibleVerse.prayer,
+        tags,
+      });
+      if (error) throw error;
+      toast.success("기도 노트에 저장되었습니다.");
+    } catch (e) {
+      console.error("기도 노트 저장 실패:", e);
+      toast.error("기도 노트를 저장하지 못했습니다.");
+    } finally {
+      setSavingPrayer(false);
+    }
+  };
+
   const showStep3Placeholder = step < 4;
   const showAlternativesPicker = step === 4 && !hasSelectedThought;
   const showBibleResult = wantsBibleVerse === true;
@@ -413,13 +485,16 @@ export function RightPanel({
         {showStep4AfterPickPanel && (
           <div className="space-y-4">
             <SelectedThoughtCard thought={selectedAlternativeThought} />
-            <FavoritesAndRetryRow
-              onRetry={() => {
+            <Button
+              onClick={() => {
                 onSetSelectedAlternativeThought("");
                 void generateAlternatives();
               }}
-              onFavorite={saveQuestionToFavorites}
-            />
+              variant="outline"
+              className="w-full gap-2 border-purple-300 text-purple-700 hover:bg-purple-50"
+            >
+              다른 답변 검토하기
+            </Button>
 
             {isChristian ? (
               <BibleOfferCard
@@ -472,7 +547,13 @@ export function RightPanel({
             {!bibleLoading && !bibleError && bibleVerse && (
               <>
                 <SelectedThoughtCard thought={selectedAlternativeThought} />
-                <BibleVerseCard bibleVerse={bibleVerse} />
+                <BibleVerseCard
+                  bibleVerse={bibleVerse}
+                  onSaveScripture={handleSaveScripture}
+                  onSavePrayer={handleSavePrayer}
+                  savingScripture={savingScripture}
+                  savingPrayer={savingPrayer}
+                />
                 <Button
                   onClick={handleFinalComplete}
                   className="w-full py-6 text-lg bg-purple-600 hover:bg-purple-700"

@@ -1,4 +1,5 @@
 // src/components/center/CenterPanel.tsx
+import type { User } from "@supabase/supabase-js";
 import {
   Bookmark,
   Check,
@@ -7,9 +8,10 @@ import {
   Shuffle,
   Star,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { generateExtendedAutomaticThoughts } from "../../lib/ai";
+import { supabase } from "../../lib/supabase/client";
 import type { EmotionThoughtPair } from "../../types";
 import { CbtMode } from "../header/ModePicker";
 import { Button } from "../ui/button";
@@ -28,6 +30,7 @@ interface CenterPanelProps {
   onSetEmotionThoughtPairs: (pairs: EmotionThoughtPair[]) => void;
   onNext: () => void;
   mode: CbtMode;
+  user: User | null;
 }
 
 interface EmotionData {
@@ -46,6 +49,31 @@ function makePrefetchKey(emotion: string, input: string): PrefetchKey {
   return `${emotion}::${input.trim()}`;
 }
 
+function formatAutoTitle(date: Date) {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  const yy = date.getFullYear().toString().slice(2);
+  const mm = pad(date.getMonth() + 1);
+  const dd = pad(date.getDate());
+  const hh = pad(date.getHours());
+  const min = pad(date.getMinutes());
+  return `${yy}년 ${mm}월 ${dd}일 ${hh}시 ${min}분에 저장`;
+}
+
+const EMOTION_NOTES_KEY = "cbt_patterns";
+
+type EmotionNote = {
+  id: string;
+  title: string;
+  trigger: string;
+  automaticThought: string;
+  emotion: string;
+  createdAt: string;
+  behavior?: string;
+  alternative?: string;
+  frequency?: number;
+  timestamp?: string;
+};
+
 export function CenterPanel({
   step,
   userInput,
@@ -54,6 +82,7 @@ export function CenterPanel({
   onSetEmotionThoughtPairs,
   onNext,
   mode,
+  user,
 }: CenterPanelProps) {
   const isDeep = mode.detailMode === "deep";
 
@@ -94,9 +123,10 @@ export function CenterPanel({
   // 사용자 직접 입력 자동사고
   const [customThought, setCustomThought] = useState<string>("");
 
-  // 즐겨찾기
+  // 저장된 자동사고(감정 노트)
   const [showFavorites, setShowFavorites] = useState(false);
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [savedNotes, setSavedNotes] = useState<EmotionNote[]>([]);
+  const [notesLoading, setNotesLoading] = useState(false);
 
   // 로딩/에러
   const [loading, setLoading] = useState(false);
@@ -113,6 +143,84 @@ export function CenterPanel({
     if (!userInput.trim()) return null;
     return makePrefetchKey(selectedEmotion, userInput);
   }, [selectedEmotion, userInput]);
+
+  const useServerNotes = Boolean(user);
+
+  const mapServerNote = (row: any): EmotionNote => ({
+    id: row.id?.toString() ?? `${Date.now()}`,
+    title: row.title ?? "",
+    trigger: row.trigger_text ?? "",
+    automaticThought: row.automatic_thought ?? "",
+    emotion: row.emotion ?? "",
+    behavior: row.behavior ?? "",
+    alternative: row.alternative ?? "",
+    frequency: Number(row.frequency) || 1,
+    createdAt: row.created_at ?? new Date().toISOString(),
+    timestamp: row.created_at ?? new Date().toISOString(),
+  });
+
+  const mapLocalNote = (item: any): EmotionNote => ({
+    id: item.id?.toString() ?? `${Date.now()}`,
+    title: item.title ?? "",
+    trigger: item.trigger ?? item.trigger_text ?? "",
+    automaticThought: item.automaticThought ?? item.automatic_thought ?? "",
+    emotion: item.emotion ?? "",
+    behavior: item.behavior ?? "",
+    alternative: item.alternative ?? "",
+    frequency: Number(item.frequency) || 1,
+    createdAt: item.timestamp ?? item.created_at ?? new Date().toISOString(),
+    timestamp: item.timestamp ?? item.created_at ?? new Date().toISOString(),
+  });
+
+  const getLocalNotes = (): EmotionNote[] => {
+    try {
+      const stored = localStorage.getItem(EMOTION_NOTES_KEY);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map(mapLocalNote)
+        .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+    } catch (e) {
+      console.error("감정 노트 로드 실패:", e);
+      return [];
+    }
+  };
+
+  const saveLocalNotes = (items: EmotionNote[]) => {
+    localStorage.setItem(EMOTION_NOTES_KEY, JSON.stringify(items));
+  };
+
+  const fetchServerNotes = async ({ silent = false } = {}) => {
+    if (!useServerNotes) return;
+    if (!silent) setNotesLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .from("emotion_notes")
+        .select(
+          "id, title, trigger_text, automatic_thought, emotion, behavior, alternative, frequency, created_at"
+        )
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setSavedNotes(data.map(mapServerNote));
+    } catch (e) {
+      console.error("감정 노트 불러오기 실패:", e);
+      if (!silent) toast.error("감정 노트를 불러오지 못했습니다.");
+    } finally {
+      if (!silent) setNotesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (useServerNotes) {
+      void fetchServerNotes({ silent: true });
+    } else {
+      setSavedNotes([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useServerNotes]);
 
   // 예시 클릭
   const handleExampleClick = (example: string) => {
@@ -295,77 +403,114 @@ export function CenterPanel({
     onNext();
   };
 
-  // 즐겨찾기 불러오기
-  const loadFavorites = () => {
-    const stored = JSON.parse(
-      localStorage.getItem("cbt-thought-favorites") || "[]"
-    );
-    setFavorites(stored);
+  // 저장된 자동사고 불러오기
+  const loadFavorites = async () => {
     setShowFavorites(true);
+
+    if (useServerNotes) {
+      await fetchServerNotes();
+      return;
+    }
+
+    const stored = getLocalNotes();
+    setSavedNotes(stored);
   };
 
-  // 자동사고 즐겨찾기 추가
-  const addThoughtToFavorites = (
+  // 자동사고를 감정 노트에 저장
+  const addThoughtToFavorites = async (
     thought: string,
     emotion: string,
-    intensity: number
+    _intensity: number
   ) => {
-    const favorites = JSON.parse(
-      localStorage.getItem("cbt-thought-favorites") || "[]"
-    );
-
-    const exists = favorites.some(
-      (f: any) => f.thought === thought && f.emotion === emotion
-    );
-
-    if (exists) {
-      toast.info("이미 즐겨찾기에 있습니다.");
+    if (!userInput.trim()) {
+      toast.error("상황을 먼저 입력해주세요.");
       return;
     }
 
-    if (favorites.length >= 20) {
-      toast.warning("최대 20개까지 저장할 수 있습니다.");
-      return;
-    }
-
-    const newFavorite = {
+    const now = new Date();
+    const nowIso = now.toISOString();
+    const title = formatAutoTitle(now);
+    const newNote: EmotionNote = {
       id: Date.now().toString(),
-      thought,
+      title,
+      trigger: userInput,
+      automaticThought: thought,
       emotion,
-      intensity: isDeep ? intensity : null,
-      createdAt: Date.now(),
+      createdAt: nowIso,
+      timestamp: nowIso,
+      behavior: "",
+      alternative: "",
+      frequency: 1,
     };
 
-    favorites.unshift(newFavorite);
-    localStorage.setItem("cbt-thought-favorites", JSON.stringify(favorites));
-    toast.success("자동사고가 즐겨찾기에 추가되었습니다!");
+    if (useServerNotes) {
+      const { data, error } = await supabase
+        .from("emotion_notes")
+        .insert({
+          title: newNote.title,
+          trigger_text: newNote.trigger,
+          automatic_thought: newNote.automaticThought,
+          emotion: newNote.emotion,
+        })
+        .select(
+          "id, title, trigger_text, automatic_thought, emotion, behavior, alternative, frequency, created_at"
+        )
+        .single();
+
+      if (error) {
+        console.error("감정 노트 저장 실패:", error);
+        toast.error("감정 노트를 저장하지 못했습니다.");
+        return;
+      }
+
+      const saved = mapServerNote(data);
+      setSavedNotes((prev) => [saved, ...prev]);
+      toast.success("자동사고가 감정 노트에 저장되었습니다.");
+      return;
+    }
+
+    const current = getLocalNotes();
+    const next = [newNote, ...current];
+    saveLocalNotes(next);
+    setSavedNotes(next);
+    toast.success("자동사고가 감정 노트에 저장되었습니다.");
   };
 
-  // 즐겨찾기에서 자동사고 불러오기
-  const loadFromFavorites = (favorite: any) => {
-    setSelectedEmotion(favorite.emotion);
-    if (typeof favorite.intensity === "number") {
-      setEmotionIntensity(favorite.intensity);
-    }
+  // 저장된 노트에서 자동사고 불러오기
+  const loadFromFavorites = (note: EmotionNote) => {
+    setSelectedEmotion(note.emotion);
     setEmotionSet(true);
-    setCustomThought(favorite.thought);
+    setCustomThought(note.automaticThought);
     setSelectedThoughtIndex(999);
     setShowFavorites(false);
-
-    // ✅ 즐겨찾기에는 emotionData가 없을 수 있으니 null 유지
 
     if (containerRef.current) containerRef.current.scrollTop = 0;
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // 즐겨찾기 삭제
-  const removeFromFavorites = (id: string) => {
-    const favorites = JSON.parse(
-      localStorage.getItem("cbt-thought-favorites") || "[]"
-    );
-    const filtered = favorites.filter((f: any) => f.id !== id);
-    localStorage.setItem("cbt-thought-favorites", JSON.stringify(filtered));
-    setFavorites(filtered);
+  // 저장된 노트 삭제
+  const removeFromFavorites = async (id: string) => {
+    if (useServerNotes) {
+      const numericId = Number(id);
+      const { error } = await supabase
+        .from("emotion_notes")
+        .delete()
+        .eq("id", Number.isNaN(numericId) ? id : numericId);
+
+      if (error) {
+        console.error("감정 노트 삭제 실패:", error);
+        toast.error("삭제하지 못했습니다.");
+        return;
+      }
+
+      setSavedNotes((prev) => prev.filter((f) => f.id !== id));
+      return;
+    }
+
+    const stored = getLocalNotes();
+    const filtered = stored.filter((f) => f.id !== id);
+    saveLocalNotes(filtered);
+    setSavedNotes(filtered);
   };
 
   // ✅ 헤더(지금 UI 반영)
@@ -803,7 +948,7 @@ export function CenterPanel({
 
                 {!showFavorites ? (
                   <Button
-                    onClick={loadFavorites}
+                    onClick={() => void loadFavorites()}
                     variant="outline"
                     className="w-full gap-2 border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
                   >
@@ -826,7 +971,12 @@ export function CenterPanel({
                       </Button>
                     </div>
 
-                    {favorites.length === 0 ? (
+                    {notesLoading ? (
+                      <div className="flex items-center gap-2 text-slate-600 px-3 py-4">
+                        <Loader2 className="size-4 animate-spin text-yellow-600" />
+                        불러오는 중입니다...
+                      </div>
+                    ) : savedNotes.length === 0 ? (
                       <div className="text-center py-8 text-slate-500">
                         <Bookmark className="size-12 mx-auto mb-2 opacity-30" />
                         <p>저장된 자동사고가 없습니다.</p>
@@ -836,7 +986,7 @@ export function CenterPanel({
                       </div>
                     ) : (
                       <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                        {favorites.map((fav: any) => (
+                        {savedNotes.map((fav) => (
                           <div
                             key={fav.id}
                             className="bg-white p-3 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 transition-all"
@@ -844,16 +994,22 @@ export function CenterPanel({
                             <div className="flex items-start gap-2 mb-2">
                               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
                                 {fav.emotion}
-                                {fav.intensity != null &&
-                                  ` (강도: ${fav.intensity})`}
                               </span>
-                              <span className="text-xs text-slate-400">
-                                {new Date(fav.createdAt).toLocaleDateString()}
-                              </span>
+                            <span className="text-xs text-slate-400">
+                              {fav.title}
+                            </span>
+                          </div>
+                            <div className="space-y-2">
+                              <p className="text-slate-700 text-sm">
+                                {fav.automaticThought}
+                              </p>
+
+                              <p className="text-xs text-slate-500 line-clamp-2">
+                                {fav.trigger}
+                              </p>
+                              <span className="block h-2" />
                             </div>
-                            <p className="text-slate-700 text-sm mb-3">
-                              {fav.thought}
-                            </p>
+
                             <div className="flex gap-2">
                               <Button
                                 onClick={() => loadFromFavorites(fav)}
@@ -863,7 +1019,7 @@ export function CenterPanel({
                                 이 생각으로 진행하기
                               </Button>
                               <Button
-                                onClick={() => removeFromFavorites(fav.id)}
+                                onClick={() => void removeFromFavorites(fav.id)}
                                 variant="outline"
                                 size="sm"
                                 className="text-red-600 hover:bg-red-50"
@@ -949,6 +1105,26 @@ export function CenterPanel({
                     placeholder="예: 나는 이렇게 하면 안 된다고 생각해..."
                     className="min-h-[80px] resize-none"
                   />
+
+                  {customThought.trim() && (
+                    <div className="flex items-center justify-between mt-2">
+                      <Button
+                        onClick={() =>
+                          addThoughtToFavorites(
+                            customThought.trim(),
+                            selectedEmotion,
+                            emotionIntensity
+                          )
+                        }
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                      >
+                        <Bookmark className="size-4" />
+                        감정 노트에 저장
+                      </Button>
+                    </div>
+                  )}
 
                   {customThought.trim() && (
                     <Button

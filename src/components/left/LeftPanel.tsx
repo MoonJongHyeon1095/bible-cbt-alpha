@@ -108,7 +108,7 @@ export function LeftPanel({
       return {
         badge: "STEP 3 · 공감 및 목표",
         title: "생각 속 오류를 함께 찾아볼까요?",
-        desc: "AI가 제안한 오류를 검토하고 맞다고 느끼는 것을 선택하세요.",
+        desc: "제안된 오류를 검토하고 맞다고 느끼는 것을 선택하세요.",
       };
     }
 
@@ -116,7 +116,7 @@ export function LeftPanel({
       return {
         badge: "STEP 3 · 인지오류 검토",
         title: "생각 속 오류를 함께 찾아볼까요?",
-        desc: "AI가 제안한 오류를 검토하고 맞다고 느끼는 것을 선택하세요.",
+        desc: "제안된 오류를 검토하고 맞다고 느끼는 것을 선택하세요.",
       };
     }
 

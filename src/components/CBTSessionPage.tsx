@@ -103,15 +103,16 @@ export function CBTSessionPage({
             key={`center-${step}`}
             step={step}
             userInput={userInput}
-            emotionThoughtPairs={emotionThoughtPairs}
-            onInputChange={setUserInput}
-            onSetEmotionThoughtPairs={setEmotionThoughtPairs}
-            onNext={handleNext}
-            mode={mode}
-          />
-        </div>
-      );
-    }
+          emotionThoughtPairs={emotionThoughtPairs}
+          onInputChange={setUserInput}
+          onSetEmotionThoughtPairs={setEmotionThoughtPairs}
+          onNext={handleNext}
+          mode={mode}
+          user={user}
+        />
+      </div>
+    );
+  }
 
     if (step === 3) {
       return (

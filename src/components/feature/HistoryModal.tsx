@@ -11,40 +11,14 @@ import {
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase/client";
 import { toast } from "sonner";
-import type {
-  SelectedCognitiveError,
-  SessionHistory,
-} from "../../types/sessionHistory";
+import type { SessionHistory } from "../../types/sessionHistory";
+import { normalizeSelectedCognitiveErrors } from "../../lib/normalizeSelectedCognitiveErrors";
 
 interface HistoryModalProps {
   open: boolean;
   onClose: () => void;
   user: User | null;
 }
-
-const normalizeSelectedCognitiveErrors = (
-  value: any
-): SelectedCognitiveError[] => {
-  if (!Array.isArray(value)) return [];
-  const out: SelectedCognitiveError[] = [];
-  value.forEach((item) => {
-    if (typeof item === "string") {
-      const title = item.trim();
-      if (title) out.push({ title });
-      return;
-    }
-    if (item && typeof item.title === "string") {
-      out.push({
-        title: item.title,
-        detail:
-          typeof item.detail === "string" && item.detail.trim()
-            ? item.detail
-            : undefined,
-      });
-    }
-  });
-  return out;
-};
 
 export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
   const [histories, setHistories] = useState<SessionHistory[]>([]);

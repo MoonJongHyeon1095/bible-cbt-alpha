@@ -1,15 +1,58 @@
+import { BookmarkPlus, Sparkles } from "lucide-react";
+import { Button } from "../ui/button";
 import type { BibleVerseResult } from "./types";
 
 interface BibleVerseCardProps {
   bibleVerse: BibleVerseResult;
+  onSaveScripture?: () => void;
+  onSavePrayer?: () => void;
+  savingScripture?: boolean;
+  savingPrayer?: boolean;
+  canSave?: boolean;
 }
 
-export function BibleVerseCard({ bibleVerse }: BibleVerseCardProps) {
+export function BibleVerseCard({
+  bibleVerse,
+  onSaveScripture,
+  onSavePrayer,
+  savingScripture,
+  savingPrayer,
+  canSave = true,
+}: BibleVerseCardProps) {
   return (
     <div className="bg-amber-50 p-6 rounded-xl border-2 border-amber-400">
-      <p className="text-amber-900 mb-3 text-xl">
-        📖 {bibleVerse.reference}
-      </p>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <p className="text-amber-900 text-xl">📖 {bibleVerse.reference}</p>
+
+        {(onSaveScripture || onSavePrayer) && (
+          <div className="flex items-center gap-2">
+            {onSaveScripture && (
+              <Button
+                onClick={onSaveScripture}
+                variant="outline"
+                size="sm"
+                className="gap-2 border-amber-300 text-amber-800 hover:bg-amber-100"
+                disabled={!canSave || savingScripture}
+              >
+                <BookmarkPlus className="size-4" />
+                말씀 저장
+              </Button>
+            )}
+            {onSavePrayer && (
+              <Button
+                onClick={onSavePrayer}
+                variant="outline"
+                size="sm"
+                className="gap-2 border-blue-200 text-blue-800 hover:bg-blue-50"
+                disabled={!canSave || savingPrayer}
+              >
+                <Sparkles className="size-4" />
+                기도 저장
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
       <p className="text-slate-800 mb-5 italic leading-relaxed text-lg">
         "{bibleVerse.verse}"
       </p>

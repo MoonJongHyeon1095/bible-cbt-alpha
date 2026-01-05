@@ -17,35 +17,9 @@ import {
   YAxis,
 } from "recharts";
 import { supabase } from "../../lib/supabase/client";
-import type {
-  SelectedCognitiveError,
-  SessionHistory,
-} from "../../types/sessionHistory";
+import type { SessionHistory } from "../../types/sessionHistory";
+import { normalizeSelectedCognitiveErrors } from "../../lib/normalizeSelectedCognitiveErrors";
 import { Card } from "../ui/card";
-
-const normalizeSelectedCognitiveErrors = (
-  value: any
-): SelectedCognitiveError[] => {
-  if (!Array.isArray(value)) return [];
-  const out: SelectedCognitiveError[] = [];
-  value.forEach((item) => {
-    if (typeof item === "string") {
-      const title = item.trim();
-      if (title) out.push({ title });
-      return;
-    }
-    if (item && typeof item.title === "string") {
-      out.push({
-        title: item.title,
-        detail:
-          typeof item.detail === "string" && item.detail.trim()
-            ? item.detail
-            : undefined,
-      });
-    }
-  });
-  return out;
-};
 
 export function DashboardPage({ user }: { user: User | null }) {
   const [histories, setHistories] = useState<SessionHistory[]>([]);
