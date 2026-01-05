@@ -2,20 +2,20 @@
 import { useEffect, useState } from "react";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
+import { AIChatPage } from "./components/feature/chat/AIChatPage";
 import { CommunityPage } from "./components/feature/CommunityPage";
 import { DashboardPage } from "./components/feature/DashboardPage";
+import { PatternsPage } from "./components/feature/emotion-note/PatternsPage";
 import { HelplinePage } from "./components/feature/HelplinePage";
-import { PatternsPage } from "./components/feature/PatternsPage";
-import { ScriptureNotesPage } from "./components/feature/ScriptureNotesPage";
-import { VoicePage } from "./components/feature/VoicePage";
-import { AIChatPage } from "./components/feature/chat/AIChatPage";
 import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPage";
+import { ScriptureNotesPage } from "./components/feature/scripture-note/ScriptureNotesPage";
+import { VoicePage } from "./components/feature/VoicePage";
 import { CommentSection } from "./components/footer/CommentSection";
 import { Navigation } from "./components/header/Navigation";
 import { authHelpers } from "./lib/supabase/auth";
 
-import type { CbtMode } from "./components/header/ModePicker";
 import type { User } from "@supabase/supabase-js";
+import type { CbtMode } from "./components/header/ModePicker";
 
 const CBT_MODE_STORAGE_KEY = "cbt-mode";
 const DEFAULT_MODE: CbtMode = { detailMode: "lite", toneMode: "normal" };
@@ -97,7 +97,7 @@ export default function App() {
         return <ScriptureNotesPage user={user} />;
 
       case "patterns":
-        return <PatternsPage />;
+        return <PatternsPage user={user} />;
 
       case "community":
         return <CommunityPage />;

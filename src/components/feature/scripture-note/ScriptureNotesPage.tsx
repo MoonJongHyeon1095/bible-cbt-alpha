@@ -1,11 +1,11 @@
+import type { User } from "@supabase/supabase-js";
 import { BookMarked, Edit2, Plus, Save, Star, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
-import { Button } from "../ui/button";
-import { Card } from "../ui/card";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
-import { supabase } from "../../lib/supabase/client";
+import { supabase } from "../../../lib/supabase/client";
+import { Button } from "../../ui/button";
+import { Card } from "../../ui/card";
+import { Input } from "../../ui/input";
+import { Textarea } from "../../ui/textarea";
 
 interface ScriptureNote {
   id: string;

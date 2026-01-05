@@ -9,10 +9,12 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
-import { Card } from "../ui/card";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
+import type { User } from "@supabase/supabase-js";
+import { Button } from "../../ui/button";
+import { Card } from "../../ui/card";
+import { Input } from "../../ui/input";
+import { Textarea } from "../../ui/textarea";
+import { supabase } from "../../../lib/supabase/client";
 
 interface Pattern {
   id: string;
@@ -26,10 +28,15 @@ interface Pattern {
   frequency: number;
 }
 
-export function PatternsPage() {
+interface PatternsPageProps {
+  user: User | null;
+}
+
+export function PatternsPage({ user }: PatternsPageProps) {
   const [patterns, setPatterns] = useState<Pattern[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Form fields
   const [title, setTitle] = useState("");
@@ -41,27 +48,113 @@ export function PatternsPage() {
 
   useEffect(() => {
     loadPatterns();
-  }, []);
+  }, [user]);
 
-  const loadPatterns = () => {
-    const saved = localStorage.getItem("cbt_patterns");
-    if (saved) {
+  const loadPatterns = async () => {
+    setLoading(true);
+
+    // 로그인 상태: Supabase에서 로드
+    if (user) {
       try {
-        setPatterns(JSON.parse(saved));
+        const { data, error } = await supabase
+          .from("emotion_notes")
+          .select(
+            "id, title, trigger_text, automatic_thought, emotion, behavior, alternative, frequency, created_at"
+          )
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const mapped =
+          data?.map((row) => ({
+            id: String(row.id),
+            title: row.title ?? "",
+            trigger: row.trigger_text ?? "",
+            automaticThought: row.automatic_thought ?? "",
+            emotion: row.emotion ?? "",
+            behavior: row.behavior ?? "",
+            alternative: row.alternative ?? "",
+            frequency: Number(row.frequency) || 1,
+            timestamp: row.created_at ?? "",
+          })) ?? [];
+
+        setPatterns(mapped);
+        return;
       } catch (e) {
         console.error("패턴 로드 실패:", e);
+        alert("감정 노트를 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
       }
+    }
+
+    // 비로그인: 로컬 저장소
+    try {
+      const saved = localStorage.getItem("cbt_patterns");
+      setPatterns(saved ? JSON.parse(saved) : []);
+    } catch (e) {
+      console.error("패턴 로드 실패:", e);
+      setPatterns([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const savePatterns = (updatedPatterns: Pattern[]) => {
+  const savePatternsLocally = (updatedPatterns: Pattern[]) => {
     localStorage.setItem("cbt_patterns", JSON.stringify(updatedPatterns));
     setPatterns(updatedPatterns);
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!title.trim() || !trigger.trim()) {
       alert("제목과 트리거를 입력해주세요.");
+      return;
+    }
+
+    // 로그인 상태: Supabase에 저장
+    if (user) {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("emotion_notes")
+          .insert({
+            user_id: user.id,
+            title: title.trim(),
+            trigger_text: trigger.trim(),
+            automatic_thought: automaticThought.trim(),
+            emotion: emotion.trim(),
+            behavior: behavior.trim(),
+            alternative: alternative.trim(),
+          })
+          .select(
+            "id, title, trigger_text, automatic_thought, emotion, behavior, alternative, frequency, created_at"
+          )
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const newPattern: Pattern = {
+            id: String(data.id),
+            title: data.title ?? "",
+            trigger: data.trigger_text ?? "",
+            automaticThought: data.automatic_thought ?? "",
+            emotion: data.emotion ?? "",
+            behavior: data.behavior ?? "",
+            alternative: data.alternative ?? "",
+            frequency: Number(data.frequency) || 1,
+            timestamp: data.created_at ?? new Date().toISOString(),
+          };
+          setPatterns((prev) => [newPattern, ...prev]);
+        }
+      } catch (e) {
+        console.error("패턴 저장 실패:", e);
+        alert("감정 노트를 저장하지 못했습니다.");
+        return;
+      } finally {
+        setLoading(false);
+        resetForm();
+      }
       return;
     }
 
@@ -78,13 +171,64 @@ export function PatternsPage() {
     };
 
     const updated = [newPattern, ...patterns];
-    savePatterns(updated);
+    savePatternsLocally(updated);
     resetForm();
   };
 
-  const handleUpdate = (id: string) => {
+  const handleUpdate = async (id: string) => {
     if (!title.trim() || !trigger.trim()) {
       alert("제목과 트리거를 입력해주세요.");
+      return;
+    }
+
+    // 로그인 상태: Supabase 업데이트
+    if (user) {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("emotion_notes")
+          .update({
+            title: title.trim(),
+            trigger_text: trigger.trim(),
+            automatic_thought: automaticThought.trim(),
+            emotion: emotion.trim(),
+            behavior: behavior.trim(),
+            alternative: alternative.trim(),
+          })
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .select(
+            "id, title, trigger_text, automatic_thought, emotion, behavior, alternative, frequency, created_at"
+          )
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const updated = patterns.map((pattern) =>
+            pattern.id === id
+              ? {
+                  id: String(data.id),
+                  title: data.title ?? "",
+                  trigger: data.trigger_text ?? "",
+                  automaticThought: data.automatic_thought ?? "",
+                  emotion: data.emotion ?? "",
+                  behavior: data.behavior ?? "",
+                  alternative: data.alternative ?? "",
+                  frequency: Number(data.frequency) || 1,
+                  timestamp: data.created_at ?? pattern.timestamp,
+                }
+              : pattern
+          );
+          setPatterns(updated);
+        }
+      } catch (e) {
+        console.error("패턴 수정 실패:", e);
+        alert("감정 노트를 수정하지 못했습니다.");
+        return;
+      } finally {
+        setLoading(false);
+        resetForm();
+      }
       return;
     }
 
@@ -102,23 +246,92 @@ export function PatternsPage() {
         : pattern
     );
 
-    savePatterns(updated);
+    savePatternsLocally(updated);
     resetForm();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("이 패턴을 삭제하시겠습니까?")) return;
+
+    if (user) {
+      try {
+        setLoading(true);
+        const { error } = await supabase
+          .from("emotion_notes")
+          .delete()
+          .eq("id", id)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } catch (e) {
+        console.error("패턴 삭제 실패:", e);
+        alert("감정 노트를 삭제하지 못했습니다.");
+        return;
+      } finally {
+        setLoading(false);
+      }
+    }
+
     const updated = patterns.filter((pattern) => pattern.id !== id);
-    savePatterns(updated);
+    if (user) {
+      setPatterns(updated);
+    } else {
+      savePatternsLocally(updated);
+    }
   };
 
-  const incrementFrequency = (id: string) => {
+  const incrementFrequency = async (id: string) => {
+    const target = patterns.find((p) => p.id === id);
+    if (!target) return;
+
+    if (user) {
+      try {
+        setLoading(true);
+        const nextFrequency = (Number(target.frequency) || 1) + 1;
+        const { data, error } = await supabase
+          .from("emotion_notes")
+          .update({ frequency: nextFrequency })
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .select(
+            "id, title, trigger_text, automatic_thought, emotion, behavior, alternative, frequency, created_at"
+          )
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setPatterns((prev) =>
+            prev.map((pattern) =>
+              pattern.id === id
+                ? {
+                    id: String(data.id),
+                    title: data.title ?? "",
+                    trigger: data.trigger_text ?? "",
+                    automaticThought: data.automatic_thought ?? "",
+                    emotion: data.emotion ?? "",
+                    behavior: data.behavior ?? "",
+                    alternative: data.alternative ?? "",
+                    frequency: Number(data.frequency) || nextFrequency,
+                    timestamp: data.created_at ?? pattern.timestamp,
+                  }
+                : pattern
+            )
+          );
+        }
+      } catch (e) {
+        console.error("발생 횟수 증가 실패:", e);
+        alert("발생 횟수를 업데이트하지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     const updated = patterns.map((pattern) =>
       pattern.id === id
         ? { ...pattern, frequency: pattern.frequency + 1 }
         : pattern
     );
-    savePatterns(updated);
+    savePatternsLocally(updated);
   };
 
   const handleEdit = (pattern: Pattern) => {
@@ -262,6 +475,7 @@ export function PatternsPage() {
                 onClick={() =>
                   editingId ? handleUpdate(editingId) : handleCreate()
                 }
+                disabled={loading}
                 className="bg-indigo-600 hover:bg-indigo-700"
               >
                 <Save className="size-4 mr-2" />
@@ -304,7 +518,14 @@ export function PatternsPage() {
       )}
 
       {/* 패턴 목록 */}
-      {patterns.length === 0 ? (
+      {loading ? (
+        <Card className="p-12 text-center">
+          <TrendingUp className="size-16 text-slate-300 mx-auto mb-4 animate-pulse" />
+          <p className="text-slate-500 text-lg mb-2">
+            감정 노트를 불러오는 중입니다...
+          </p>
+        </Card>
+      ) : patterns.length === 0 ? (
         <Card className="p-12 text-center">
           <TrendingUp className="size-16 text-slate-300 mx-auto mb-4" />
           <p className="text-slate-500 text-lg mb-2">
@@ -335,6 +556,7 @@ export function PatternsPage() {
                   <button
                     onClick={() => incrementFrequency(pattern.id)}
                     className="text-green-600 hover:text-green-700 px-3 py-1 bg-green-50 rounded text-sm"
+                    disabled={loading}
                     title="발생 횟수 +1"
                   >
                     +1회
