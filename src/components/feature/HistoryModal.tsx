@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
+import { Calendar, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from './ui/dialog';
-import { Button } from './ui/button';
-import { Trash2, Calendar } from 'lucide-react';
+} from "../ui/dialog";
 
 interface SessionHistory {
   id: string;
@@ -20,7 +20,7 @@ interface SessionHistory {
   }>;
   selectedCognitiveErrors: string[];
   selectedAlternativeThought: string;
-  positiveReframes: {[emotion: string]: string};
+  positiveReframes: { [emotion: string]: string };
   bibleVerse?: {
     verse: string;
     reference: string;
@@ -43,37 +43,37 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
   }, [open]);
 
   const loadHistories = () => {
-    const saved = localStorage.getItem('cbt_history');
+    const saved = localStorage.getItem("cbt_history");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         setHistories(parsed);
       } catch (e) {
-        console.error('히스토리 로드 실패:', e);
+        console.error("히스토리 로드 실패:", e);
       }
     }
   };
 
   const deleteHistory = (id: string) => {
-    const updated = histories.filter(h => h.id !== id);
+    const updated = histories.filter((h) => h.id !== id);
     setHistories(updated);
-    localStorage.setItem('cbt_history', JSON.stringify(updated));
+    localStorage.setItem("cbt_history", JSON.stringify(updated));
   };
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent 
+      <DialogContent
         className="max-w-4xl max-h-[80vh] overflow-y-auto bg-slate-900 border-slate-700 text-slate-100"
         aria-describedby="history-description"
       >
@@ -82,7 +82,10 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
             <Calendar className="size-6 text-indigo-400" />
             이전 기록 다시보기
           </DialogTitle>
-          <DialogDescription id="history-description" className="text-slate-400">
+          <DialogDescription
+            id="history-description"
+            className="text-slate-400"
+          >
             저장된 인지치료 세션 기록을 확인하고 관리할 수 있습니다.
           </DialogDescription>
         </DialogHeader>
@@ -102,9 +105,11 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm text-slate-400">{formatDate(history.timestamp)}</span>
+                      <span className="text-sm text-slate-400">
+                        {formatDate(history.timestamp)}
+                      </span>
                     </div>
-                    
+
                     <div className="space-y-3">
                       {/* 경험 */}
                       <div>
@@ -115,11 +120,14 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
                       {/* 감정-자동사고 */}
                       {history.emotionThoughtPairs.length > 0 && (
                         <div>
-                          <p className="text-xs text-purple-400 mb-1">💭 감정 & 자동사고</p>
+                          <p className="text-xs text-purple-400 mb-1">
+                            💭 감정 & 자동사고
+                          </p>
                           <div className="space-y-1">
                             {history.emotionThoughtPairs.map((pair, idx) => (
                               <p key={idx} className="text-sm text-slate-300">
-                                • {pair.emotion} ({pair.intensity}/100): {pair.thought}
+                                • {pair.emotion} ({pair.intensity}/100):{" "}
+                                {pair.thought}
                               </p>
                             ))}
                           </div>
@@ -129,11 +137,17 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
                       {/* 인지오류 */}
                       {history.selectedCognitiveErrors.length > 0 && (
                         <div>
-                          <p className="text-xs text-orange-400 mb-1">⚠️ 인지오류</p>
+                          <p className="text-xs text-orange-400 mb-1">
+                            ⚠️ 인지오류
+                          </p>
                           <div className="space-y-1">
-                            {history.selectedCognitiveErrors.map((error, idx) => (
-                              <p key={idx} className="text-sm text-slate-300">• {error}</p>
-                            ))}
+                            {history.selectedCognitiveErrors.map(
+                              (error, idx) => (
+                                <p key={idx} className="text-sm text-slate-300">
+                                  • {error}
+                                </p>
+                              )
+                            )}
                           </div>
                         </div>
                       )}
@@ -141,7 +155,9 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
                       {/* 대안사고 */}
                       {history.selectedAlternativeThought && (
                         <div>
-                          <p className="text-xs text-green-400 mb-1">✨ 대안사고</p>
+                          <p className="text-xs text-green-400 mb-1">
+                            ✨ 대안사고
+                          </p>
                           <p className="text-sm text-slate-300 italic">
                             "{history.selectedAlternativeThought}"
                           </p>
@@ -151,7 +167,9 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
                       {/* 성경 말씀 */}
                       {history.bibleVerse && (
                         <div>
-                          <p className="text-xs text-amber-400 mb-1">📖 성경 말씀</p>
+                          <p className="text-xs text-amber-400 mb-1">
+                            📖 성경 말씀
+                          </p>
                           <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-3 space-y-2">
                             <p className="text-amber-300 text-sm font-semibold">
                               {history.bibleVerse.reference}
@@ -181,7 +199,10 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
         </div>
 
         <div className="mt-6 flex justify-end">
-          <Button onClick={onClose} className="bg-indigo-600 hover:bg-indigo-700">
+          <Button
+            onClick={onClose}
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
             닫기
           </Button>
         </div>

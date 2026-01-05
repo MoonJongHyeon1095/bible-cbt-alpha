@@ -1,15 +1,15 @@
-import { useState } from 'react';
+import { CheckCircle, Mail, Send } from "lucide-react";
+import { useState } from "react";
+import { Button } from "../ui/button";
+import { Checkbox } from "../ui/checkbox";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-} from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Checkbox } from './ui/checkbox';
-import { Mail, Send, CheckCircle } from 'lucide-react';
+} from "../ui/dialog";
+import { Input } from "../ui/input";
 
 interface EmailModalProps {
   open: boolean;
@@ -23,19 +23,19 @@ interface EmailModalProps {
     }>;
     selectedCognitiveErrors: string[];
     selectedAlternativeThought: string;
-    positiveReframes: {[emotion: string]: string};
+    positiveReframes: { [emotion: string]: string };
   };
 }
 
 export function EmailModal({ open, onClose, sessionData }: EmailModalProps) {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
 
   const handleSendEmail = async () => {
     if (!email || !agreedToPrivacy) {
-      alert('이메일을 입력하고 개인정보 처리방침에 동의해주세요.');
+      alert("이메일을 입력하고 개인정보 처리방침에 동의해주세요.");
       return;
     }
 
@@ -46,31 +46,38 @@ export function EmailModal({ open, onClose, sessionData }: EmailModalProps) {
 === 🧠 인지치료 심리테스트 결과 ===
 
 📝 경험:
-${sessionData.userInput || '(없음)'}
+${sessionData.userInput || "(없음)"}
 
 💭 감정 & 자동사고:
-${sessionData.emotionThoughtPairs.map(p => 
-  `• ${p.emotion} (강도: ${p.intensity}/100)\n  → ${p.thought}`
-).join('\n') || '(없음)'}
+${
+  sessionData.emotionThoughtPairs
+    .map((p) => `• ${p.emotion} (강도: ${p.intensity}/100)\n  → ${p.thought}`)
+    .join("\n") || "(없음)"
+}
 
 ✨ 긍정적 재구성:
-${Object.entries(sessionData.positiveReframes).map(([emotion, reframe]) => 
-  `• ${emotion}: ${reframe}`
-).join('\n') || '(없음)'}
+${
+  Object.entries(sessionData.positiveReframes)
+    .map(([emotion, reframe]) => `• ${emotion}: ${reframe}`)
+    .join("\n") || "(없음)"
+}
 
 ⚠️ 인지오류:
-${sessionData.selectedCognitiveErrors.map(e => `• ${e}`).join('\n') || '(없음)'}
+${
+  sessionData.selectedCognitiveErrors.map((e) => `• ${e}`).join("\n") ||
+  "(없음)"
+}
 
 💡 대안사고:
-${sessionData.selectedAlternativeThought || '(없음)'}
+${sessionData.selectedAlternativeThought || "(없음)"}
 
 ---
-이 결과는 ${new Date().toLocaleString('ko-KR')}에 생성되었습니다.
+이 결과는 ${new Date().toLocaleString("ko-KR")}에 생성되었습니다.
 617ALLIANCE | 마음밭을 정돈하기 위한 말씀기도 훈련
     `.trim();
 
     // mailto 링크 생성
-    const subject = encodeURIComponent('인지치료 심리테스트 결과');
+    const subject = encodeURIComponent("인지치료 심리테스트 결과");
     const body = encodeURIComponent(emailBody);
     const mailtoLink = `mailto:${email}?subject=${subject}&body=${body}`;
 
@@ -79,30 +86,30 @@ ${sessionData.selectedAlternativeThought || '(없음)'}
       const historyItem = {
         id: Date.now().toString(),
         timestamp: new Date().toISOString(),
-        ...sessionData
+        ...sessionData,
       };
-      
-      const existing = localStorage.getItem('cbt_history');
+
+      const existing = localStorage.getItem("cbt_history");
       const histories = existing ? JSON.parse(existing) : [];
       histories.unshift(historyItem);
-      
+
       // 최대 20개까지만 저장
       if (histories.length > 20) {
         histories.pop();
       }
-      
-      localStorage.setItem('cbt_history', JSON.stringify(histories));
+
+      localStorage.setItem("cbt_history", JSON.stringify(histories));
     } catch (e) {
-      console.error('히스토리 저장 실패:', e);
+      console.error("히스토리 저장 실패:", e);
     }
 
     // mailto 링크 열기
-    window.open(mailtoLink, '_blank');
+    window.open(mailtoLink, "_blank");
 
     setTimeout(() => {
       setIsSending(false);
       setIsSent(true);
-      
+
       setTimeout(() => {
         setIsSent(false);
         onClose();
@@ -112,7 +119,7 @@ ${sessionData.selectedAlternativeThought || '(없음)'}
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent 
+      <DialogContent
         className="max-w-xl bg-slate-900 border-slate-700 text-slate-100"
         aria-describedby="email-description"
       >
@@ -157,16 +164,27 @@ ${sessionData.selectedAlternativeThought || '(없음)'}
               <div className="text-xs text-slate-400 space-y-1 max-h-32 overflow-y-auto">
                 <p>• 수집하는 정보: 이메일 주소, 치료 과정 데이터</p>
                 <p>• 이용 목적: 사용자가 요청한 결과 전송 및 기록 저장</p>
-                <p>• 보관 기간: 브라우저 로컬스토리지에 저장되며, 사용자가 직접 삭제할 수 있습니다</p>
-                <p>• 본 서비스는 외부 서버로 데이터를 전송하지 않으며, 모든 데이터는 사용자의 브라우저에 저장됩니다</p>
-                <p>• 본 서비스는 의료 서비스가 아니며, 심각한 정신건강 문제가 있는 경우 전문가의 상담을 받으시기 바랍니다</p>
+                <p>
+                  • 보관 기간: 브라우저 로컬스토리지에 저장되며, 사용자가 직접
+                  삭제할 수 있습니다
+                </p>
+                <p>
+                  • 본 서비스는 외부 서버로 데이터를 전송하지 않으며, 모든
+                  데이터는 사용자의 브라우저에 저장됩니다
+                </p>
+                <p>
+                  • 본 서비스는 의료 서비스가 아니며, 심각한 정신건강 문제가
+                  있는 경우 전문가의 상담을 받으시기 바랍니다
+                </p>
               </div>
-              
+
               <div className="flex items-start gap-3 pt-2">
                 <Checkbox
                   id="privacy"
                   checked={agreedToPrivacy}
-                  onCheckedChange={(checked) => setAgreedToPrivacy(checked as boolean)}
+                  onCheckedChange={(checked) =>
+                    setAgreedToPrivacy(checked as boolean)
+                  }
                   className="mt-1"
                 />
                 <label
@@ -207,7 +225,8 @@ ${sessionData.selectedAlternativeThought || '(없음)'}
             </div>
 
             <p className="text-xs text-slate-500 text-center">
-              💡 이 기능은 기본 메일 앱을 사용합니다. 메일 앱이 열리면 전송을 완료해주세요.
+              💡 이 기능은 기본 메일 앱을 사용합니다. 메일 앱이 열리면 전송을
+              완료해주세요.
             </p>
           </div>
         )}

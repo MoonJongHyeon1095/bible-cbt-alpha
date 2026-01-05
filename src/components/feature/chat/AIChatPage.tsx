@@ -1,8 +1,8 @@
 import { Bot, MessageSquare, Send, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "../ui/button";
-import { Card } from "../ui/card";
-import { Textarea } from "../ui/textarea";
+import { Button } from "../../ui/button";
+import { Card } from "../../ui/card";
+import { Textarea } from "../../ui/textarea";
 
 interface Message {
   id: string;

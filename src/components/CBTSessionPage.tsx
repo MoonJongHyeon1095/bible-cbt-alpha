@@ -2,10 +2,10 @@
 import { useEffect, useMemo, useState } from "react";
 import type { EmotionThoughtPair } from "../types";
 import { CenterPanel } from "./center/CenterPanel";
-import { EmailModal } from "./EmailModal";
-import { FavoritesModal } from "./FavoritesModal";
+import { EmailModal } from "./feature/EmailModal";
+import { FavoritesModal } from "./feature/FavoritesModal";
+import { HistoryModal } from "./feature/HistoryModal";
 import { CbtMode } from "./header/ModePicker";
-import { HistoryModal } from "./HistoryModal";
 import { LeftPanel } from "./left/LeftPanel";
 import { RightPanel } from "./right/RightPanel";
 import { ToolDock } from "./tool/ToolDock";

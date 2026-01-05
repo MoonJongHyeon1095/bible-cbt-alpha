@@ -1,35 +1,42 @@
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { LifeBuoy, Phone, MessageCircle, Globe, Clock, AlertCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  Clock,
+  Globe,
+  LifeBuoy,
+  MessageCircle,
+  Phone,
+} from "lucide-react";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
 
 export function HelplinePage() {
   const helplines = [
     {
-      name: '자살예방상담전화',
-      phone: '1393',
-      description: '24시간 상담 가능',
-      available: '24시간',
+      name: "자살예방상담전화",
+      phone: "1393",
+      description: "24시간 상담 가능",
+      available: "24시간",
       icon: Phone,
     },
     {
-      name: '정신건강위기상담전화',
-      phone: '1577-0199',
-      description: '24시간 정신건강 위기 상담',
-      available: '24시간',
+      name: "정신건강위기상담전화",
+      phone: "1577-0199",
+      description: "24시간 정신건강 위기 상담",
+      available: "24시간",
       icon: Phone,
     },
     {
-      name: '희망의 전화',
-      phone: '129',
-      description: '보건복지상담센터',
-      available: '24시간',
+      name: "희망의 전화",
+      phone: "129",
+      description: "보건복지상담센터",
+      available: "24시간",
       icon: Phone,
     },
     {
-      name: '청소년 전화',
-      phone: '1388',
-      description: '청소년 상담 및 긴급구조',
-      available: '24시간',
+      name: "청소년 전화",
+      phone: "1388",
+      description: "청소년 상담 및 긴급구조",
+      available: "24시간",
       icon: Phone,
     },
   ];
@@ -53,18 +60,19 @@ export function HelplinePage() {
           <div>
             <h3 className="text-lg text-red-900 mb-2">⚠️ 긴급 상황이신가요?</h3>
             <p className="text-red-800 mb-3">
-              지금 당장 자신이나 타인을 해칠 위험이 있다면, 즉시 아래 긴급 전화로 연락하세요.
+              지금 당장 자신이나 타인을 해칠 위험이 있다면, 즉시 아래 긴급
+              전화로 연락하세요.
             </p>
             <div className="flex gap-3">
               <Button
-                onClick={() => (window.location.href = 'tel:112')}
+                onClick={() => (window.location.href = "tel:112")}
                 className="bg-red-600 hover:bg-red-700"
               >
                 <Phone className="size-5 mr-2" />
                 112 (경찰)
               </Button>
               <Button
-                onClick={() => (window.location.href = 'tel:119')}
+                onClick={() => (window.location.href = "tel:119")}
                 className="bg-orange-600 hover:bg-orange-700"
               >
                 <Phone className="size-5 mr-2" />
@@ -89,14 +97,22 @@ export function HelplinePage() {
                   <Icon className="size-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg text-slate-900 mb-1">{helpline.name}</h3>
-                  <p className="text-sm text-slate-600 mb-3">{helpline.description}</p>
+                  <h3 className="text-lg text-slate-900 mb-1">
+                    {helpline.name}
+                  </h3>
+                  <p className="text-sm text-slate-600 mb-3">
+                    {helpline.description}
+                  </p>
                   <div className="flex items-center gap-2 mb-3">
                     <Clock className="size-4 text-slate-500" />
-                    <span className="text-sm text-slate-600">{helpline.available}</span>
+                    <span className="text-sm text-slate-600">
+                      {helpline.available}
+                    </span>
                   </div>
                   <Button
-                    onClick={() => (window.location.href = `tel:${helpline.phone}`)}
+                    onClick={() =>
+                      (window.location.href = `tel:${helpline.phone}`)
+                    }
                     className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
                   >
                     <Phone className="size-4 mr-2" />
@@ -133,7 +149,9 @@ export function HelplinePage() {
           </div>
 
           <div className="bg-slate-50 p-4 rounded-lg">
-            <h4 className="text-slate-900 mb-1">가까운 정신건강복지센터 찾기</h4>
+            <h4 className="text-slate-900 mb-1">
+              가까운 정신건강복지센터 찾기
+            </h4>
             <p className="text-sm text-slate-600 mb-2">
               내 지역의 정신건강 지원 기관
             </p>

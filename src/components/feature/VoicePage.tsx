@@ -1,34 +1,35 @@
-import { useState, useEffect } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Mic, MicOff, Play, Square, AlertCircle } from 'lucide-react';
+import { AlertCircle, Mic, MicOff, Play, Square } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
 
 export function VoicePage() {
   const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState('');
+  const [transcript, setTranscript] = useState("");
   const [isSupported, setIsSupported] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
 
   useEffect(() => {
     // Web Speech API 지원 확인
     const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
     if (SpeechRecognition) {
       setIsSupported(true);
       const recognitionInstance = new SpeechRecognition();
       recognitionInstance.continuous = true;
       recognitionInstance.interimResults = true;
-      recognitionInstance.lang = 'ko-KR';
+      recognitionInstance.lang = "ko-KR";
 
       recognitionInstance.onresult = (event: any) => {
-        let interimTranscript = '';
-        let finalTranscript = '';
+        let interimTranscript = "";
+        let finalTranscript = "";
 
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += transcript + ' ';
+            finalTranscript += transcript + " ";
           } else {
             interimTranscript += transcript;
           }
@@ -38,7 +39,7 @@ export function VoicePage() {
       };
 
       recognitionInstance.onerror = (event: any) => {
-        console.error('음성 인식 오류:', event.error);
+        console.error("음성 인식 오류:", event.error);
         setIsRecording(false);
       };
 
@@ -54,7 +55,7 @@ export function VoicePage() {
 
   const startRecording = () => {
     if (recognition) {
-      setTranscript('');
+      setTranscript("");
       recognition.start();
       setIsRecording(true);
     }
@@ -69,14 +70,14 @@ export function VoicePage() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(transcript).then(() => {
-      alert('텍스트가 클립보드에 복사되었습니다!');
+      alert("텍스트가 클립보드에 복사되었습니다!");
     });
   };
 
   const handleUseCBT = () => {
     // CBT 페이지로 이동하면서 텍스트 전달
-    localStorage.setItem('voice_input_text', transcript);
-    alert('CBT 세션으로 이동합니다. 입력된 텍스트를 사용할 수 있습니다.');
+    localStorage.setItem("voice_input_text", transcript);
+    alert("CBT 세션으로 이동합니다. 입력된 텍스트를 사용할 수 있습니다.");
   };
 
   return (
@@ -86,13 +87,17 @@ export function VoicePage() {
           <Mic className="size-8 text-purple-600" />
           음성 입력
         </h1>
-        <p className="text-slate-600">말로 경험을 입력하고 마음생각고쳐쓰기에서 사용하세요.</p>
+        <p className="text-slate-600">
+          말로 경험을 입력하고 마음생각고쳐쓰기에서 사용하세요.
+        </p>
       </div>
 
       {!isSupported ? (
         <Card className="p-12 text-center bg-red-50 border-red-200">
           <AlertCircle className="size-16 text-red-400 mx-auto mb-4" />
-          <p className="text-red-700 text-lg mb-2">음성 인식이 지원되지 않는 브라우저입니다.</p>
+          <p className="text-red-700 text-lg mb-2">
+            음성 인식이 지원되지 않는 브라우저입니다.
+          </p>
           <p className="text-red-600 text-sm">
             Chrome, Edge, Safari 등 최신 브라우저를 사용해주세요.
           </p>
@@ -105,8 +110,8 @@ export function VoicePage() {
               <div
                 className={`size-32 rounded-full flex items-center justify-center transition-all ${
                   isRecording
-                    ? 'bg-red-600 animate-pulse'
-                    : 'bg-gradient-to-r from-red-600 to-pink-600'
+                    ? "bg-red-600 animate-pulse"
+                    : "bg-gradient-to-r from-red-600 to-pink-600"
                 }`}
               >
                 {isRecording ? (
@@ -118,12 +123,12 @@ export function VoicePage() {
 
               <div className="text-center">
                 <p className="text-lg text-slate-900 mb-2">
-                  {isRecording ? '🎤 녹음 중...' : '준비됨'}
+                  {isRecording ? "🎤 녹음 중..." : "준비됨"}
                 </p>
                 <p className="text-sm text-slate-600">
                   {isRecording
-                    ? '말씀하세요. 자동으로 텍스트로 변환됩니다.'
-                    : '마이크 버튼을 눌러 녹음을 시작하세요.'}
+                    ? "말씀하세요. 자동으로 텍스트로 변환됩니다."
+                    : "마이크 버튼을 눌러 녹음을 시작하세요."}
                 </p>
               </div>
 
@@ -155,7 +160,7 @@ export function VoicePage() {
           {/* 변환된 텍스트 */}
           <Card className="p-6">
             <h3 className="text-lg text-slate-900 mb-4">변환된 텍스트</h3>
-            
+
             {transcript ? (
               <>
                 <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-4 min-h-[200px] max-h-[400px] overflow-y-auto">
@@ -180,7 +185,7 @@ export function VoicePage() {
                     마음생각고쳐쓰기에서 사용하기
                   </Button>
                   <Button
-                    onClick={() => setTranscript('')}
+                    onClick={() => setTranscript("")}
                     variant="outline"
                     className="border-red-300 text-red-700 hover:bg-red-50"
                   >
@@ -191,9 +196,7 @@ export function VoicePage() {
             ) : (
               <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-lg p-12 text-center">
                 <Mic className="size-12 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-500">
-                  아직 녹음된 내용이 없습니다.
-                </p>
+                <p className="text-slate-500">아직 녹음된 내용이 없습니다.</p>
               </div>
             )}
           </Card>

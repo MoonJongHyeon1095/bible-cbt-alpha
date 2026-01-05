@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
-import { Input } from './ui/input';
-import { BookMarked, Plus, Trash2, Edit2, Save, X, Star } from 'lucide-react';
+import { BookMarked, Edit2, Plus, Save, Star, Trash2, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
 
 interface ScriptureNote {
   id: string;
@@ -18,9 +18,9 @@ export function ScriptureNotesPage() {
   const [notes, setNotes] = useState<ScriptureNote[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [reference, setReference] = useState('');
-  const [verse, setVerse] = useState('');
-  const [reflection, setReflection] = useState('');
+  const [reference, setReference] = useState("");
+  const [verse, setVerse] = useState("");
+  const [reflection, setReflection] = useState("");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   useEffect(() => {
@@ -28,24 +28,24 @@ export function ScriptureNotesPage() {
   }, []);
 
   const loadNotes = () => {
-    const saved = localStorage.getItem('scripture_notes');
+    const saved = localStorage.getItem("scripture_notes");
     if (saved) {
       try {
         setNotes(JSON.parse(saved));
       } catch (e) {
-        console.error('말씀 노트 로드 실패:', e);
+        console.error("말씀 노트 로드 실패:", e);
       }
     }
   };
 
   const saveNotes = (updatedNotes: ScriptureNote[]) => {
-    localStorage.setItem('scripture_notes', JSON.stringify(updatedNotes));
+    localStorage.setItem("scripture_notes", JSON.stringify(updatedNotes));
     setNotes(updatedNotes);
   };
 
   const handleCreate = () => {
     if (!reference.trim() || !verse.trim()) {
-      alert('성경 구절과 말씀을 입력해주세요.');
+      alert("성경 구절과 말씀을 입력해주세요.");
       return;
     }
 
@@ -65,7 +65,7 @@ export function ScriptureNotesPage() {
 
   const handleUpdate = (id: string) => {
     if (!reference.trim() || !verse.trim()) {
-      alert('성경 구절과 말씀을 입력해주세요.');
+      alert("성경 구절과 말씀을 입력해주세요.");
       return;
     }
 
@@ -85,7 +85,7 @@ export function ScriptureNotesPage() {
   };
 
   const handleDelete = (id: string) => {
-    if (!confirm('이 말씀 노트를 삭제하시겠습니까?')) return;
+    if (!confirm("이 말씀 노트를 삭제하시겠습니까?")) return;
     const updated = notes.filter((note) => note.id !== id);
     saveNotes(updated);
   };
@@ -108,19 +108,19 @@ export function ScriptureNotesPage() {
   const resetForm = () => {
     setIsCreating(false);
     setEditingId(null);
-    setReference('');
-    setVerse('');
-    setReflection('');
+    setReference("");
+    setVerse("");
+    setReflection("");
   };
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return date.toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -141,11 +141,11 @@ export function ScriptureNotesPage() {
         <div className="flex gap-2">
           <Button
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            variant={showFavoritesOnly ? 'default' : 'outline'}
+            variant={showFavoritesOnly ? "default" : "outline"}
             className={
               showFavoritesOnly
-                ? 'bg-yellow-600 hover:bg-yellow-700'
-                : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'
+                ? "bg-yellow-600 hover:bg-yellow-700"
+                : "border-yellow-300 text-yellow-700 hover:bg-yellow-50"
             }
           >
             <Star className="size-5 mr-2" />
@@ -156,8 +156,7 @@ export function ScriptureNotesPage() {
               onClick={() => setIsCreating(true)}
               className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
             >
-              <Plus className="size-5 mr-2" />
-              새 말씀 노트
+              <Plus className="size-5 mr-2" />새 말씀 노트
             </Button>
           )}
         </div>
@@ -167,11 +166,13 @@ export function ScriptureNotesPage() {
       {isCreating && (
         <Card className="p-6 mb-6 bg-amber-50 border-2 border-amber-200">
           <h3 className="text-lg text-slate-900 mb-4">
-            {editingId ? '말씀 노트 수정' : '새 말씀 노트 작성'}
+            {editingId ? "말씀 노트 수정" : "새 말씀 노트 작성"}
           </h3>
           <div className="space-y-4">
             <div>
-              <label className="text-sm text-slate-700 mb-2 block">성경 구절</label>
+              <label className="text-sm text-slate-700 mb-2 block">
+                성경 구절
+              </label>
               <Input
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
@@ -181,7 +182,9 @@ export function ScriptureNotesPage() {
             </div>
 
             <div>
-              <label className="text-sm text-slate-700 mb-2 block">말씀 본문</label>
+              <label className="text-sm text-slate-700 mb-2 block">
+                말씀 본문
+              </label>
               <Textarea
                 value={verse}
                 onChange={(e) => setVerse(e.target.value)}
@@ -204,11 +207,13 @@ export function ScriptureNotesPage() {
 
             <div className="flex gap-2">
               <Button
-                onClick={() => (editingId ? handleUpdate(editingId) : handleCreate())}
+                onClick={() =>
+                  editingId ? handleUpdate(editingId) : handleCreate()
+                }
                 className="bg-amber-600 hover:bg-amber-700"
               >
                 <Save className="size-4 mr-2" />
-                {editingId ? '수정 완료' : '저장'}
+                {editingId ? "수정 완료" : "저장"}
               </Button>
               <Button onClick={resetForm} variant="outline">
                 <X className="size-4 mr-2" />
@@ -224,12 +229,14 @@ export function ScriptureNotesPage() {
         <Card className="p-12 text-center">
           <BookMarked className="size-16 text-slate-300 mx-auto mb-4" />
           <p className="text-slate-500 text-lg mb-2">
-            {showFavoritesOnly ? '즐겨찾기한 말씀이 없습니다.' : '아직 말씀 노트가 없습니다.'}
+            {showFavoritesOnly
+              ? "즐겨찾기한 말씀이 없습니다."
+              : "아직 말씀 노트가 없습니다."}
           </p>
           <p className="text-slate-400">
             {showFavoritesOnly
-              ? '별표를 클릭하여 말씀을 즐겨찾기해보세요.'
-              : '첫 번째 말씀 노트를 작성해보세요.'}
+              ? "별표를 클릭하여 말씀을 즐겨찾기해보세요."
+              : "첫 번째 말씀 노트를 작성해보세요."}
           </p>
         </Card>
       ) : (
@@ -244,11 +251,15 @@ export function ScriptureNotesPage() {
                   <button
                     onClick={() => toggleFavorite(note.id)}
                     className={`${
-                      note.favorite ? 'text-yellow-500' : 'text-slate-300'
+                      note.favorite ? "text-yellow-500" : "text-slate-300"
                     } hover:text-yellow-600 transition-colors`}
-                    title={note.favorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+                    title={note.favorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}
                   >
-                    <Star className={`size-6 ${note.favorite ? 'fill-current' : ''}`} />
+                    <Star
+                      className={`size-6 ${
+                        note.favorite ? "fill-current" : ""
+                      }`}
+                    />
                   </button>
                   <h3 className="text-xl text-amber-900">{note.reference}</h3>
                 </div>
@@ -279,11 +290,15 @@ export function ScriptureNotesPage() {
               {note.reflection && (
                 <div className="bg-slate-50 p-4 rounded-lg mb-3">
                   <p className="text-sm text-slate-600 mb-1">💭 묵상 / 적용:</p>
-                  <p className="text-slate-700 whitespace-pre-wrap">{note.reflection}</p>
+                  <p className="text-slate-700 whitespace-pre-wrap">
+                    {note.reflection}
+                  </p>
                 </div>
               )}
 
-              <p className="text-xs text-slate-400">{formatDate(note.timestamp)}</p>
+              <p className="text-xs text-slate-400">
+                {formatDate(note.timestamp)}
+              </p>
             </Card>
           ))}
         </div>

@@ -1,14 +1,14 @@
 import { Plus, Star, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "./ui/dialog";
-import { Textarea } from "./ui/textarea";
+} from "../ui/dialog";
+import { Textarea } from "../ui/textarea";
 
 interface FavoritesModalProps {
   open: boolean;

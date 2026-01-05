@@ -1,7 +1,21 @@
-import { useState, useEffect } from 'react';
-import { Card } from './ui/card';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Heart, Brain, Target, Calendar } from 'lucide-react';
+import { Brain, Calendar, Heart, Target, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Card } from "../ui/card";
 
 interface SessionHistory {
   id: string;
@@ -25,7 +39,7 @@ export function DashboardPage() {
   }, []);
 
   const loadData = () => {
-    const saved = localStorage.getItem('cbt_history');
+    const saved = localStorage.getItem("cbt_history");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -34,7 +48,7 @@ export function DashboardPage() {
         processTopEmotions(parsed);
         processCognitiveErrors(parsed);
       } catch (e) {
-        console.error('데이터 로드 실패:', e);
+        console.error("데이터 로드 실패:", e);
       }
     }
   };
@@ -44,9 +58,11 @@ export function DashboardPage() {
     const recentSessions = data.slice(0, 10).reverse();
     const trends = recentSessions.map((session, index) => {
       const avgIntensity =
-        session.emotionThoughtPairs.reduce((sum, pair) => sum + pair.intensity, 0) /
-        (session.emotionThoughtPairs.length || 1);
-      
+        session.emotionThoughtPairs.reduce(
+          (sum, pair) => sum + pair.intensity,
+          0
+        ) / (session.emotionThoughtPairs.length || 1);
+
       const date = new Date(session.timestamp);
       return {
         session: `세션 ${index + 1}`,
@@ -59,7 +75,7 @@ export function DashboardPage() {
 
   const processTopEmotions = (data: SessionHistory[]) => {
     const emotionCount: { [key: string]: number } = {};
-    
+
     data.forEach((session) => {
       session.emotionThoughtPairs.forEach((pair) => {
         emotionCount[pair.emotion] = (emotionCount[pair.emotion] || 0) + 1;
@@ -76,10 +92,10 @@ export function DashboardPage() {
 
   const processCognitiveErrors = (data: SessionHistory[]) => {
     const errorCount: { [key: string]: number } = {};
-    
+
     data.forEach((session) => {
       session.selectedCognitiveErrors.forEach((error) => {
-        const shortName = error.split(':')[0].trim();
+        const shortName = error.split(":")[0].trim();
         errorCount[shortName] = (errorCount[shortName] || 0) + 1;
       });
     });
@@ -92,7 +108,7 @@ export function DashboardPage() {
     setCognitiveErrorStats(sorted);
   };
 
-  const COLORS = ['#9333ea', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'];
+  const COLORS = ["#9333ea", "#ec4899", "#f59e0b", "#10b981", "#3b82f6"];
 
   return (
     <div className="max-w-[1800px] mx-auto px-8 py-8">
@@ -123,7 +139,10 @@ export function DashboardPage() {
             <div>
               <p className="text-pink-700 text-sm mb-1">기록된 감정</p>
               <p className="text-3xl text-pink-900">
-                {histories.reduce((sum, h) => sum + h.emotionThoughtPairs.length, 0)}
+                {histories.reduce(
+                  (sum, h) => sum + h.emotionThoughtPairs.length,
+                  0
+                )}
               </p>
             </div>
             <div className="bg-pink-600 rounded-full p-3">
@@ -137,7 +156,10 @@ export function DashboardPage() {
             <div>
               <p className="text-amber-700 text-sm mb-1">발견된 인지오류</p>
               <p className="text-3xl text-amber-900">
-                {histories.reduce((sum, h) => sum + h.selectedCognitiveErrors.length, 0)}
+                {histories.reduce(
+                  (sum, h) => sum + h.selectedCognitiveErrors.length,
+                  0
+                )}
               </p>
             </div>
             <div className="bg-amber-600 rounded-full p-3">
@@ -151,7 +173,11 @@ export function DashboardPage() {
             <div>
               <p className="text-indigo-700 text-sm mb-1">활동 일수</p>
               <p className="text-3xl text-indigo-900">
-                {new Set(histories.map(h => new Date(h.timestamp).toDateString())).size}
+                {
+                  new Set(
+                    histories.map((h) => new Date(h.timestamp).toDateString())
+                  ).size
+                }
               </p>
             </div>
             <div className="bg-indigo-600 rounded-full p-3">
@@ -164,28 +190,36 @@ export function DashboardPage() {
       {histories.length === 0 ? (
         <Card className="p-12 text-center">
           <p className="text-slate-500 text-lg mb-4">아직 데이터가 없습니다.</p>
-          <p className="text-slate-400">마음생각고쳐쓰기를 완료하면 통계가 표시됩니다.</p>
+          <p className="text-slate-400">
+            마음생각고쳐쓰기를 완료하면 통계가 표시됩니다.
+          </p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 감정 강도 추이 */}
           <Card className="p-6">
-            <h3 className="text-lg text-slate-900 mb-4">📈 감정 강도 추이 (최근 10개 세션)</h3>
+            <h3 className="text-lg text-slate-900 mb-4">
+              📈 감정 강도 추이 (최근 10개 세션)
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={emotionTrends}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="date" stroke="#64748b" />
                 <YAxis stroke="#64748b" domain={[0, 100]} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "8px",
+                  }}
                 />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="평균강도" 
-                  stroke="#9333ea" 
+                <Line
+                  type="monotone"
+                  dataKey="평균강도"
+                  stroke="#9333ea"
                   strokeWidth={3}
-                  dot={{ fill: '#9333ea', r: 5 }}
+                  dot={{ fill: "#9333ea", r: 5 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -193,7 +227,9 @@ export function DashboardPage() {
 
           {/* 가장 많이 느낀 감정 */}
           <Card className="p-6">
-            <h3 className="text-lg text-slate-900 mb-4">💭 가장 많이 느낀 감정 Top 5</h3>
+            <h3 className="text-lg text-slate-900 mb-4">
+              💭 가장 많이 느낀 감정 Top 5
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
@@ -207,7 +243,10 @@ export function DashboardPage() {
                   dataKey="value"
                 >
                   {topEmotions.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -217,17 +256,28 @@ export function DashboardPage() {
 
           {/* 인지오류 분석 */}
           <Card className="p-6 lg:col-span-2">
-            <h3 className="text-lg text-slate-900 mb-4">⚠️ 자주 나타나는 인지오류 Top 5</h3>
+            <h3 className="text-lg text-slate-900 mb-4">
+              ⚠️ 자주 나타나는 인지오류 Top 5
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={cognitiveErrorStats}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="name" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "8px",
+                  }}
                 />
                 <Legend />
-                <Bar dataKey="count" fill="#ec4899" name="발생 횟수" radius={[8, 8, 0, 0]} />
+                <Bar
+                  dataKey="count"
+                  fill="#ec4899"
+                  name="발생 횟수"
+                  radius={[8, 8, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </Card>
@@ -240,27 +290,43 @@ export function DashboardPage() {
             <div className="space-y-3">
               {topEmotions.length > 0 && (
                 <p className="text-slate-700">
-                  • 당신은 주로 <strong className="text-purple-700">{topEmotions[0].name}</strong> 감정을 경험하고 있습니다.
+                  • 당신은 주로{" "}
+                  <strong className="text-purple-700">
+                    {topEmotions[0].name}
+                  </strong>{" "}
+                  감정을 경험하고 있습니다.
                 </p>
               )}
               {cognitiveErrorStats.length > 0 && (
                 <p className="text-slate-700">
-                  • <strong className="text-pink-700">{cognitiveErrorStats[0].name}</strong> 패턴이 가장 자주 나타납니다. 
-                  이 부분에 주의를 기울여보세요.
+                  •{" "}
+                  <strong className="text-pink-700">
+                    {cognitiveErrorStats[0].name}
+                  </strong>{" "}
+                  패턴이 가장 자주 나타납니다. 이 부분에 주의를 기울여보세요.
                 </p>
               )}
               {emotionTrends.length >= 2 && (
                 <p className="text-slate-700">
-                  • 최근 감정 강도가{' '}
-                  {emotionTrends[emotionTrends.length - 1].평균강도 < emotionTrends[0].평균강도
-                    ? <strong className="text-green-700">감소하고 있습니다! 좋은 진전이에요. 👏</strong>
-                    : <strong className="text-amber-700">증가하는 경향이 있습니다. 더 자주 돌아보세요.</strong>
-                  }
+                  • 최근 감정 강도가{" "}
+                  {emotionTrends[emotionTrends.length - 1].평균강도 <
+                  emotionTrends[0].평균강도 ? (
+                    <strong className="text-green-700">
+                      감소하고 있습니다! 좋은 진전이에요. 👏
+                    </strong>
+                  ) : (
+                    <strong className="text-amber-700">
+                      증가하는 경향이 있습니다. 더 자주 돌아보세요.
+                    </strong>
+                  )}
                 </p>
               )}
               <p className="text-slate-700">
-                • 총 <strong className="text-indigo-700">{histories.length}번</strong>의 세션을 완료했습니다. 
-                꾸준한 자기 성찰이 변화를 만듭니다! 🌟
+                • 총{" "}
+                <strong className="text-indigo-700">
+                  {histories.length}번
+                </strong>
+                의 세션을 완료했습니다. 꾸준한 자기 성찰이 변화를 만듭니다! 🌟
               </p>
             </div>
           </Card>

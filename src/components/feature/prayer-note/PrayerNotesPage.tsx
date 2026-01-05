@@ -1,10 +1,10 @@
 // src/components/prayer-note/PrayerNotesPage.tsx
 import { BookOpen, Edit2, Plus, Save, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
-import { Card } from "../ui/card";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
+import { Button } from "../../ui/button";
+import { Card } from "../../ui/card";
+import { Input } from "../../ui/input";
+import { Textarea } from "../../ui/textarea";
 
 interface PrayerNote {
   id: string;
