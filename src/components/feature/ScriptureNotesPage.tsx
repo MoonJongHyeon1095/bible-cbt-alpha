@@ -1,9 +1,11 @@
 import { BookMarked, Edit2, Plus, Save, Star, Trash2, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import { supabase } from "../../lib/supabase/client";
 
 interface ScriptureNote {
   id: string;
@@ -14,7 +16,11 @@ interface ScriptureNote {
   favorite: boolean;
 }
 
-export function ScriptureNotesPage() {
+interface ScriptureNotesPageProps {
+  user: User | null;
+}
+
+export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   const [notes, setNotes] = useState<ScriptureNote[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -22,30 +28,104 @@ export function ScriptureNotesPage() {
   const [verse, setVerse] = useState("");
   const [reflection, setReflection] = useState("");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadNotes();
-  }, []);
+  }, [user]);
 
-  const loadNotes = () => {
-    const saved = localStorage.getItem("scripture_notes");
-    if (saved) {
+  const loadNotes = async () => {
+    // 로그인 상태: Supabase에서 로드
+    if (user) {
       try {
-        setNotes(JSON.parse(saved));
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("scripture_notes")
+          .select("id, reference, verse, reflection, favorite, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const mapped =
+          data?.map((row) => ({
+            id: String(row.id),
+            reference: row.reference ?? "",
+            verse: row.verse ?? "",
+            reflection: row.reflection ?? "",
+            favorite: !!row.favorite,
+            timestamp: row.created_at ?? "",
+          })) ?? [];
+
+        setNotes(mapped);
+        return;
       } catch (e) {
         console.error("말씀 노트 로드 실패:", e);
+        alert("말씀 노트를 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
       }
+    }
+
+    // 비로그인: 로컬 저장소
+    try {
+      const saved = localStorage.getItem("scripture_notes");
+      if (saved) {
+        setNotes(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error("말씀 노트 로드 실패:", e);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const saveNotes = (updatedNotes: ScriptureNote[]) => {
+  const saveNotesLocally = (updatedNotes: ScriptureNote[]) => {
     localStorage.setItem("scripture_notes", JSON.stringify(updatedNotes));
     setNotes(updatedNotes);
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!reference.trim() || !verse.trim()) {
       alert("성경 구절과 말씀을 입력해주세요.");
+      return;
+    }
+
+    // 로그인 상태: Supabase에 저장
+    if (user) {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("scripture_notes")
+          .insert({
+            user_id: user.id,
+            reference: reference.trim(),
+            verse: verse.trim(),
+            reflection: reflection.trim(),
+          })
+          .select("id, reference, verse, reflection, favorite, created_at")
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const newNote: ScriptureNote = {
+            id: String(data.id),
+            reference: data.reference ?? "",
+            verse: data.verse ?? "",
+            reflection: data.reflection ?? "",
+            favorite: !!data.favorite,
+            timestamp: data.created_at ?? new Date().toISOString(),
+          };
+          setNotes((prev) => [newNote, ...prev]);
+        }
+      } catch (e) {
+        console.error("말씀 노트 저장 실패:", e);
+        alert("말씀 노트를 저장하지 못했습니다.");
+        return;
+      } finally {
+        setLoading(false);
+        resetForm();
+      }
       return;
     }
 
@@ -59,13 +139,56 @@ export function ScriptureNotesPage() {
     };
 
     const updated = [newNote, ...notes];
-    saveNotes(updated);
+    saveNotesLocally(updated);
     resetForm();
   };
 
-  const handleUpdate = (id: string) => {
+  const handleUpdate = async (id: string) => {
     if (!reference.trim() || !verse.trim()) {
       alert("성경 구절과 말씀을 입력해주세요.");
+      return;
+    }
+
+    // 로그인 상태: Supabase 업데이트
+    if (user) {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("scripture_notes")
+          .update({
+            reference: reference.trim(),
+            verse: verse.trim(),
+            reflection: reflection.trim(),
+          })
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .select("id, reference, verse, reflection, favorite, created_at")
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const updated = notes.map((note) =>
+            note.id === id
+              ? {
+                  id: String(data.id),
+                  reference: data.reference ?? "",
+                  verse: data.verse ?? "",
+                  reflection: data.reflection ?? "",
+                  favorite: !!data.favorite,
+                  timestamp: data.created_at ?? note.timestamp,
+                }
+              : note
+          );
+          setNotes(updated);
+        }
+      } catch (e) {
+        console.error("말씀 노트 수정 실패:", e);
+        alert("말씀 노트를 수정하지 못했습니다.");
+        return;
+      } finally {
+        setLoading(false);
+        resetForm();
+      }
       return;
     }
 
@@ -80,21 +203,84 @@ export function ScriptureNotesPage() {
         : note
     );
 
-    saveNotes(updated);
+    saveNotesLocally(updated);
     resetForm();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("이 말씀 노트를 삭제하시겠습니까?")) return;
+
+    if (user) {
+      try {
+        setLoading(true);
+        const { error } = await supabase
+          .from("scripture_notes")
+          .delete()
+          .eq("id", id)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } catch (e) {
+        console.error("말씀 노트 삭제 실패:", e);
+        alert("말씀 노트를 삭제하지 못했습니다.");
+        return;
+      } finally {
+        setLoading(false);
+      }
+    }
+
     const updated = notes.filter((note) => note.id !== id);
-    saveNotes(updated);
+    if (user) {
+      setNotes(updated);
+    } else {
+      saveNotesLocally(updated);
+    }
   };
 
-  const toggleFavorite = (id: string) => {
+  const toggleFavorite = async (id: string) => {
+    const target = notes.find((n) => n.id === id);
+    if (!target) return;
+
+    if (user) {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("scripture_notes")
+          .update({ favorite: !target.favorite })
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .select("id, reference, verse, reflection, favorite, created_at")
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setNotes((prev) =>
+            prev.map((note) =>
+              note.id === id
+                ? {
+                    id: String(data.id),
+                    reference: data.reference ?? "",
+                    verse: data.verse ?? "",
+                    reflection: data.reflection ?? "",
+                    favorite: !!data.favorite,
+                    timestamp: data.created_at ?? note.timestamp,
+                  }
+                : note
+            )
+          );
+        }
+      } catch (e) {
+        console.error("즐겨찾기 토글 실패:", e);
+        alert("즐겨찾기를 변경하지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     const updated = notes.map((note) =>
       note.id === id ? { ...note, favorite: !note.favorite } : note
     );
-    saveNotes(updated);
+    saveNotesLocally(updated);
   };
 
   const handleEdit = (note: ScriptureNote) => {

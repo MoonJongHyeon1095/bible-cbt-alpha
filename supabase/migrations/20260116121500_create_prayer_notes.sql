@@ -30,3 +30,6 @@ alter table public.prayer_notes enable row level security;
 alter table public.prayer_notes force row level security;
 
 revoke all on table public.prayer_notes from anon, authenticated;
+
+-- 인증된 사용자만 CRUD 허용 (행 단위 제어는 정책에서 처리)
+grant select, insert, update, delete on table public.prayer_notes to authenticated;
