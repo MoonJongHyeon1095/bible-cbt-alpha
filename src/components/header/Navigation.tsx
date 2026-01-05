@@ -61,20 +61,24 @@ export function Navigation({
   const isDesktop = useIsDesktop(768);
   const [open, setOpen] = useState(false);
 
-  const navItems = useMemo(
-    () => [
+  const navItems = useMemo(() => {
+    const base = [
       { id: "dashboard", label: "대시보드", icon: LayoutDashboard },
       // AI 챗봇 비활성화
       // { id: "ai-chat", label: "AI 상담", icon: MessageSquare },
-      { id: "prayer-notes", label: "기도 노트", icon: BookOpen },
-      { id: "scripture-notes", label: "말씀 노트", icon: BookMarked },
       { id: "patterns", label: "감정 노트", icon: HeartPulse },
       // 익명 커뮤니티 비활성화
       // { id: "community", label: "커뮤니티", icon: MessageSquare },
       { id: "helpline", label: "헬프라인", icon: LifeBuoy },
-    ],
-    []
-  );
+    ];
+
+    if (mode.toneMode === "christian") {
+      base.splice(1, 0, { id: "prayer-notes", label: "기도 노트", icon: BookOpen });
+      base.splice(2, 0, { id: "scripture-notes", label: "말씀 노트", icon: BookMarked });
+    }
+
+    return base;
+  }, [mode.toneMode]);
 
   const go = (page: string) => {
     onNavigate(page);

@@ -23,7 +23,7 @@ type ModePickerProps = {
 export function ModePicker({
   value,
   onChange,
-  defaultMode = { detailMode: "lite", toneMode: "normal" },
+  defaultMode = { detailMode: "lite", toneMode: "christian" },
 }: ModePickerProps) {
   const [show, setShow] = useState(false);
 

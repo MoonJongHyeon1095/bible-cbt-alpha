@@ -2,6 +2,7 @@
 import type { User } from "@supabase/supabase-js";
 import { Loader2, RefreshCw, Star } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   generateBibleVerse,
   generateContextualAlternativeThoughts,
@@ -9,7 +10,6 @@ import {
 import { supabase } from "../../lib/supabase/client";
 import type { EmotionThoughtPair } from "../../types";
 import type { SessionHistory } from "../../types/sessionHistory";
-import { toast } from "sonner";
 import { CbtMode } from "../header/ModePicker";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -45,6 +45,7 @@ export function RightPanel({
   mode,
 }: RightPanelProps) {
   const isDeep = mode.detailMode === "deep";
+  const isChristian = mode.toneMode === "christian";
   // 대안사고 생성 상태
   const [alternativeThoughts, setAlternativeThoughts] = useState<
     Array<{
@@ -121,6 +122,10 @@ export function RightPanel({
 
   // 성경 말씀 "선택함" → Step 5로
   const handleWantsBible = async () => {
+    if (!isChristian) {
+      await handleDoesNotWantBible();
+      return;
+    }
     setWantsBibleVerse(true);
     setBibleLoading(true);
     setBibleError(null);
@@ -148,7 +153,7 @@ export function RightPanel({
   // 성경 말씀 "선택 안 함" → 최종 감정 강도 기록으로
   const handleDoesNotWantBible = async () => {
     setWantsBibleVerse(false);
-    if (!isDeep) {
+    if (!isChristian || !isDeep) {
       await handleFinalComplete();
       return;
     }
@@ -214,17 +219,24 @@ export function RightPanel({
         }
 
         localStorage.setItem("cbt_history", JSON.stringify(histories));
-    } catch (e) {
-      console.error("히스토리 저장 실패:", e);
+      } catch (e) {
+        console.error("히스토리 저장 실패:", e);
+      }
     }
-  }
-  toast.success("세션 기록이 저장되었습니다. 평안을 기원합니다.");
-  onComplete();
-};
+    toast.success("세션 기록이 저장되었습니다. 평안을 기원합니다.");
+    onComplete();
+  };
 
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
-      <div className="mb-4">
+      <div className="mb-4 space-y-2">
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
+          {step < 4
+            ? "STEP 3 · 준비 중"
+            : step === 4
+            ? "STEP 4 · 대안사고"
+            : "STEP 5 · 마무리"}
+        </div>
         <h2 className="text-slate-800 text-xl">대안사고 구성</h2>
         <p className="text-slate-600 text-sm mt-2">
           우리의 생각을 더 진실된 생각으로 바꾸면, 우리의 감정도 적절한 자리를
@@ -235,9 +247,7 @@ export function RightPanel({
       <div className="flex-1 space-y-6 overflow-y-auto">
         {step < 4 && (
           <div className="flex items-center justify-center h-full">
-            <p className="text-slate-500">
-              좌측 패널에서 인지오류 검토를 완료해주세요.
-            </p>
+            <p className="text-slate-500">인지오류 검토를 완료해주세요.</p>
           </div>
         )}
 
@@ -438,79 +448,94 @@ export function RightPanel({
               </Button>
             </div>
 
-            <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
-              <p className="text-blue-900 mb-4">
-                하나님의 위로의 말씀을 찾아보시겠습니까?
-                <br />
-                그분은 말씀으로 기도하면 응답하십니다.
-              </p>
+            {isChristian ? (
+              <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
+                <p className="text-blue-900 mb-4">
+                  하나님의 위로의 말씀을 찾아보시겠습니까?
+                  <br />
+                  그분은 말씀으로 기도하면 응답하십니다.
+                </p>
 
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                <Button
-                  onClick={handleWantsBible}
-                  disabled={bibleLoading}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {bibleLoading ? (
-                    <Loader2 className="size-4 animate-spin mr-2" />
-                  ) : null}
-                  말씀을 찾습니다
-                </Button>
-                <Button onClick={handleDoesNotWantBible} variant="outline">
-                  아니오
-                </Button>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <Button
+                    onClick={handleWantsBible}
+                    disabled={bibleLoading}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {bibleLoading ? (
+                      <Loader2 className="size-4 animate-spin mr-2" />
+                    ) : null}
+                    말씀을 찾습니다
+                  </Button>
+                  <Button onClick={handleDoesNotWantBible} variant="outline">
+                    아니오
+                  </Button>
+                </div>
+
+                {/* 즐겨찾기 추가 버튼 */}
+                <div className="border-t border-blue-300 pt-3 mt-3">
+                  <p className="text-blue-800 text-sm mb-2">
+                    💡 이 질문을 즐겨찾기 하시겠습니까?
+                  </p>
+                  <Button
+                    onClick={() => {
+                      // 현재 질문을 즐겨찾기에 추가
+                      const favorites = JSON.parse(
+                        localStorage.getItem("cbt-favorites") || "[]"
+                      );
+                      const exists = favorites.some(
+                        (f: any) => f.text === userInput
+                      );
+
+                      if (exists) {
+                        toast.info("이미 즐겨찾기에 있습니다.");
+                        return;
+                      }
+
+                      if (favorites.length >= 10) {
+                        toast.warning("최대 10개까지 저장할 수 있습니다.");
+                        return;
+                      }
+
+                      const newFavorite = {
+                        id: Date.now().toString(),
+                        text: userInput,
+                        createdAt: Date.now(),
+                      };
+
+                      favorites.unshift(newFavorite);
+                      localStorage.setItem(
+                        "cbt-favorites",
+                        JSON.stringify(favorites)
+                      );
+                      toast.success("즐겨찾기에 추가되었습니다!");
+                    }}
+                    variant="outline"
+                    className="w-full gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                  >
+                    <Star className="size-4" />
+                    즐겨찾기 추가
+                  </Button>
+                </div>
+
+                {bibleError && (
+                  <p className="text-red-600 text-sm mt-3">{bibleError}</p>
+                )}
               </div>
-
-              {/* 즐겨찾기 추가 버튼 */}
-              <div className="border-t border-blue-300 pt-3 mt-3">
-                <p className="text-blue-800 text-sm mb-2">
-                  💡 이 질문을 즐겨찾기 하시겠습니까?
+            ) : (
+              <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
+                <p className="text-blue-900 mb-3">
+                  세션이 만족스러우셨을지 모르겠습니다. <br />
+                  다만 우리는 진심으로, 당신의 평안을 바랍니다.
                 </p>
                 <Button
-                  onClick={() => {
-                    // 현재 질문을 즐겨찾기에 추가
-                    const favorites = JSON.parse(
-                      localStorage.getItem("cbt-favorites") || "[]"
-                    );
-                    const exists = favorites.some(
-                      (f: any) => f.text === userInput
-                    );
-
-                    if (exists) {
-                      toast.info("이미 즐겨찾기에 있습니다.");
-                      return;
-                    }
-
-                    if (favorites.length >= 10) {
-                      toast.warning("최대 10개까지 저장할 수 있습니다.");
-                      return;
-                    }
-
-                    const newFavorite = {
-                      id: Date.now().toString(),
-                      text: userInput,
-                      createdAt: Date.now(),
-                    };
-
-                    favorites.unshift(newFavorite);
-                    localStorage.setItem(
-                      "cbt-favorites",
-                      JSON.stringify(favorites)
-                    );
-                    toast.success("즐겨찾기에 추가되었습니다!");
-                  }}
-                  variant="outline"
-                  className="w-full gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                  onClick={handleDoesNotWantBible}
+                  className="w-full bg-purple-600 hover:bg-purple-700"
                 >
-                  <Star className="size-4" />
-                  즐겨찾기 추가
+                  완료하기
                 </Button>
               </div>
-
-              {bibleError && (
-                <p className="text-red-600 text-sm mt-3">{bibleError}</p>
-              )}
-            </div>
+            )}
           </div>
         )}
 
@@ -629,13 +654,19 @@ export function RightPanel({
                       navigator.clipboard
                         .writeText(text)
                         .then(() => {
-                          toast.success("말씀이 클립보드에 복사되었습니다! 카카오톡에서 붙여넣기 해주세요.");
+                          toast.success(
+                            "말씀이 클립보드에 복사되었습니다! 카카오톡에서 붙여넣기 해주세요."
+                          );
                         })
                         .catch(() => {
-                          toast.error("복사에 실패했습니다. 말씀을 직접 복사해주세요.");
+                          toast.error(
+                            "복사에 실패했습니다. 말씀을 직접 복사해주세요."
+                          );
                         });
                     } else {
-                      toast.info("클립보드가 지원되지 않습니다. 텍스트를 직접 복사해주세요.");
+                      toast.info(
+                        "클립보드가 지원되지 않습니다. 텍스트를 직접 복사해주세요."
+                      );
                     }
                   }}
                   variant="outline"
@@ -670,7 +701,10 @@ export function RightPanel({
             </div>
 
             <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
-              <p className="text-blue-900 mb-3">당신의 행복을 바랍니다</p>
+              <p className="text-blue-900 mb-3">
+                세션이 만족스러우셨을지 모르겠습니다. 다만 우리는 진심으로,
+                당신의 평안을 바랍니다.
+              </p>
 
               <div className="bg-white p-4 rounded border border-blue-300 mb-4">
                 <p className="text-slate-800 mb-2">

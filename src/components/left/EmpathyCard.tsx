@@ -90,7 +90,8 @@ export function EmpathyCard({
           {!isLite && (
             <Button
               onClick={onOpenIntensityModal}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-5 text-base shadow-lg"
+              variant="default"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 text-base shadow-lg border border-emerald-700"
             >
               💭 감정 강도 조절하기
             </Button>
@@ -99,7 +100,8 @@ export function EmpathyCard({
           {isLite && (
             <Button
               onClick={onLiteNext}
-              className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white py-5 text-base shadow-lg"
+              variant="default"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 text-base shadow-lg border border-emerald-700"
             >
               다음 단계로 이동
             </Button>

@@ -8,9 +8,9 @@ import {
   Star,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { generateExtendedAutomaticThoughts } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
-import { toast } from "sonner";
 import { CbtMode } from "../header/ModePicker";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -405,7 +405,7 @@ export function CenterPanel({
     return {
       badge: "STEP 3 · 다음 단계",
       title: "다음 단계로 진행해볼까요?",
-      desc: "좌측 패널에서 인지오류를 검토하게 될 거예요.",
+      desc: "인지오류를 검토하게 될 거예요.",
     };
   }, [step, emotionSet, showEmotionDetail]);
 
@@ -575,9 +575,9 @@ export function CenterPanel({
                   <button
                     key={emotion.id}
                     onClick={() => handleEmotionSelect(emotion as EmotionData)}
-                    className={`text-left p-3 rounded-xl border-2 transition-all hover:shadow-lg hover:scale-[1.02] ${
+                    className={`text-left p-3 rounded-xl border-2 transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-1 ${
                       isSelected
-                        ? "border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg scale-[1.02]"
+                        ? "border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg"
                         : emotion.color + " border-2 hover:border-blue-300"
                     }`}
                   >
@@ -1014,7 +1014,7 @@ export function CenterPanel({
               ))}
             </div>
             <p className="text-emerald-600 mt-3 text-base">
-              → 좌측 패널에서 인지오류를 검토해주세요.
+              인지오류를 검토해주세요.
             </p>
           </div>
         )}

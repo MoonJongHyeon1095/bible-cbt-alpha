@@ -1,7 +1,6 @@
-import { Brain, Calendar, Heart, Target, TrendingUp } from "lucide-react";
-import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { supabase } from "../../lib/supabase/client";
+import { Brain, Calendar, Heart, LayoutDashboard, Target } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -17,6 +16,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { supabase } from "../../lib/supabase/client";
 import { Card } from "../ui/card";
 
 interface SessionHistory {
@@ -81,14 +81,11 @@ export function DashboardPage({ user }: { user: User | null }) {
           emotionThoughtPairs: Array.isArray(row.emotion_thought_pairs)
             ? row.emotion_thought_pairs.map((p: any) => ({
                 emotion: p.emotion,
-                intensity:
-                  typeof p.intensity === "number" ? p.intensity : null,
+                intensity: typeof p.intensity === "number" ? p.intensity : null,
                 thought: p.thought,
               }))
             : [],
-          selectedCognitiveErrors: Array.isArray(
-            row.selected_cognitive_errors
-          )
+          selectedCognitiveErrors: Array.isArray(row.selected_cognitive_errors)
             ? row.selected_cognitive_errors
             : [],
         })) ?? [];
@@ -171,7 +168,7 @@ export function DashboardPage({ user }: { user: User | null }) {
     <div className="max-w-[1800px] mx-auto px-8 py-8">
       <div className="mb-8">
         <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
-          <TrendingUp className="size-8 text-purple-600" />
+          <LayoutDashboard className="size-8 text-purple-600" />
           나의 감정 대시보드
         </h1>
         <p className="text-slate-600">당신의 감정 여정을 한눈에 확인하세요.</p>

@@ -20,7 +20,7 @@ import type { User } from "@supabase/supabase-js";
 import type { CbtMode } from "./components/header/ModePicker";
 
 const CBT_MODE_STORAGE_KEY = "cbt-mode";
-const DEFAULT_MODE: CbtMode = { detailMode: "lite", toneMode: "normal" };
+const DEFAULT_MODE: CbtMode = { detailMode: "lite", toneMode: "christian" };
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("cbt");
