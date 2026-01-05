@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { BookMarked, Edit2, Plus, Save, Star, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../../lib/supabase/client";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
@@ -29,10 +29,17 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   const [reflection, setReflection] = useState("");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [loading, setLoading] = useState(false);
+  const referenceRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     loadNotes();
   }, [user]);
+
+  useEffect(() => {
+    if (isCreating && editingId && referenceRef.current) {
+      referenceRef.current.focus();
+    }
+  }, [isCreating, editingId]);
 
   const loadNotes = async () => {
     setLoading(true);
@@ -360,6 +367,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                 성경 구절
               </label>
               <Input
+                ref={referenceRef}
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
                 placeholder="예: 요한복음 3:16, 시편 23:1"

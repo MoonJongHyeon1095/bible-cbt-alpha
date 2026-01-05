@@ -1,5 +1,7 @@
 import { Brain, Calendar, Heart, Target, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "../../lib/supabase/client";
 import {
   Bar,
   BarChart,
@@ -22,13 +24,14 @@ interface SessionHistory {
   timestamp: string;
   emotionThoughtPairs: Array<{
     emotion: string;
-    intensity: number;
+    intensity: number | null;
     thought: string;
   }>;
   selectedCognitiveErrors: string[];
+  detailMode?: "lite" | "deep";
 }
 
-export function DashboardPage() {
+export function DashboardPage({ user }: { user: User | null }) {
   const [histories, setHistories] = useState<SessionHistory[]>([]);
   const [emotionTrends, setEmotionTrends] = useState<any[]>([]);
   const [topEmotions, setTopEmotions] = useState<any[]>([]);
@@ -36,40 +39,94 @@ export function DashboardPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [user]);
 
   const loadData = () => {
+    if (user) {
+      void loadFromSupabase();
+      return;
+    }
+
     const saved = localStorage.getItem("cbt_history");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setHistories(parsed);
-        processEmotionTrends(parsed);
-        processTopEmotions(parsed);
-        processCognitiveErrors(parsed);
-      } catch (e) {
-        console.error("데이터 로드 실패:", e);
-      }
+    if (!saved) return;
+
+    try {
+      const parsed = JSON.parse(saved);
+      setHistories(parsed);
+      processEmotionTrends(parsed);
+      processTopEmotions(parsed);
+      processCognitiveErrors(parsed);
+    } catch (e) {
+      console.error("데이터 로드 실패:", e);
+    }
+  };
+
+  const loadFromSupabase = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("session_history")
+        .select(
+          "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors"
+        )
+        .eq("user_id", user?.id)
+        .order("timestamp", { ascending: false })
+        .limit(200);
+
+      if (error) throw error;
+
+      const mapped: SessionHistory[] =
+        data?.map((row: any) => ({
+          id: String(row.id),
+          timestamp: row.timestamp,
+          emotionThoughtPairs: Array.isArray(row.emotion_thought_pairs)
+            ? row.emotion_thought_pairs.map((p: any) => ({
+                emotion: p.emotion,
+                intensity:
+                  typeof p.intensity === "number" ? p.intensity : null,
+                thought: p.thought,
+              }))
+            : [],
+          selectedCognitiveErrors: Array.isArray(
+            row.selected_cognitive_errors
+          )
+            ? row.selected_cognitive_errors
+            : [],
+        })) ?? [];
+
+      setHistories(mapped);
+      processEmotionTrends(mapped);
+      processTopEmotions(mapped);
+      processCognitiveErrors(mapped);
+    } catch (e) {
+      console.error("Supabase 데이터 로드 실패:", e);
     }
   };
 
   const processEmotionTrends = (data: SessionHistory[]) => {
-    // 최근 10개 세션의 평균 감정 강도
+    // 최근 10개 세션 중 강도 정보가 있는 것만 평균 계산
     const recentSessions = data.slice(0, 10).reverse();
-    const trends = recentSessions.map((session, index) => {
+    const trends: any[] = [];
+
+    recentSessions.forEach((session) => {
+      const pairsWithIntensity = session.emotionThoughtPairs.filter(
+        (p) => typeof p.intensity === "number"
+      );
+      if (pairsWithIntensity.length === 0) return;
+
       const avgIntensity =
-        session.emotionThoughtPairs.reduce(
-          (sum, pair) => sum + pair.intensity,
+        pairsWithIntensity.reduce(
+          (sum, pair) => sum + (pair.intensity as number),
           0
-        ) / (session.emotionThoughtPairs.length || 1);
+        ) / pairsWithIntensity.length;
 
       const date = new Date(session.timestamp);
-      return {
-        session: `세션 ${index + 1}`,
+      trends.push({
+        session: `세션 ${trends.length + 1}`,
         date: `${date.getMonth() + 1}/${date.getDate()}`,
         평균강도: Math.round(avgIntensity),
-      };
+      });
     });
+
     setEmotionTrends(trends);
   };
 

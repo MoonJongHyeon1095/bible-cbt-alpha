@@ -10,15 +10,19 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { Input } from "../ui/input";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "../../lib/supabase/client";
+import type { SessionHistory } from "../../types/sessionHistory";
 
 interface EmailModalProps {
   open: boolean;
   onClose: () => void;
+  user: User | null;
   sessionData: {
     userInput: string;
     emotionThoughtPairs: Array<{
       emotion: string;
-      intensity: number;
+      intensity: number | null;
       thought: string;
     }>;
     selectedCognitiveErrors: string[];
@@ -27,7 +31,7 @@ interface EmailModalProps {
   };
 }
 
-export function EmailModal({ open, onClose, sessionData }: EmailModalProps) {
+export function EmailModal({ open, onClose, user, sessionData }: EmailModalProps) {
   const [email, setEmail] = useState("");
   const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -51,7 +55,11 @@ ${sessionData.userInput || "(없음)"}
 💭 감정 & 자동사고:
 ${
   sessionData.emotionThoughtPairs
-    .map((p) => `• ${p.emotion} (강도: ${p.intensity}/100)\n  → ${p.thought}`)
+    .map((p) => {
+      const intensityText =
+        typeof p.intensity === "number" ? ` (강도: ${p.intensity}/100)` : "";
+      return `• ${p.emotion}${intensityText}\n  → ${p.thought}`;
+    })
     .join("\n") || "(없음)"
 }
 
@@ -81,26 +89,44 @@ ${sessionData.selectedAlternativeThought || "(없음)"}
     const body = encodeURIComponent(emailBody);
     const mailtoLink = `mailto:${email}?subject=${subject}&body=${body}`;
 
-    // 로컬스토리지에 저장
-    try {
-      const historyItem = {
-        id: Date.now().toString(),
-        timestamp: new Date().toISOString(),
-        ...sessionData,
-      };
+    // 기록 저장 (로그인 시 Supabase, 아니면 로컬)
+    const historyItem: SessionHistory = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      ...sessionData,
+    };
 
-      const existing = localStorage.getItem("cbt_history");
-      const histories = existing ? JSON.parse(existing) : [];
-      histories.unshift(historyItem);
-
-      // 최대 20개까지만 저장
-      if (histories.length > 20) {
-        histories.pop();
+    if (user) {
+      try {
+        const { error } = await supabase.from("session_history").insert({
+          user_id: user.id,
+          timestamp: historyItem.timestamp,
+          user_input: historyItem.userInput,
+          emotion_thought_pairs: historyItem.emotionThoughtPairs,
+          selected_cognitive_errors: historyItem.selectedCognitiveErrors,
+          selected_alternative_thought: historyItem.selectedAlternativeThought,
+          positive_reframes: historyItem.positiveReframes,
+          bible_verse: historyItem.bibleVerse,
+        });
+        if (error) throw error;
+      } catch (e) {
+        console.error("히스토리 저장 실패:", e);
       }
+    } else {
+      try {
+        const existing = localStorage.getItem("cbt_history");
+        const histories = existing ? JSON.parse(existing) : [];
+        histories.unshift(historyItem);
 
-      localStorage.setItem("cbt_history", JSON.stringify(histories));
-    } catch (e) {
-      console.error("히스토리 저장 실패:", e);
+        // 최대 20개까지만 저장
+        if (histories.length > 20) {
+          histories.pop();
+        }
+
+        localStorage.setItem("cbt_history", JSON.stringify(histories));
+      } catch (e) {
+        console.error("히스토리 저장 실패:", e);
+      }
     }
 
     // mailto 링크 열기

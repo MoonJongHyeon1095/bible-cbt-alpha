@@ -1,5 +1,5 @@
 export interface EmotionThoughtPair {
   emotion: string;
-  intensity: number;
+  intensity: number | null;
   thought: string;
 }

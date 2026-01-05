@@ -186,7 +186,7 @@ export function HelplinePage() {
           <div className="bg-white p-4 rounded-lg border border-purple-200">
             <h4 className="text-slate-900 mb-1">온라인 기도 요청</h4>
             <p className="text-sm text-slate-600 mb-2">
-              ��께 기도해줄 공동체 찾기
+              함께 기도해줄 공동체 찾기
             </p>
             <p className="text-sm text-slate-500">🔗 준비 중입니다...</p>
           </div>

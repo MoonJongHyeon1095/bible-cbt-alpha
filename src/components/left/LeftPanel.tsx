@@ -152,16 +152,17 @@ export function LeftPanel({
     setEmpathyError(null);
 
     try {
+      const pairIntensity = currentPair.intensity ?? 50;
       const result = await generateBurnsEmpathy(
         userInput,
         currentPair.emotion,
         currentPair.thought,
-        currentPair.intensity
+        pairIntensity
       );
       if (isStale(keyAtStart)) return;
 
       setBurnsEmpathy(result);
-      setTargetIntensity(Math.round(currentPair.intensity * 0.6));
+      setTargetIntensity(Math.round(pairIntensity * 0.6));
     } catch (err) {
       if (isStale(keyAtStart)) return;
       setEmpathyError(
@@ -388,7 +389,7 @@ export function LeftPanel({
         <EmotionIntensityModal
           open={showIntensityModal}
           emotion={currentPair.emotion}
-          currentIntensity={currentPair.intensity}
+          currentIntensity={currentPair.intensity ?? 50}
           targetIntensity={targetIntensity}
           onTargetIntensityChange={setTargetIntensity}
           onConfirm={() => {

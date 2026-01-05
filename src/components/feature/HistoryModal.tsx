@@ -8,56 +8,111 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-
-interface SessionHistory {
-  id: string;
-  timestamp: string;
-  userInput: string;
-  emotionThoughtPairs: Array<{
-    emotion: string;
-    intensity: number;
-    thought: string;
-  }>;
-  selectedCognitiveErrors: string[];
-  selectedAlternativeThought: string;
-  positiveReframes: { [emotion: string]: string };
-  bibleVerse?: {
-    verse: string;
-    reference: string;
-    prayer: string;
-  } | null;
-}
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "../../lib/supabase/client";
+import type { SessionHistory } from "../../types/sessionHistory";
 
 interface HistoryModalProps {
   open: boolean;
   onClose: () => void;
+  user: User | null;
 }
 
-export function HistoryModal({ open, onClose }: HistoryModalProps) {
+export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
   const [histories, setHistories] = useState<SessionHistory[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
       loadHistories();
     }
-  }, [open]);
+  }, [open, user]);
 
-  const loadHistories = () => {
+  const loadHistories = async () => {
+    setLoading(true);
+
+    // 로그인: Supabase에서 조회
+    if (user) {
+      try {
+        const { data, error } = await supabase
+          .from("session_history")
+          .select(
+            "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors, selected_alternative_thought, positive_reframes, bible_verse"
+          )
+          .eq("user_id", user.id)
+          .order("timestamp", { ascending: false })
+          .limit(50);
+
+        if (error) throw error;
+
+        const mapped =
+          data?.map((row) => ({
+            id: String(row.id),
+            timestamp: row.timestamp,
+            userInput: row.user_input ?? "",
+            emotionThoughtPairs: Array.isArray(row.emotion_thought_pairs)
+              ? row.emotion_thought_pairs
+              : [],
+            selectedCognitiveErrors: Array.isArray(
+              row.selected_cognitive_errors
+            )
+              ? row.selected_cognitive_errors
+              : [],
+            selectedAlternativeThought: row.selected_alternative_thought ?? "",
+            positiveReframes:
+              (row.positive_reframes as Record<string, string>) ?? {},
+            bibleVerse: row.bible_verse as SessionHistory["bibleVerse"],
+          })) ?? [];
+
+        setHistories(mapped);
+        return;
+      } catch (e) {
+        console.error("히스토리 로드 실패:", e);
+        alert("세션 기록을 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // 비로그인: 로컬 저장소
     const saved = localStorage.getItem("cbt_history");
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
+        const parsed: SessionHistory[] = JSON.parse(saved);
         setHistories(parsed);
       } catch (e) {
         console.error("히스토리 로드 실패:", e);
+        setHistories([]);
       }
+    } else {
+      setHistories([]);
     }
+    setLoading(false);
   };
 
-  const deleteHistory = (id: string) => {
+  const deleteHistory = async (id: string) => {
+    if (user) {
+      try {
+        setLoading(true);
+        const { error } = await supabase
+          .from("session_history")
+          .delete()
+          .eq("id", id)
+          .eq("user_id", user.id);
+        if (error) throw error;
+      } catch (e) {
+        console.error("히스토리 삭제 실패:", e);
+        alert("세션 기록을 삭제하지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
     const updated = histories.filter((h) => h.id !== id);
     setHistories(updated);
-    localStorage.setItem("cbt_history", JSON.stringify(updated));
+    if (!user) {
+      localStorage.setItem("cbt_history", JSON.stringify(updated));
+    }
   };
 
   const formatDate = (timestamp: string) => {
@@ -91,7 +146,11 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
-          {histories.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-12 text-slate-400">
+              <p className="text-lg mb-2">기록을 불러오는 중입니다...</p>
+            </div>
+          ) : histories.length === 0 ? (
             <div className="text-center py-12 text-slate-400">
               <p className="text-lg mb-2">저장된 기록이 없습니다.</p>
               <p className="text-sm">완료된 세션은 자동으로 저장됩니다.</p>
@@ -126,8 +185,10 @@ export function HistoryModal({ open, onClose }: HistoryModalProps) {
                           <div className="space-y-1">
                             {history.emotionThoughtPairs.map((pair, idx) => (
                               <p key={idx} className="text-sm text-slate-300">
-                                • {pair.emotion} ({pair.intensity}/100):{" "}
-                                {pair.thought}
+                                • {pair.emotion}
+                                {pair.intensity != null &&
+                                  ` (${pair.intensity}/100)`}
+                                : {pair.thought}
                               </p>
                             ))}
                           </div>

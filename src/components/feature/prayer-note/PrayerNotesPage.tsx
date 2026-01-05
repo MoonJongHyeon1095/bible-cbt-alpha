@@ -1,6 +1,6 @@
 // src/components/prayer-note/PrayerNotesPage.tsx
 import { BookOpen, Edit2, Plus, Save, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
@@ -28,10 +28,17 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
   const [content, setContent] = useState("");
   const [tags, setTags] = useState("");
   const [loading, setLoading] = useState(false);
+  const titleRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     loadNotes();
   }, [user]);
+
+  useEffect(() => {
+    if (isCreating && editingId && titleRef.current) {
+      titleRef.current.focus();
+    }
+  }, [isCreating, editingId]);
 
   const parseTags = (raw: string) =>
     raw
@@ -301,6 +308,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
             <div>
               <label className="text-sm text-slate-700 mb-2 block">제목</label>
               <Input
+                ref={titleRef}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="기도 제목을 입력하세요"

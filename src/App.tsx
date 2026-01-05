@@ -13,6 +13,7 @@ import { VoicePage } from "./components/feature/VoicePage";
 import { CommentSection } from "./components/footer/CommentSection";
 import { Navigation } from "./components/header/Navigation";
 import { authHelpers } from "./lib/supabase/auth";
+import { Toaster } from "./components/ui/sonner";
 
 import type { User } from "@supabase/supabase-js";
 import type { CbtMode } from "./components/header/ModePicker";
@@ -82,10 +83,10 @@ export default function App() {
   const renderPage = () => {
     switch (currentPage) {
       case "cbt":
-        return <CBTSessionPage mode={mode} />;
+        return <CBTSessionPage mode={mode} user={user} />;
 
       case "dashboard":
-        return <DashboardPage />;
+        return <DashboardPage user={user} />;
 
       case "ai-chat":
         return <AIChatPage />;
@@ -109,7 +110,7 @@ export default function App() {
         return <HelplinePage />;
 
       default:
-        return <CBTSessionPage mode={mode} />;
+        return <CBTSessionPage mode={mode} user={user} />;
     }
   };
 
@@ -159,6 +160,8 @@ export default function App() {
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
       />
+
+      <Toaster position="top-center" richColors closeButton />
     </div>
   );
 }

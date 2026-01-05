@@ -1,20 +1,20 @@
+import type { User } from "@supabase/supabase-js";
 import {
   AlertCircle,
   Edit2,
+  HeartPulse,
   Lightbulb,
   Plus,
   Save,
   Trash2,
-  TrendingUp,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "../../../lib/supabase/client";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
-import { supabase } from "../../../lib/supabase/client";
 
 interface Pattern {
   id: string;
@@ -45,10 +45,17 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const [emotion, setEmotion] = useState("");
   const [behavior, setBehavior] = useState("");
   const [alternative, setAlternative] = useState("");
+  const titleRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     loadPatterns();
   }, [user]);
+
+  useEffect(() => {
+    if (isCreating && editingId && titleRef.current) {
+      titleRef.current.focus();
+    }
+  }, [isCreating, editingId]);
 
   const loadPatterns = async () => {
     setLoading(true);
@@ -375,7 +382,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
-            <TrendingUp className="size-8 text-indigo-600" />
+            <HeartPulse className="size-8 text-indigo-600" />
             감정 노트
           </h1>
           <p className="text-slate-600">반복되는 감정 패턴을 기록하세요.</p>
@@ -403,6 +410,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
                 감정패턴 제목 (간단하게)
               </label>
               <Input
+                ref={titleRef}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="예: 사람들 앞에서 발표할 때"
@@ -460,7 +468,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
             <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
               <label className="text-sm text-green-800 mb-2 block flex items-center gap-2">
-                <Lightbulb className="size-4" />✨ 대안적 접근 (더 건강한 방법)
+                <Lightbulb className="size-4" />
+                대안적 접근 (더 건강한 방법)
               </label>
               <Textarea
                 value={alternative}
@@ -520,14 +529,14 @@ export function PatternsPage({ user }: PatternsPageProps) {
       {/* 패턴 목록 */}
       {loading ? (
         <Card className="p-12 text-center">
-          <TrendingUp className="size-16 text-slate-300 mx-auto mb-4 animate-pulse" />
+          <HeartPulse className="size-16 text-slate-300 mx-auto mb-4 animate-pulse" />
           <p className="text-slate-500 text-lg mb-2">
             감정 노트를 불러오는 중입니다...
           </p>
         </Card>
       ) : patterns.length === 0 ? (
         <Card className="p-12 text-center">
-          <TrendingUp className="size-16 text-slate-300 mx-auto mb-4" />
+          <HeartPulse className="size-16 text-slate-300 mx-auto mb-4" />
           <p className="text-slate-500 text-lg mb-2">
             아직 저장된 패턴이 없습니다.
           </p>
@@ -610,7 +619,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
                 <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
                   <p className="text-xs text-green-700 mb-2 flex items-center gap-1">
-                    <Lightbulb className="size-4" />✨ 대안적 접근
+                    <Lightbulb className="size-4" /> 대안적 접근
                   </p>
                   <p className="text-slate-700 whitespace-pre-wrap">
                     {pattern.alternative || "아직 대안이 작성되지 않았습니다."}

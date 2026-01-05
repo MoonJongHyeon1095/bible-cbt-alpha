@@ -9,8 +9,15 @@ import { CbtMode } from "./header/ModePicker";
 import { LeftPanel } from "./left/LeftPanel";
 import { RightPanel } from "./right/RightPanel";
 import { ToolDock } from "./tool/ToolDock";
+import type { User } from "@supabase/supabase-js";
 
-export function CBTSessionPage({ mode }: { mode: CbtMode }) {
+export function CBTSessionPage({
+  mode,
+  user,
+}: {
+  mode: CbtMode;
+  user: User | null;
+}) {
   const [step, setStep] = useState<number>(1);
   const [userInput, setUserInput] = useState<string>("");
 
@@ -136,6 +143,7 @@ export function CBTSessionPage({ mode }: { mode: CbtMode }) {
           onRestartWithSameInput={restartWithSameInput}
           onNext={handleNext}
           mode={mode}
+          user={user}
         />
       </div>
     );
@@ -163,11 +171,13 @@ export function CBTSessionPage({ mode }: { mode: CbtMode }) {
       <HistoryModal
         open={showHistoryModal}
         onClose={() => setShowHistoryModal(false)}
+        user={user}
       />
 
       <EmailModal
         open={showEmailModal}
         onClose={() => setShowEmailModal(false)}
+        user={user}
         sessionData={sessionData}
       />
 

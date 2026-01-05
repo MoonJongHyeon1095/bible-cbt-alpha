@@ -1,11 +1,15 @@
 // src/components/right/RightPanel.tsx
+import type { User } from "@supabase/supabase-js";
 import { Loader2, RefreshCw, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   generateBibleVerse,
   generateContextualAlternativeThoughts,
 } from "../../lib/ai";
+import { supabase } from "../../lib/supabase/client";
 import type { EmotionThoughtPair } from "../../types";
+import type { SessionHistory } from "../../types/sessionHistory";
+import { toast } from "sonner";
 import { CbtMode } from "../header/ModePicker";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
@@ -23,6 +27,7 @@ interface RightPanelProps {
   onRestartWithSameInput?: () => void;
   onNext: () => void;
   mode: CbtMode;
+  user: User | null;
 }
 
 export function RightPanel({
@@ -36,7 +41,10 @@ export function RightPanel({
   onComplete,
   onRestartWithSameInput,
   onNext,
+  user,
+  mode,
 }: RightPanelProps) {
+  const isDeep = mode.detailMode === "deep";
   // 대안사고 생성 상태
   const [alternativeThoughts, setAlternativeThoughts] = useState<
     Array<{
@@ -118,17 +126,14 @@ export function RightPanel({
     setBibleError(null);
 
     try {
-      // const verse = await generateBibleVerse(
-      //   selectedAlternativeThought,
-      //   userInput
-      // );
       const emotions = emotionThoughtPairs
-        .map((p) => `${p.emotion}(${p.intensity}/100)`)
+        .map((p) =>
+          isDeep && p.intensity != null
+            ? `${p.emotion}(${p.intensity}/100)`
+            : p.emotion
+        )
         .join(", ");
-      const verse = await generateBibleVerse(
-        userInput, // ✅ 상황
-        emotions // ✅ 감정(들)
-      );
+      const verse = await generateBibleVerse(userInput, emotions);
       setBibleVerse(verse);
       onNext();
     } catch (err) {
@@ -143,50 +148,78 @@ export function RightPanel({
   // 성경 말씀 "선택 안 함" → 최종 감정 강도 기록으로
   const handleDoesNotWantBible = () => {
     setWantsBibleVerse(false);
-    setShowFinalIntensity(true);
-    // 초기값 설정
-    const initialIntensities: { [emotion: string]: number } = {};
-    emotionThoughtPairs.forEach((pair) => {
-      initialIntensities[pair.emotion] = pair.intensity;
-    });
-    setFinalIntensities(initialIntensities);
+    if (isDeep) {
+      setShowFinalIntensity(true);
+      // 초기값 설정 (심화 모드에서만)
+      const initialIntensities: { [emotion: string]: number } = {};
+      emotionThoughtPairs.forEach((pair) => {
+        if (pair.intensity != null) {
+          initialIntensities[pair.emotion] = pair.intensity;
+        }
+      });
+      setFinalIntensities(initialIntensities);
+    } else {
+      setShowFinalIntensity(false);
+    }
     onNext();
   };
 
   // 최종 완료
-  const handleFinalComplete = () => {
-    // 히스토리 저장
-    try {
-      const historyItem = {
-        id: Date.now().toString(),
-        timestamp: new Date().toISOString(),
-        userInput,
-        emotionThoughtPairs,
-        selectedCognitiveErrors,
-        selectedAlternativeThought,
-        positiveReframes,
-        bibleVerse: wantsBibleVerse ? bibleVerse : null,
-      };
+  const handleFinalComplete = async () => {
+    const pairsToSave = emotionThoughtPairs.map((pair) => ({
+      ...pair,
+      intensity: isDeep ? pair.intensity : null,
+    }));
 
-      const existing = localStorage.getItem("cbt_history");
-      const histories = existing ? JSON.parse(existing) : [];
-      histories.unshift(historyItem);
+    const historyItem: SessionHistory = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      userInput,
+      emotionThoughtPairs: pairsToSave,
+      selectedCognitiveErrors,
+      selectedAlternativeThought,
+      positiveReframes,
+      bibleVerse: wantsBibleVerse ? bibleVerse : null,
+      detailMode: mode.detailMode,
+    };
 
-      // 최대 20개까지만 저장
-      if (histories.length > 20) {
-        histories.pop();
+    if (user) {
+      try {
+        const { error } = await supabase.from("session_history").insert({
+          user_id: user.id,
+          timestamp: historyItem.timestamp,
+          user_input: historyItem.userInput,
+          emotion_thought_pairs: pairsToSave,
+          selected_cognitive_errors: historyItem.selectedCognitiveErrors,
+          selected_alternative_thought: historyItem.selectedAlternativeThought,
+          positive_reframes: historyItem.positiveReframes,
+          bible_verse: historyItem.bibleVerse,
+        });
+        if (error) throw error;
+      } catch (e) {
+        console.error("히스토리 저장 실패:", e);
+        alert("세션 기록을 저장하지 못했습니다.");
+        return;
       }
+    } else {
+      try {
+        const existing = localStorage.getItem("cbt_history");
+        const histories = existing ? JSON.parse(existing) : [];
+        histories.unshift(historyItem);
 
-      localStorage.setItem("cbt_history", JSON.stringify(histories));
+        // 최대 20개까지만 저장
+        if (histories.length > 20) {
+          histories.pop();
+        }
+
+        localStorage.setItem("cbt_history", JSON.stringify(histories));
     } catch (e) {
       console.error("히스토리 저장 실패:", e);
     }
-
-    alert(
-      "✅ 치유의 여정을 완료하셨습니다.\n기록이 저장되었습니다. 평안을 기원합니다."
-    );
-    onComplete();
-  };
+  }
+  toast.success("세션 기록이 저장되었습니다. 평안을 기원합니다.");
+  onComplete();
+};
 
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
@@ -288,6 +321,21 @@ export function RightPanel({
                     </div>
                   </button>
                 ))}
+              </div>
+            )}
+
+            {/* 명언: 로딩 중 읽을거리 */}
+            {thoughtsLoading && (
+              <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 backdrop-blur-md border border-indigo-500/50 rounded-xl p-6 text-center">
+                <div className="text-indigo-200 text-2xl mb-3">💭</div>
+                <p className="text-white text-lg leading-relaxed mb-2">
+                  "생각이 고통을 만든다.
+                  <br />
+                  생각을 바꾸면 고통도 바뀐다."
+                </p>
+                <p className="text-indigo-300 text-sm">
+                  — 마음생각고쳐쓰기의 핵심 원리
+                </p>
               </div>
             )}
           </div>
@@ -654,62 +702,99 @@ export function RightPanel({
                 </div>
               </div>
 
-              {!showFinalIntensity ? (
-                <Button
-                  onClick={() => setShowFinalIntensity(true)}
-                  className="w-full bg-purple-600 hover:bg-purple-700"
-                >
-                  감정 변화 기록하기
-                </Button>
+              {isDeep &&
+              emotionThoughtPairs.some((p) => p.intensity != null) ? (
+                !showFinalIntensity ? (
+                  <Button
+                    onClick={() => setShowFinalIntensity(true)}
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                  >
+                    감정 변화 기록하기
+                  </Button>
+                ) : (
+                  <>
+                    <div className="bg-white p-4 rounded border border-purple-300 mb-4">
+                      <p className="text-purple-800 mb-3">
+                        <strong>
+                          감정이 좋아졌다면 얼마나 좋아졌는지 기록해주세요:
+                        </strong>
+                      </p>
+                      <div className="space-y-4">
+                        {emotionThoughtPairs.map((pair, i) => {
+                          const baseIntensity = pair.intensity ?? 50;
+                          const currentValue =
+                            finalIntensities[pair.emotion] ?? baseIntensity;
+                          return (
+                            <div key={i} className="space-y-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-slate-700">
+                                  {pair.emotion}
+                                </span>
+                                <div className="flex gap-4 text-sm">
+                                  <span className="text-slate-500">
+                                    이전: {baseIntensity}
+                                  </span>
+                                  <span className="text-purple-600">
+                                    현재: {currentValue}
+                                  </span>
+                                </div>
+                              </div>
+                              <Slider
+                                value={[currentValue]}
+                                onValueChange={(val: any[]) =>
+                                  setFinalIntensities({
+                                    ...finalIntensities,
+                                    [pair.emotion]: val[0],
+                                  })
+                                }
+                                min={0}
+                                max={100}
+                                step={5}
+                              />
+                              <div className="flex justify-between text-slate-400">
+                                <span>0</span>
+                                <span>100</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleFinalComplete}
+                      className="w-full bg-purple-600 hover:bg-purple-700 mb-4"
+                    >
+                      완료
+                    </Button>
+
+                    {/* 같은 주제로 다시 하기 버튼 */}
+                    {onRestartWithSameInput && (
+                      <Button
+                        onClick={() => {
+                          if (
+                            confirm(
+                              "같은 주제로 다시 하시겠습니까? 아직 감정이 남아 있다면 반복하시면 더욱 효과적입니다."
+                            )
+                          ) {
+                            onRestartWithSameInput();
+                          }
+                        }}
+                        variant="outline"
+                        className="w-full mb-4 gap-2 border-2 border-green-400 text-green-700 hover:bg-green-50"
+                      >
+                        <RefreshCw className="size-4" />
+                        같은 주제로 다시 하기
+                      </Button>
+                    )}
+                  </>
+                )
               ) : (
                 <>
-                  <div className="bg-white p-4 rounded border border-purple-300 mb-4">
-                    <p className="text-purple-800 mb-3">
-                      <strong>
-                        감정이 좋아졌다면 얼마나 좋아졌는지 기록해주세요:
-                      </strong>
-                    </p>
-                    <div className="space-y-4">
-                      {emotionThoughtPairs.map((pair, i) => (
-                        <div key={i} className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-700">
-                              {pair.emotion}
-                            </span>
-                            <div className="flex gap-4 text-sm">
-                              <span className="text-slate-500">
-                                이전: {pair.intensity}
-                              </span>
-                              <span className="text-purple-600">
-                                현재:{" "}
-                                {finalIntensities[pair.emotion] ||
-                                  pair.intensity}
-                              </span>
-                            </div>
-                          </div>
-                          <Slider
-                            value={[
-                              finalIntensities[pair.emotion] || pair.intensity,
-                            ]}
-                            onValueChange={(val: any[]) =>
-                              setFinalIntensities({
-                                ...finalIntensities,
-                                [pair.emotion]: val[0],
-                              })
-                            }
-                            min={0}
-                            max={100}
-                            step={5}
-                          />
-                          <div className="flex justify-between text-slate-400">
-                            <span>0</span>
-                            <span>100</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="bg-white p-4 rounded border border-purple-200 mb-4 text-slate-700">
+                    심화 모드가 아니거나 강도 기록이 없는 세션입니다. 강도 측정
+                    없이 바로 완료할 수 있습니다.
                   </div>
-
                   <Button
                     onClick={handleFinalComplete}
                     className="w-full bg-purple-600 hover:bg-purple-700 mb-4"
@@ -717,7 +802,6 @@ export function RightPanel({
                     완료
                   </Button>
 
-                  {/* 같은 주제로 다시 하기 버튼 */}
                   {onRestartWithSameInput && (
                     <Button
                       onClick={() => {
@@ -736,19 +820,6 @@ export function RightPanel({
                       같은 주제로 다시 하기
                     </Button>
                   )}
-
-                  {/* 명언 */}
-                  <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 backdrop-blur-md border border-indigo-500/50 rounded-xl p-6 text-center">
-                    <div className="text-indigo-200 text-2xl mb-3">💭</div>
-                    <p className="text-white text-lg leading-relaxed mb-2">
-                      "생각이 고통을 만든다.
-                      <br />
-                      생각을 바꾸면 고통도 바뀐다."
-                    </p>
-                    <p className="text-indigo-300 text-sm">
-                      — 마음생각고쳐쓰기의 핵심 원리
-                    </p>
-                  </div>
                 </>
               )}
             </div>

@@ -3,12 +3,12 @@ import {
   BookMarked,
   BookOpen,
   Brain,
+  HeartPulse,
   LayoutDashboard,
   LifeBuoy,
   LogIn,
   LogOut,
   Menu,
-  TrendingUp,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
@@ -68,7 +68,7 @@ export function Navigation({
       // { id: "ai-chat", label: "AI 상담", icon: MessageSquare },
       { id: "prayer-notes", label: "기도 노트", icon: BookOpen },
       { id: "scripture-notes", label: "말씀 노트", icon: BookMarked },
-      { id: "patterns", label: "감정 노트", icon: TrendingUp },
+      { id: "patterns", label: "감정 노트", icon: HeartPulse },
       // 익명 커뮤니티 비활성화
       // { id: "community", label: "커뮤니티", icon: MessageSquare },
       { id: "helpline", label: "헬프라인", icon: LifeBuoy },
@@ -106,6 +106,8 @@ export function Navigation({
                 <p className="text-xs text-slate-500">by 617ALLIANCE</p>
               </div>
             </button>
+
+            <div className="w-6" />
 
             {/* Navigation Items */}
             <div className="flex items-center gap-2 flex-wrap">
