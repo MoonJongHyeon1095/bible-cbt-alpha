@@ -146,21 +146,22 @@ export function RightPanel({
   };
 
   // 성경 말씀 "선택 안 함" → 최종 감정 강도 기록으로
-  const handleDoesNotWantBible = () => {
+  const handleDoesNotWantBible = async () => {
     setWantsBibleVerse(false);
-    if (isDeep) {
-      setShowFinalIntensity(true);
-      // 초기값 설정 (심화 모드에서만)
-      const initialIntensities: { [emotion: string]: number } = {};
-      emotionThoughtPairs.forEach((pair) => {
-        if (pair.intensity != null) {
-          initialIntensities[pair.emotion] = pair.intensity;
-        }
-      });
-      setFinalIntensities(initialIntensities);
-    } else {
-      setShowFinalIntensity(false);
+    if (!isDeep) {
+      await handleFinalComplete();
+      return;
     }
+
+    setShowFinalIntensity(true);
+    // 초기값 설정 (심화 모드에서만)
+    const initialIntensities: { [emotion: string]: number } = {};
+    emotionThoughtPairs.forEach((pair) => {
+      if (pair.intensity != null) {
+        initialIntensities[pair.emotion] = pair.intensity;
+      }
+    });
+    setFinalIntensities(initialIntensities);
     onNext();
   };
 
