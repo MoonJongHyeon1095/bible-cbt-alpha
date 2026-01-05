@@ -35,10 +35,11 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   }, [user]);
 
   const loadNotes = async () => {
+    setLoading(true);
+
     // 로그인 상태: Supabase에서 로드
     if (user) {
       try {
-        setLoading(true);
         const { data, error } = await supabase
           .from("scripture_notes")
           .select("id, reference, verse, reflection, favorite, created_at")
@@ -70,11 +71,10 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
     // 비로그인: 로컬 저장소
     try {
       const saved = localStorage.getItem("scripture_notes");
-      if (saved) {
-        setNotes(JSON.parse(saved));
-      }
+      setNotes(saved ? JSON.parse(saved) : []);
     } catch (e) {
       console.error("말씀 노트 로드 실패:", e);
+      setNotes([]);
     } finally {
       setLoading(false);
     }
