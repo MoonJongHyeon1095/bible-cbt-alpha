@@ -89,6 +89,8 @@ export function LeftPanel({
 
   // 선택(최대 2개)
   const [selected, setSelected] = useState<ErrorIndex[]>([]);
+  // 카드 표시 순서를 저장: 선택해도 위치가 유지되도록 별도 상태로 관리
+  const [displayIndices, setDisplayIndices] = useState<ErrorIndex[]>([]);
 
   const pairKey = useMemo(() => {
     if (!currentPair) return "";
@@ -341,24 +343,30 @@ export function LeftPanel({
     onNext();
   }, [detailByIndex, onNext, onSelectCognitiveErrors, selected]);
 
-  const uiIndices: ErrorIndex[] = useMemo(() => {
-    const set = new Set<ErrorIndex>();
-    const out: ErrorIndex[] = [];
+  useEffect(() => {
+    // 선택/새 후보가 있어도 기존 순서 유지 + 새 항목은 뒤에 추가
+    setDisplayIndices((prev) => {
+      const need = new Set<ErrorIndex>([...selected, ...candidate3]);
+      const kept = prev.filter((idx) => need.has(idx));
+      const seen = new Set<ErrorIndex>(kept);
 
-    for (const idx of selected) {
-      if (set.has(idx)) continue;
-      set.add(idx);
-      out.push(idx);
-    }
+      candidate3.forEach((idx) => {
+        if (!seen.has(idx)) {
+          kept.push(idx);
+          seen.add(idx);
+        }
+      });
 
-    for (const idx of candidate3) {
-      if (set.has(idx)) continue;
-      set.add(idx);
-      out.push(idx);
-    }
+      selected.forEach((idx) => {
+        if (!seen.has(idx)) {
+          kept.push(idx);
+          seen.add(idx);
+        }
+      });
 
-    return out;
-  }, [selected, candidate3]);
+      return kept;
+    });
+  }, [candidate3, selected]);
 
   const canConfirmSelection = useMemo(() => {
     if (selected.length !== 2) return false;
@@ -408,7 +416,7 @@ export function LeftPanel({
             detailByIndex={detailByIndex}
             detailLoading={detailLoading}
             detailError={detailError}
-            uiIndices={uiIndices}
+            uiIndices={displayIndices}
             selected={selected}
             canConfirm={canConfirmSelection}
             onRetryRank={() => void runRankThenKickoffTop3Details()}
