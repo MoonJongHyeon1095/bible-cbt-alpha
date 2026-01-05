@@ -44,7 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     body: JSON.stringify({
       model: "gpt-4.1-mini",
       input,
-      temperature: 0.7,
+      temperature: 0.3,
       max_output_tokens: 1200,
     }),
   });
