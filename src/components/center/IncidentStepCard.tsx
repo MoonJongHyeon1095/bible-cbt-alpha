@@ -1,7 +1,6 @@
 import { Bookmark, Shuffle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-import type { EmotionNote } from "./types";
 
 interface ExampleItem {
   emoji: string;
@@ -43,19 +42,20 @@ export function IncidentStepCard({
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <button
           onClick={onSaveTrigger}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50 transition-all text-indigo-700 hover:text-indigo-800 text-sm"
-          title="상황 저장"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-indigo-500 bg-indigo-600 text-white hover:bg-indigo-700 hover:border-indigo-600 transition-all text-sm font-semibold shadow-sm"
+          title="저장"
         >
           <Bookmark className="size-4" />
-          상황 저장
+          저장
         </button>
 
         <button
           onClick={onOpenSavedTriggers}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 hover:border-slate-400 hover:bg-slate-50 transition-all text-slate-700 text-sm"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg border border-indigo-300 bg-indigo-50 hover:border-indigo-500 hover:bg-indigo-100 transition-all text-indigo-700 text-sm font-semibold shadow-sm"
           title="저장된 상황 불러오기"
         >
-          저장된 상황 불러오기
+          <Bookmark className="size-4" />
+          저장된 사건 불러오기
         </button>
       </div>
       {/* 저장된 상황 불러오기는 모달로 분리 */}

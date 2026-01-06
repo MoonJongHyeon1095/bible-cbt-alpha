@@ -6,6 +6,7 @@ interface SelectedThoughtCardProps {
   className?: string;
   onSave?: () => void;
   canSave?: boolean;
+  isLoggedIn?: boolean;
 }
 
 export function SelectedThoughtCard({
@@ -13,6 +14,7 @@ export function SelectedThoughtCard({
   className = "",
   onSave,
   canSave = false,
+  isLoggedIn = false,
 }: SelectedThoughtCardProps) {
   return (
     <div
@@ -20,7 +22,7 @@ export function SelectedThoughtCard({
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <p className="text-purple-900">✓ 선택한 대안사고:</p>
-        {canSave && onSave ? (
+        {isLoggedIn && canSave && onSave ? (
           <Button
             size="sm"
             variant="outline"

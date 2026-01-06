@@ -553,6 +553,7 @@ export function RightPanel({
             <SelectedThoughtCard
               thought={selectedAlternativeThought}
               canSave={Boolean(activeNoteIdState)}
+              isLoggedIn={Boolean(user)}
               onSave={handleSaveAlternative}
             />
             <Button
@@ -619,6 +620,7 @@ export function RightPanel({
                 <SelectedThoughtCard
                   thought={selectedAlternativeThought}
                   canSave={Boolean(activeNoteIdState)}
+                  isLoggedIn={Boolean(user)}
                   onSave={handleSaveAlternative}
                 />
                 <BibleVerseCard
@@ -644,6 +646,7 @@ export function RightPanel({
             <SelectedThoughtCard
               thought={selectedAlternativeThought}
               canSave={Boolean(activeNoteIdState)}
+              isLoggedIn={Boolean(user)}
               onSave={handleSaveAlternative}
             />
             {showBibleOfferInFinalArea && (
