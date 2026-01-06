@@ -29,7 +29,12 @@ export function EmotionIntensityModal({
   onCancel,
 }: EmotionIntensityModalProps) {
   return (
-    <Dialog open={open} onOpenChange={(open) => !open && onCancel()}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen: boolean) => {
+        if (!nextOpen) onCancel();
+      }}
+    >
       <DialogContent
         className="max-w-6xl bg-white border-2 border-indigo-200 shadow-2xl max-h-[90vh] overflow-y-auto"
         aria-describedby="emotion-target-description"

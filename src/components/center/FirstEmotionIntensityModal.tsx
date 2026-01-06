@@ -93,7 +93,7 @@ export function FirstEmotionIntensityModal({
   return (
     <Dialog
       open={open}
-      onOpenChange={(nextOpen) => {
+      onOpenChange={(nextOpen: boolean) => {
         if (!nextOpen) onClose?.();
       }}
     >

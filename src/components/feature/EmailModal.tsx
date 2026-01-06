@@ -16,6 +16,7 @@ import type {
   SelectedCognitiveError,
   SessionHistory,
 } from "../../types/sessionHistory";
+import type { CheckedState } from "@radix-ui/react-checkbox";
 import { toast } from "sonner";
 
 interface EmailModalProps {
@@ -216,8 +217,8 @@ ${sessionData.selectedAlternativeThought || "(없음)"}
                 <Checkbox
                   id="privacy"
                   checked={agreedToPrivacy}
-                  onCheckedChange={(checked) =>
-                    setAgreedToPrivacy(checked as boolean)
+                  onCheckedChange={(checked: CheckedState) =>
+                    setAgreedToPrivacy(checked === true)
                   }
                   className="mt-1"
                 />

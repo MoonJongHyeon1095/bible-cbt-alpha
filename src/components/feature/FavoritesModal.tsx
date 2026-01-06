@@ -91,7 +91,10 @@ export function FavoritesModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(open: any) => !open && onClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen: boolean) => !nextOpen && onClose()}
+    >
       <DialogContent
         className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col"
         aria-describedby="favorites-description"
