@@ -2,7 +2,7 @@ import { Bookmark, Check, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { LoadingInsightCard } from "./LoadingInsightCard";
-import type { EmotionData, EmotionNoteDetailWithNote } from "./types";
+import type { EmotionData } from "./types";
 
 interface ThoughtSelectionCardProps {
   selectedEmotion: string;
@@ -106,7 +106,7 @@ export function ThoughtSelectionCard({
           className="gap-2 border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
         >
           <Bookmark className="size-4" />
-          저장한 자동사고 불러오기
+          감정 노트에서 자동사고 불러오기
         </Button>
       </div>
 
@@ -124,7 +124,9 @@ export function ThoughtSelectionCard({
               <div className="flex items-start gap-3">
                 <span
                   className={`flex-shrink-0 w-6 h-6 rounded-full text-white flex items-center justify-center text-sm ${
-                    selectedThoughtIndex === index ? "bg-blue-600" : "bg-slate-400"
+                    selectedThoughtIndex === index
+                      ? "bg-blue-600"
+                      : "bg-slate-400"
                   }`}
                 >
                   {index + 1}
@@ -149,9 +151,12 @@ export function ThoughtSelectionCard({
 
       <div className="border-t-2 border-slate-300 pt-4">
         <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200 mb-3">
-          <p className="text-indigo-900 mb-2">✍️ 또는 당신의 생각을 직접 적어보세요</p>
+          <p className="text-indigo-900 mb-2">
+            ✍️ 또는 당신의 생각을 직접 적어보세요
+          </p>
           <p className="text-slate-600 text-sm">
-            제안한 생각 중에 딱 맞는 것이 없다면, 당신의 진짜 생각을 그대로 적어주세요.
+            제안한 생각 중에 딱 맞는 것이 없다면, 당신의 진짜 생각을 그대로
+            적어주세요.
           </p>
         </div>
 

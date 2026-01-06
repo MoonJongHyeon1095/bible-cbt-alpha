@@ -30,7 +30,7 @@ export function LoadingInsightCard({ emotion, emotionData }: Props) {
   return (
     <div
       className={[
-        "mt-6 rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-4",
+        "mt-8 rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-4",
         // ✅ 샤르륵 (순수 Tailwind)
         "will-change-transform will-change-opacity transform-gpu",
         "transition-all duration-700 ease-out",

@@ -52,10 +52,10 @@ export function IncidentStepCard({
         <button
           onClick={onOpenSavedTriggers}
           className="flex items-center gap-2 px-3 py-2 rounded-lg border border-indigo-300 bg-indigo-50 hover:border-indigo-500 hover:bg-indigo-100 transition-all text-indigo-700 text-sm font-semibold shadow-sm"
-          title="저장된 사건 불러오기"
+          title="감정 노트에서 불러오기"
         >
           <Bookmark className="size-4" />
-          저장된 사건 불러오기
+          감정 노트에서 불러오기
         </button>
       </div>
       {/* 저장된 상황 불러오기는 모달로 분리 */}
