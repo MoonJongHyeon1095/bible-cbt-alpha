@@ -151,23 +151,25 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-4xl max-h-[80vh] overflow-y-auto bg-slate-900 border-slate-700 text-slate-100"
+        className="max-w-4xl max-h-[80vh] bg-slate-900 border-slate-700 text-slate-100 p-0 overflow-hidden flex flex-col"
         aria-describedby="history-description"
       >
-        <DialogHeader>
-          <DialogTitle className="text-2xl text-white flex items-center gap-2">
-            <Calendar className="size-6 text-indigo-400" />
-            이전 기록 다시보기
-          </DialogTitle>
-          <DialogDescription
-            id="history-description"
-            className="text-slate-400"
-          >
-            저장된 인지치료 세션 기록을 확인하고 관리할 수 있습니다.
-          </DialogDescription>
-        </DialogHeader>
+        <div className="sticky top-0 z-30 px-6 pt-6 pb-4 bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-slate-900/90 border-b border-slate-800">
+          <DialogHeader className="text-left">
+            <DialogTitle className="text-2xl text-white flex items-center gap-2">
+              <Calendar className="size-6 text-indigo-400" />
+              이전 기록 다시보기
+            </DialogTitle>
+            <DialogDescription
+              id="history-description"
+              className="text-slate-400"
+            >
+              저장된 인지치료 세션 기록을 확인하고 관리할 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
 
-        <div className="space-y-4 mt-4">
+        <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4 mt-4">
           {loading ? (
             <div className="text-center py-12 text-slate-400">
               <p className="text-lg mb-2">기록을 불러오는 중입니다...</p>
@@ -325,15 +327,6 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
               </div>
             ))
           )}
-        </div>
-
-        <div className="mt-6 flex justify-end">
-          <Button
-            onClick={onClose}
-            className="bg-indigo-600 hover:bg-indigo-700"
-          >
-            닫기
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
