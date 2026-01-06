@@ -43,16 +43,16 @@ export function IncidentStepCard({
         <button
           onClick={onSaveTrigger}
           className="flex items-center gap-2 px-3 py-2 rounded-lg border border-indigo-500 bg-indigo-600 text-white hover:bg-indigo-700 hover:border-indigo-600 transition-all text-sm font-semibold shadow-sm"
-          title="저장"
+          title="감정노트에 저장"
         >
           <Bookmark className="size-4" />
-          저장
+          감정 노트에 저장
         </button>
 
         <button
           onClick={onOpenSavedTriggers}
           className="flex items-center gap-2 px-3 py-2 rounded-lg border border-indigo-300 bg-indigo-50 hover:border-indigo-500 hover:bg-indigo-100 transition-all text-indigo-700 text-sm font-semibold shadow-sm"
-          title="저장된 상황 불러오기"
+          title="저장된 사건 불러오기"
         >
           <Bookmark className="size-4" />
           저장된 사건 불러오기

@@ -1,11 +1,4 @@
-import {
-  AlertCircle,
-  Clock,
-  Globe,
-  LifeBuoy,
-  MessageCircle,
-  Phone,
-} from "lucide-react";
+import { Clock, Globe, LifeBuoy, MessageCircle, Phone } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 
@@ -52,36 +45,6 @@ export function HelplinePage() {
           위기 상황에서 도움을 받을 수 있는 전화번호와 자원입니다.
         </p>
       </div>
-
-      {/* 긴급 안내 */}
-      <Card className="p-6 mb-8 bg-red-50 border-2 border-red-300">
-        <div className="flex gap-4">
-          <AlertCircle className="size-8 text-red-600 flex-shrink-0" />
-          <div>
-            <h3 className="text-lg text-red-900 mb-2">⚠️ 긴급 상황이신가요?</h3>
-            <p className="text-red-800 mb-3">
-              지금 당장 자신이나 타인을 해칠 위험이 있다면, 즉시 아래 긴급
-              전화로 연락하세요.
-            </p>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => (window.location.href = "tel:112")}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                <Phone className="size-5 mr-2" />
-                112 (경찰)
-              </Button>
-              <Button
-                onClick={() => (window.location.href = "tel:119")}
-                className="bg-orange-600 hover:bg-orange-700"
-              >
-                <Phone className="size-5 mr-2" />
-                119 (응급)
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Card>
 
       {/* 상담 전화 목록 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

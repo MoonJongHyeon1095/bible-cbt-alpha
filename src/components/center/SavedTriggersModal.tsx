@@ -23,7 +23,12 @@ export function SavedTriggersModal({
   onSelect,
 }: SavedTriggersModalProps) {
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={(next: boolean) => {
+        if (!next) onClose();
+      }}
+    >
       <DialogContent className="max-w-3xl w-[95vw] bg-white">
         <DialogTitle className="flex items-center gap-2 text-lg">
           <Bookmark className="size-5 text-indigo-600" />

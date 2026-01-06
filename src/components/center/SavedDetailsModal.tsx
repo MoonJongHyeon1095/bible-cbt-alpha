@@ -45,7 +45,12 @@ export function SavedDetailsModal({
   }, [details, open]);
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={(next: boolean) => {
+        if (!next) onClose();
+      }}
+    >
       <DialogContent className="max-w-5xl w-[97vw] bg-white">
         <DialogTitle className="flex items-center gap-2 text-lg pr-10">
           <Bookmark className="size-5 text-yellow-600" />
