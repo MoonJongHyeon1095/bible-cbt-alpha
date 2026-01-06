@@ -18,7 +18,23 @@ export function requireAppKey(req: VercelRequest): boolean {
   return got === required;
 }
 
+export function setCors(res: VercelResponse) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-api-key");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,PUT,DELETE,OPTIONS");
+}
+
+export function handleCors(req: VercelRequest, res: VercelResponse): boolean {
+  setCors(res);
+  if (req.method === "OPTIONS") {
+    res.status(204).end();
+    return true;
+  }
+  return false;
+}
+
 export function json(res: VercelResponse, status: number, body: any) {
+  setCors(res);
   res.status(status).setHeader("Content-Type", "application/json; charset=utf-8");
   res.end(JSON.stringify(body));
 }
