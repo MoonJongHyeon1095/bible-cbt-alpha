@@ -1,4 +1,5 @@
 // src/lib/supabase/auth.ts
+import { Capacitor } from "@capacitor/core";
 import { supabase } from "./client";
 
 export const authHelpers = {
@@ -29,9 +30,16 @@ export const authHelpers = {
   },
 
   signInWithGoogle() {
+    const redirectTo =
+      Capacitor.isNativePlatform()
+        ? "com.example.cbt://auth-callback"
+        : typeof window !== "undefined"
+          ? window.location.origin
+          : undefined;
+
     return supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo },
     });
   },
 };
