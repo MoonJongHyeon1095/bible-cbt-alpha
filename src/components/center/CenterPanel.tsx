@@ -115,6 +115,7 @@ export function CenterPanel({
   const [savedDetails, setSavedDetails] = useState<EmotionNoteDetailWithNote[]>(
     []
   );
+  const [savingDetail, setSavingDetail] = useState(false);
   const [notesLoading, setNotesLoading] = useState(false);
 
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
@@ -607,6 +608,7 @@ export function CenterPanel({
     emotion: string,
     _intensity: number
   ) => {
+    if (savingDetail) return;
     if (!userInput.trim()) {
       toast.error("상황을 먼저 입력해주세요.");
       return;
@@ -619,6 +621,7 @@ export function CenterPanel({
 
     if (useServerNotes) {
       try {
+        setSavingDetail(true);
         setNotesLoading(true);
         let noteId = activeNoteId;
         let noteTitle = activeNoteTitle ?? title;
@@ -675,6 +678,7 @@ export function CenterPanel({
         return;
       } finally {
         setNotesLoading(false);
+        setSavingDetail(false);
       }
     }
 
@@ -720,6 +724,7 @@ export function CenterPanel({
       ...prev,
     ]);
     toast.success("자동사고가 감정 노트에 저장되었습니다.");
+    setSavingDetail(false);
   };
 
   // 저장된 노트에서 자동사고 불러오기

@@ -59,8 +59,7 @@ export function SavedTriggersModal({
                     <div className="text-slate-800 font-semibold text-sm">
                       {note.title || "저장된 상황"}
                     </div>
-                    <br />
-                    <div className="text-slate-700 text-base leading-6 line-clamp-3">
+                    <div className="text-slate-700 text-base leading-6 line-clamp-3 mt-1">
                       {note.trigger}
                     </div>
                   </button>

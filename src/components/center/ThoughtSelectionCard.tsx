@@ -87,7 +87,7 @@ export function ThoughtSelectionCard({
         </p>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
         <Button
           onClick={onRegenerate}
           variant="outline"
@@ -98,16 +98,17 @@ export function ThoughtSelectionCard({
           <RefreshCw className="size-4" />
           다시 만들기
         </Button>
-      </div>
 
-      <Button
-        onClick={onLoadFavorites}
-        variant="outline"
-        className="w-full gap-2 border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-      >
-        <Bookmark className="size-4" />
-        저장한 자동사고 불러오기
-      </Button>
+        <Button
+          onClick={onLoadFavorites}
+          variant="outline"
+          size="sm"
+          className="gap-2 border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+        >
+          <Bookmark className="size-4" />
+          저장한 자동사고 불러오기
+        </Button>
+      </div>
 
       <div className="space-y-3">
         {generatedThoughts.map((thought, index) => (
