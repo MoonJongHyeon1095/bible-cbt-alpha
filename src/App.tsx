@@ -22,11 +22,16 @@ import type { CbtMode } from "./components/header/ModePicker";
 const CBT_MODE_STORAGE_KEY = "cbt-mode";
 const DEFAULT_MODE: CbtMode = { detailMode: "lite", toneMode: "christian" };
 
+const getIsDesktop = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(min-width: 768px)").matches;
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState("cbt");
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isDesktop, setIsDesktop] = useState<boolean>(getIsDesktop);
 
   // ✅ 전역 모드 상태(단일 소스)
   const [mode, setMode] = useState<CbtMode>(DEFAULT_MODE);
@@ -58,6 +63,16 @@ export default function App() {
       // ignore
     }
   }, [mode]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const handleChange = (event: MediaQueryListEvent) =>
+      setIsDesktop(event.matches);
+
+    setIsDesktop(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
 
   const checkUser = async () => {
     try {
@@ -141,20 +156,24 @@ export default function App() {
       <main className="pb-16">{renderPage()}</main>
 
       {/* Footer: 모바일에서는 숨김 */}
-      <footer className="hidden md:block border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-16">
-        <div className="max-w-[1800px] mx-auto px-8">
-          <div className="text-center mb-8">
-            <div className="inline-block bg-white border border-slate-200 shadow-sm rounded-2xl px-10 py-5 mb-6">
-              <p className="text-slate-500 text-sm mb-1">Copyright © 2025</p>
-              <p className="text-slate-800 text-lg tracking-wide">
-                617ALLIANCE
-              </p>
+      {isDesktop && (
+        <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-16">
+          <div className="max-w-[1800px] mx-auto px-8">
+            <div className="text-center mb-8">
+              <div className="inline-block bg-white border border-slate-200 shadow-sm rounded-2xl px-10 py-5 mb-6">
+                <p className="text-slate-500 text-sm mb-1">
+                  Copyright © 2025
+                </p>
+                <p className="text-slate-800 text-lg tracking-wide">
+                  617ALLIANCE
+                </p>
+              </div>
             </div>
-          </div>
 
-          <CommentSection />
-        </div>
-      </footer>
+            <CommentSection />
+          </div>
+        </footer>
+      )}
 
       <AuthModal
         open={showAuthModal}
