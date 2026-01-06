@@ -6,46 +6,54 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-import { App as CapApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { supabase } from "./lib/supabase/client";
 
-function registerOAuthDeepLinkHandler() {
-  // 웹에서는 필요 없음 (앱에서만)
+async function registerOAuthDeepLinkHandler() {
+  // ✅ 웹에서는 아예 @capacitor/app을 로드하지 않음 (완전 안전)
   if (!Capacitor.isNativePlatform()) return;
 
-  CapApp.addListener("appUrlOpen", async ({ url }) => {
-    // ✅ 여기 로그가 핵심 (딥링크가 들어오는지 확인)
-    console.log("[oauth] appUrlOpen:", url);
+  try {
+    const mod = await import("@capacitor/app");
+    const CapApp = mod.App;
 
-    // 우리가 설정한 딥링크만 처리
-    if (!url.startsWith("com.example.cbt://auth-callback")) return;
+    CapApp.addListener("appUrlOpen", async ({ url }) => {
+      console.log("[oauth] appUrlOpen:", url);
 
-    try {
-      const u = new URL(url);
+      if (!url.startsWith("com.example.cbt://auth-callback")) return;
 
-      // Supabase PKCE: ?code=...
-      const code = u.searchParams.get("code");
-      console.log("[oauth] code:", code);
+      try {
+        const u = new URL(url);
+        const code = u.searchParams.get("code");
 
-      if (!code) {
-        console.log("[oauth] no code param. url:", url);
-        return;
-      }
+        console.log("[oauth] code:", code);
 
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) {
-        console.log("[oauth] exchangeCodeForSession error:", error);
-      } else {
+        if (!code) {
+          console.log("[oauth] no code param. url:", url);
+          return;
+        }
+
+        const { data, error } = await supabase.auth.exchangeCodeForSession(
+          code
+        );
+
+        if (error) {
+          console.log("[oauth] exchangeCodeForSession error:", error);
+          return;
+        }
+
         console.log("[oauth] exchangeCodeForSession ok:", {
           user: data?.user?.id,
           session: Boolean(data?.session),
         });
+      } catch (e) {
+        console.log("[oauth] callback parse error:", e);
       }
-    } catch (e) {
-      console.log("[oauth] callback parse error:", e);
-    }
-  });
+    });
+  } catch (e) {
+    // ✅ 혹시라도 네이티브 환경인데 플러그인 로딩이 실패한 경우
+    console.log("[oauth] failed to load @capacitor/app:", e);
+  }
 }
 
 // ✅ 앱 시작 시 1번만 등록
