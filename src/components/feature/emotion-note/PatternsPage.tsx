@@ -636,6 +636,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
           }
         : pattern
     );
+    setPatterns(updated);
     saveLocalPatterns(updated);
   };
 
@@ -675,10 +676,12 @@ export function PatternsPage({ user }: PatternsPageProps) {
     });
   };
 
-  // 가장 빈번한 패턴 정렬
-  const sortedPatterns = [...patterns].sort(
-    (a: Pattern, b: Pattern) => b.frequency - a.frequency
+  const latestSortedPatterns = [...patterns].sort((a: Pattern, b: Pattern) =>
+    (b.timestamp ?? "").localeCompare(a.timestamp ?? "")
   );
+  const mostFrequentPattern = [...patterns].sort(
+    (a: Pattern, b: Pattern) => b.frequency - a.frequency
+  )[0];
 
   const emotionOptions = EMOTIONS.map((e) => e.label);
 
@@ -909,9 +912,26 @@ export function PatternsPage({ user }: PatternsPageProps) {
             </div>
             <div className="bg-white rounded-lg p-4 border border-purple-200">
               <p className="text-sm text-slate-600 mb-1">가장 빈번한 패턴</p>
-              <p className="text-lg text-purple-700 truncate">
-                {sortedPatterns[0]?.title || "-"}
-              </p>
+              {mostFrequentPattern ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const targetId = mostFrequentPattern.id;
+                    const el = document.getElementById(
+                      `pattern-${targetId}`
+                    );
+                    if (el) {
+                      el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                    setEditingId(null);
+                  }}
+                  className="block w-full text-left text-base text-purple-700 truncate hover:underline"
+                >
+                  {mostFrequentPattern.trigger || "-"}
+                </button>
+              ) : (
+                <p className="text-base text-purple-700 truncate">-</p>
+              )}
             </div>
             <div className="bg-white rounded-lg p-4 border border-pink-200">
               <p className="text-sm text-slate-600 mb-1">총 발생 횟수</p>
@@ -941,8 +961,9 @@ export function PatternsPage({ user }: PatternsPageProps) {
         </Card>
       ) : (
         <div className="space-y-4">
-          {sortedPatterns.map((pattern) => (
+          {latestSortedPatterns.map((pattern) => (
             <Card
+              id={`pattern-${pattern.id}`}
               key={pattern.id}
               className="p-6 hover:shadow-lg transition-shadow bg-white border-indigo-100"
             >
