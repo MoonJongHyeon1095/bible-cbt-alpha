@@ -1,4 +1,6 @@
 import { Button } from "../ui/button";
+import { Checkbox } from "../ui/checkbox";
+import { Label } from "../ui/label";
 import type { EmotionData } from "./types";
 
 interface EmotionDetailCardProps {
@@ -67,27 +69,28 @@ export function EmotionDetailCard({
             : "bg-slate-50 border-slate-300"
         }`}
       >
-        <label className="flex items-center justify-between cursor-pointer select-none">
-          <span className="flex items-center gap-2">
-            <input
-              type="checkbox"
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Checkbox
+              id="emotion-confirm-checkbox"
               checked={confirmed}
-              onChange={(e) => onConfirmChange(e.target.checked)}
-              className="h-4 w-4 accent-green-600"
+              onCheckedChange={(checked) => onConfirmChange(Boolean(checked))}
+              className="data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
             />
-            <span
-              className={`text-sm ${
+            <Label
+              htmlFor="emotion-confirm-checkbox"
+              className={`cursor-pointer ${
                 confirmed ? "text-green-900" : "text-slate-700"
               }`}
             >
               위 내용을 확인했습니다
-            </span>
-          </span>
+            </Label>
+          </div>
 
           <span className="text-xs text-slate-500">
             {confirmed ? "확인됨" : "체크 필요"}
           </span>
-        </label>
+        </div>
       </div>
 
       <div className="flex gap-3">
