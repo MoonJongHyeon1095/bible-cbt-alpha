@@ -4,7 +4,6 @@ import type { EmotionThoughtPair } from "../types";
 import type { SelectedCognitiveError } from "../types/sessionHistory";
 import { CenterPanel } from "./center/CenterPanel";
 import { EmailModal } from "./feature/EmailModal";
-import { FavoritesModal } from "./feature/FavoritesModal";
 import { HistoryModal } from "./feature/HistoryModal";
 import { CbtMode } from "./header/ModePicker";
 import { LeftPanel } from "./left/LeftPanel";
@@ -37,7 +36,6 @@ export function CBTSessionPage({
   // ✅ 툴 모달
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
-  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
 
   const sessionData = useMemo(
     () => ({
@@ -166,7 +164,6 @@ export function CBTSessionPage({
         onReset={resetAll}
         onOpenHistory={() => setShowHistoryModal(true)}
         onOpenEmail={() => setShowEmailModal(true)}
-        onOpenFavorites={() => setShowFavoritesModal(true)}
       />
 
       {/* ✅ 모달들 */}
@@ -181,16 +178,6 @@ export function CBTSessionPage({
         onClose={() => setShowEmailModal(false)}
         user={user}
         sessionData={sessionData}
-      />
-
-      <FavoritesModal
-        open={showFavoritesModal}
-        onClose={() => setShowFavoritesModal(false)}
-        onSelect={(text) => {
-          setUserInput(text);
-          setStep(1);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }}
       />
     </div>
   );

@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "../ui/button";
 import { ToolEmailButton } from "./ToolEmailButton";
-import { ToolFavoritesButton } from "./ToolFavoritesButton";
 import { ToolHistoryButton } from "./ToolHistoryButton";
 import { ToolResetButton } from "./ToolResetButton";
 
@@ -12,7 +11,6 @@ type ToolDockProps = {
   onReset: () => void;
   onOpenHistory: () => void;
   onOpenEmail: () => void;
-  onOpenFavorites: () => void;
 };
 
 const HOST_ID = "tooldock-portal-host";
@@ -41,7 +39,6 @@ export function ToolDock({
   onReset,
   onOpenHistory,
   onOpenEmail,
-  onOpenFavorites,
 }: ToolDockProps) {
   const [open, setOpen] = useState(false);
   const [host, setHost] = useState<HTMLDivElement | null>(null);
@@ -84,9 +81,8 @@ export function ToolDock({
       <ToolResetButton key="reset" onReset={onReset} />,
       <ToolHistoryButton key="history" onOpenHistory={onOpenHistory} />,
       <ToolEmailButton key="email" onOpenEmail={onOpenEmail} />,
-      <ToolFavoritesButton key="favorites" onOpenFavorites={onOpenFavorites} />,
     ],
-    [onReset, onOpenHistory, onOpenEmail, onOpenFavorites]
+    [onReset, onOpenHistory, onOpenEmail]
   );
 
   if (!host) return null;

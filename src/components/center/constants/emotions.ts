@@ -1,3 +1,4 @@
+// src/components/center/constants/emotions.ts
 // 11개 부정적 감정 목록 (성취감, 만족감 제외)
 export const EMOTIONS = [
   {

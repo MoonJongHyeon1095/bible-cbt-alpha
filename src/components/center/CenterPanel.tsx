@@ -1,26 +1,36 @@
 // src/components/center/CenterPanel.tsx
 import type { User } from "@supabase/supabase-js";
-import {
-  Bookmark,
-  Check,
-  Loader2,
-  RefreshCw,
-  Shuffle,
-  Star,
-} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { generateExtendedAutomaticThoughts } from "../../lib/ai";
-import { supabase } from "../../lib/supabase/client";
 import type { EmotionThoughtPair } from "../../types";
 import { CbtMode } from "../header/ModePicker";
-import { Button } from "../ui/button";
 import { Card } from "../ui/card";
-import { Textarea } from "../ui/textarea";
-import { EMOTIONS } from "./constants/emotions";
+import { CenterHeader } from "./CenterHeader";
 import { ALL_EXAMPLES } from "./constants/examples";
+import { EmotionDetailCard } from "./EmotionDetailCard";
+import { EmotionGrid } from "./EmotionGrid";
 import { FirstEmotionIntensityModal } from "./FirstEmotionIntensityModal";
-import { LoadingInsightCard } from "./LoadingInsightCard";
+import { IncidentStepCard } from "./IncidentStepCard";
+import { ThoughtSelectionCard } from "./ThoughtSelectionCard";
+import type {
+  EmotionData,
+  EmotionNote,
+  EmotionNoteDetail,
+  EmotionNoteDetailWithNote,
+} from "./types";
+import {
+  createDetailAPI,
+  createNoteAPI,
+  deleteDetailAPI,
+  fetchDetailsAPI,
+  fetchNotesAPI,
+} from "./utils/api";
+import {
+  flattenLocalDetails,
+  getLocalNotes,
+  saveLocalNotes,
+} from "./utils/storage";
 
 interface CenterPanelProps {
   step: number;
@@ -31,16 +41,6 @@ interface CenterPanelProps {
   onNext: () => void;
   mode: CbtMode;
   user: User | null;
-}
-
-interface EmotionData {
-  id: string;
-  label: string;
-  description: string;
-  physical: string;
-  color: string;
-  positive: string[];
-  caution: string[];
 }
 
 type PrefetchKey = string;
@@ -58,21 +58,6 @@ function formatAutoTitle(date: Date) {
   const min = pad(date.getMinutes());
   return `${yy}년 ${mm}월 ${dd}일 ${hh}시 ${min}분에 저장`;
 }
-
-const EMOTION_NOTES_KEY = "cbt_patterns";
-
-type EmotionNote = {
-  id: string;
-  title: string;
-  trigger: string;
-  automaticThought: string;
-  emotion: string;
-  createdAt: string;
-  behavior?: string;
-  alternative?: string;
-  frequency?: number;
-  timestamp?: string;
-};
 
 export function CenterPanel({
   step,
@@ -125,12 +110,36 @@ export function CenterPanel({
 
   // 저장된 자동사고(감정 노트)
   const [showFavorites, setShowFavorites] = useState(false);
-  const [savedNotes, setSavedNotes] = useState<EmotionNote[]>([]);
+  const [savedDetails, setSavedDetails] = useState<EmotionNoteDetailWithNote[]>(
+    []
+  );
   const [notesLoading, setNotesLoading] = useState(false);
+
+  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+  const [activeNoteTitle, setActiveNoteTitle] = useState<string | null>(null);
+  const activeNoteIdRef = useRef<string | null>(null);
+
+  const [showSavedTriggers, setShowSavedTriggers] = useState(false);
+  const [savedTriggerNotes, setSavedTriggerNotes] = useState<EmotionNote[]>([]);
 
   // 로딩/에러
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [activeNoteTrigger, setActiveNoteTrigger] = useState<string | null>(
+    null
+  );
+
+  const setActiveNote = (
+    noteId: string | null,
+    title?: string | null,
+    trigger?: string | null
+  ) => {
+    setActiveNoteId(noteId);
+    setActiveNoteTitle(title ?? null);
+    setActiveNoteTrigger(trigger ?? null);
+    activeNoteIdRef.current = noteId;
+  };
 
   /**
    * ✅ 프리페치 캐시
@@ -149,62 +158,45 @@ export function CenterPanel({
   const mapServerNote = (row: any): EmotionNote => ({
     id: row.id?.toString() ?? `${Date.now()}`,
     title: row.title ?? "",
-    trigger: row.trigger_text ?? "",
-    automaticThought: row.automatic_thought ?? "",
-    emotion: row.emotion ?? "",
+    trigger: row.trigger ?? row.trigger_text ?? "",
     behavior: row.behavior ?? "",
-    alternative: row.alternative ?? "",
     frequency: Number(row.frequency) || 1,
     createdAt: row.created_at ?? new Date().toISOString(),
     timestamp: row.created_at ?? new Date().toISOString(),
   });
 
-  const mapLocalNote = (item: any): EmotionNote => ({
-    id: item.id?.toString() ?? `${Date.now()}`,
-    title: item.title ?? "",
-    trigger: item.trigger ?? item.trigger_text ?? "",
-    automaticThought: item.automaticThought ?? item.automatic_thought ?? "",
-    emotion: item.emotion ?? "",
-    behavior: item.behavior ?? "",
-    alternative: item.alternative ?? "",
-    frequency: Number(item.frequency) || 1,
-    createdAt: item.timestamp ?? item.created_at ?? new Date().toISOString(),
-    timestamp: item.timestamp ?? item.created_at ?? new Date().toISOString(),
+  const mapServerDetail = (row: any): EmotionNoteDetailWithNote => ({
+    id: row.id?.toString() ?? `${Date.now()}`,
+    noteId: row.note_id?.toString() ?? "",
+    automaticThought: row.automatic_thought ?? row.automaticThought ?? "",
+    emotion: row.emotion ?? "",
+    alternative: row.alternative ?? "",
+    createdAt: row.created_at ?? new Date().toISOString(),
+    noteTitle:
+      row.noteTitle ??
+      row.note_title ??
+      row.emotion_notes?.title ??
+      "",
+    noteTrigger:
+      row.noteTrigger ??
+      row.note_trigger ??
+      row.emotion_notes?.trigger ??
+      row.emotion_notes?.trigger_text ??
+      "",
   });
-
-  const getLocalNotes = (): EmotionNote[] => {
-    try {
-      const stored = localStorage.getItem(EMOTION_NOTES_KEY);
-      if (!stored) return [];
-      const parsed = JSON.parse(stored);
-      if (!Array.isArray(parsed)) return [];
-      return parsed
-        .map(mapLocalNote)
-        .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
-    } catch (e) {
-      console.error("감정 노트 로드 실패:", e);
-      return [];
-    }
-  };
-
-  const saveLocalNotes = (items: EmotionNote[]) => {
-    localStorage.setItem(EMOTION_NOTES_KEY, JSON.stringify(items));
-  };
 
   const fetchServerNotes = async ({ silent = false } = {}) => {
     if (!useServerNotes) return;
     if (!silent) setNotesLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from("emotion_notes")
-        .select(
-          "id, title, trigger_text, automatic_thought, emotion, behavior, alternative, frequency, created_at"
-        )
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setSavedNotes(data.map(mapServerNote));
+      const { ok, payload } = await fetchNotesAPI();
+      if (!ok)
+        throw new Error(payload?.error || "노트를 불러오지 못했습니다.");
+      const notes = Array.isArray(payload?.notes)
+        ? payload.notes.map(mapServerNote)
+        : [];
+      setSavedTriggerNotes(notes);
     } catch (e) {
       console.error("감정 노트 불러오기 실패:", e);
       if (!silent) toast.error("감정 노트를 불러오지 못했습니다.");
@@ -217,14 +209,22 @@ export function CenterPanel({
     if (useServerNotes) {
       void fetchServerNotes({ silent: true });
     } else {
-      setSavedNotes([]);
+      const locals = getLocalNotes();
+      setSavedTriggerNotes(locals);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useServerNotes]);
 
   // 예시 클릭
+  const handleInputChange = (value: string, preserveNote = false) => {
+    if (!preserveNote && value !== userInput) {
+      setActiveNote(null, null, null);
+    }
+    onInputChange(value);
+  };
+
   const handleExampleClick = (example: string) => {
-    onInputChange(example);
+    handleInputChange(example);
   };
 
   // ✅ 공통: 감정 바뀔 때 상태 리셋(프리페치 무효화 포함)
@@ -247,6 +247,108 @@ export function CenterPanel({
 
     setError(null);
   };
+
+  const handleSaveTriggerOnly = async () => {
+    const triggerText = userInput.trim();
+    if (!triggerText) {
+      toast.error("먼저 상황을 입력해주세요.");
+      return;
+    }
+
+    const now = new Date();
+    const title = activeNoteTitle ?? formatAutoTitle(now);
+
+    if (useServerNotes) {
+      const existing = savedTriggerNotes.find(
+        (note) => note.trigger === triggerText
+      );
+      if (existing) {
+        setActiveNote(existing.id, existing.title, existing.trigger);
+        toast.success("이미 저장된 상황을 불러왔습니다.");
+        return;
+      }
+
+      try {
+        setNotesLoading(true);
+        const { ok, payload } = await createNoteAPI({
+          title,
+          trigger: triggerText,
+        });
+        if (!ok || !payload?.note) {
+          throw new Error(payload?.error || "상황을 저장하지 못했습니다.");
+        }
+        const note = mapServerNote(payload.note);
+        setActiveNote(note.id, note.title, note.trigger);
+        setSavedTriggerNotes((prev) => [note, ...prev]);
+        toast.success("상황이 저장되었습니다.");
+      } catch (e) {
+        console.error("상황 저장 실패:", e);
+        toast.error("상황을 저장하지 못했습니다.");
+      } finally {
+        setNotesLoading(false);
+      }
+      return;
+    }
+
+    const existingLocal = getLocalNotes().find(
+      (note) => note.trigger === triggerText
+    );
+    if (existingLocal) {
+      setActiveNote(
+        existingLocal.id,
+        existingLocal.title,
+        existingLocal.trigger
+      );
+      toast.success("이미 저장된 상황을 불러왔습니다.");
+      return;
+    }
+
+    const nowIso = now.toISOString();
+    const newNote: EmotionNote = {
+      id: Date.now().toString(),
+      title,
+      trigger: triggerText,
+      createdAt: nowIso,
+      timestamp: nowIso,
+      frequency: 1,
+      behavior: "",
+      details: [],
+    };
+    const current = getLocalNotes();
+    const next = [newNote, ...current];
+    saveLocalNotes(next);
+    setSavedTriggerNotes(next);
+    setActiveNote(newNote.id, newNote.title, newNote.trigger);
+    toast.success("상황이 저장되었습니다.");
+  };
+
+  const toggleSavedTriggers = async () => {
+    const next = !showSavedTriggers;
+    setShowSavedTriggers(next);
+    if (next) {
+      if (useServerNotes) {
+        await fetchServerNotes();
+      } else {
+        const locals = getLocalNotes();
+        setSavedTriggerNotes(locals);
+      }
+    }
+  };
+
+  const handleTriggerPick = (note: EmotionNote) => {
+    handleInputChange(note.trigger, true);
+    setActiveNote(note.id, note.title, note.trigger);
+    resetForNewEmotion();
+    setShowSavedTriggers(false);
+    onNext();
+  };
+
+  useEffect(() => {
+    if (showFavorites) {
+      void fetchSavedDetails(activeNoteIdRef.current ?? undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showFavorites, useServerNotes]);
 
   /**
    * ✅ 프리페치 시작 (deep에서 강도 모달 열리기 전에 미리 생성)
@@ -383,6 +485,39 @@ export function CenterPanel({
     setSelectedThoughtIndex(index);
   };
 
+  const handleCustomThoughtChange = (value: string) => {
+    setCustomThought(value);
+    if (
+      value &&
+      selectedThoughtIndex !== null &&
+      selectedThoughtIndex !== 999
+    ) {
+      setSelectedThoughtIndex(null);
+    }
+  };
+
+  const handleCustomThoughtSelect = () => {
+    setSelectedThoughtIndex(999);
+  };
+
+  const submitThoughtSelection = () => {
+    if (selectedThoughtIndex === null) return;
+
+    if (selectedThoughtIndex === 999 && customThought.trim()) {
+      const storedIntensity = isDeep ? emotionIntensity : null;
+      const newPair: EmotionThoughtPair = {
+        emotion: selectedEmotion,
+        intensity: storedIntensity,
+        thought: customThought.trim(),
+      };
+      onSetEmotionThoughtPairs([...emotionThoughtPairs, newPair]);
+      onNext();
+      return;
+    }
+
+    handleComplete();
+  };
+
   // 선택 완료 → Step 3로
   const handleComplete = () => {
     if (selectedThoughtIndex === null) return;
@@ -406,14 +541,49 @@ export function CenterPanel({
   // 저장된 자동사고 불러오기
   const loadFavorites = async () => {
     setShowFavorites(true);
+    await fetchSavedDetails(activeNoteIdRef.current ?? undefined);
+  };
 
-    if (useServerNotes) {
-      await fetchServerNotes();
-      return;
+  const fetchSavedDetails = async (noteId?: string) => {
+    setNotesLoading(true);
+    try {
+      if (useServerNotes) {
+        const effectiveNoteId =
+          noteId ||
+          activeNoteIdRef.current ||
+          savedTriggerNotes.find((n) => n.trigger === userInput.trim())?.id ||
+          undefined;
+
+        const params = new URLSearchParams();
+        if (effectiveNoteId) params.set("noteId", effectiveNoteId);
+
+        const { ok, payload } = await fetchDetailsAPI(
+          params.get("noteId") || undefined
+        );
+        if (!ok)
+          throw new Error(payload?.error || "감정 노트를 불러오지 못했습니다.");
+        const details = Array.isArray(payload?.details)
+          ? payload.details.map(mapServerDetail)
+          : [];
+        setSavedDetails(details);
+      } else {
+        const notes = getLocalNotes();
+        const effectiveNoteId =
+          noteId ||
+          activeNoteIdRef.current ||
+          savedTriggerNotes.find((n) => n.trigger === userInput.trim())?.id ||
+          undefined;
+        const filtered = effectiveNoteId
+          ? notes.filter((n) => n.id === effectiveNoteId)
+          : notes;
+        setSavedDetails(flattenLocalDetails(filtered));
+      }
+    } catch (e) {
+      console.error("감정 노트 불러오기 실패:", e);
+      toast.error("감정 노트를 불러오지 못했습니다.");
+    } finally {
+      setNotesLoading(false);
     }
-
-    const stored = getLocalNotes();
-    setSavedNotes(stored);
   };
 
   // 자동사고를 감정 노트에 저장
@@ -427,147 +597,178 @@ export function CenterPanel({
       return;
     }
 
+    const triggerText = userInput.trim();
     const now = new Date();
     const nowIso = now.toISOString();
-    const title = formatAutoTitle(now);
-    const newNote: EmotionNote = {
-      id: Date.now().toString(),
-      title,
-      trigger: userInput,
-      automaticThought: thought,
-      emotion,
-      createdAt: nowIso,
-      timestamp: nowIso,
-      behavior: "",
-      alternative: "",
-      frequency: 1,
-    };
+    const title = activeNoteTitle ?? formatAutoTitle(now);
 
     if (useServerNotes) {
-      const { data, error } = await supabase
-        .from("emotion_notes")
-        .insert({
-          title: newNote.title,
-          trigger_text: newNote.trigger,
-          automatic_thought: newNote.automaticThought,
-          emotion: newNote.emotion,
-        })
-        .select(
-          "id, title, trigger_text, automatic_thought, emotion, behavior, alternative, frequency, created_at"
-        )
-        .single();
+      try {
+        setNotesLoading(true);
+        let noteId = activeNoteId;
+        let noteTitle = activeNoteTitle ?? title;
+        let noteTrigger = activeNoteTrigger ?? triggerText;
 
-      if (error) {
-        console.error("감정 노트 저장 실패:", error);
+        if (!noteId) {
+          const existing = savedTriggerNotes.find(
+            (n) => n.trigger === triggerText
+          );
+          if (existing) {
+            noteId = existing.id;
+            noteTitle = existing.title;
+            noteTrigger = existing.trigger;
+          }
+        }
+
+        if (!noteId) {
+          const { ok, payload } = await createNoteAPI({
+            title,
+            trigger: triggerText,
+          });
+          if (!ok || !payload?.note) {
+            throw new Error(
+              payload?.error || "상황을 저장하지 못했습니다."
+            );
+          }
+          const mappedNote = mapServerNote(payload.note);
+          setSavedTriggerNotes((prev) => [mappedNote, ...prev]);
+          noteId = mappedNote.id;
+          noteTitle = mappedNote.title;
+          noteTrigger = mappedNote.trigger;
+        }
+
+        const { ok, payload } = await createDetailAPI({
+          noteId,
+          automaticThought: thought,
+          emotion,
+          alternative: "",
+        });
+        if (!ok || !payload?.detail) {
+          throw new Error(
+            payload?.error || "자동사고를 저장하지 못했습니다."
+          );
+        }
+
+        const savedDetail = mapServerDetail(payload.detail);
+        setActiveNote(noteId, noteTitle, noteTrigger);
+        setSavedDetails((prev) => [savedDetail, ...prev]);
+        toast.success("자동사고가 감정 노트에 저장되었습니다.");
+        return;
+      } catch (e) {
+        console.error("감정 노트 저장 실패:", e);
         toast.error("감정 노트를 저장하지 못했습니다.");
         return;
+      } finally {
+        setNotesLoading(false);
       }
-
-      const saved = mapServerNote(data);
-      setSavedNotes((prev) => [saved, ...prev]);
-      toast.success("자동사고가 감정 노트에 저장되었습니다.");
-      return;
     }
 
-    const current = getLocalNotes();
-    const next = [newNote, ...current];
-    saveLocalNotes(next);
-    setSavedNotes(next);
+    const notes = getLocalNotes();
+    const existingNote =
+      notes.find((n) => n.id === activeNoteId) ||
+      notes.find((n) => n.trigger === triggerText);
+
+    const noteToUse =
+      existingNote ??
+      ({
+        id: Date.now().toString(),
+        title,
+        trigger: triggerText,
+        createdAt: nowIso,
+        timestamp: nowIso,
+        behavior: "",
+        frequency: 1,
+        details: [],
+      } as EmotionNote);
+
+    const detail: EmotionNoteDetail = {
+      id: Date.now().toString(),
+      noteId: noteToUse.id,
+      automaticThought: thought,
+      emotion,
+      alternative: "",
+      createdAt: nowIso,
+    };
+
+    const updatedNotes = (() => {
+      const without = notes.filter((n) => n.id !== noteToUse.id);
+      const mergedDetails = [detail, ...(noteToUse.details ?? [])];
+      const mergedNote = { ...noteToUse, details: mergedDetails };
+      return [mergedNote, ...without];
+    })();
+
+    saveLocalNotes(updatedNotes);
+    setSavedTriggerNotes(updatedNotes);
+    setActiveNote(noteToUse.id, noteToUse.title, noteToUse.trigger);
+    setSavedDetails((prev) => [
+      { ...detail, noteTitle: noteToUse.title, noteTrigger: noteToUse.trigger },
+      ...prev,
+    ]);
     toast.success("자동사고가 감정 노트에 저장되었습니다.");
   };
 
   // 저장된 노트에서 자동사고 불러오기
-  const loadFromFavorites = (note: EmotionNote) => {
-    setSelectedEmotion(note.emotion);
+  const loadFromFavorites = (detail: EmotionNoteDetailWithNote) => {
+    const emotion = detail.emotion || selectedEmotion;
+    const thought = detail.automaticThought;
+    const storedIntensity = isDeep ? emotionIntensity : null;
+
+    if (detail.noteTrigger) {
+      handleInputChange(detail.noteTrigger, true);
+    }
+    setSelectedEmotion(emotion);
     setEmotionSet(true);
-    setCustomThought(note.automaticThought);
-    setSelectedThoughtIndex(999);
     setShowFavorites(false);
+    setActiveNote(detail.noteId, detail.noteTitle, detail.noteTrigger);
+
+    const newPair: EmotionThoughtPair = {
+      emotion,
+      intensity: storedIntensity,
+      thought,
+    };
+
+    onSetEmotionThoughtPairs([...emotionThoughtPairs, newPair]);
 
     if (containerRef.current) containerRef.current.scrollTop = 0;
     window.scrollTo({ top: 0, behavior: "smooth" });
+    onNext();
   };
 
   // 저장된 노트 삭제
   const removeFromFavorites = async (id: string) => {
     if (useServerNotes) {
-      const numericId = Number(id);
-      const { error } = await supabase
-        .from("emotion_notes")
-        .delete()
-        .eq("id", Number.isNaN(numericId) ? id : numericId);
-
-      if (error) {
-        console.error("감정 노트 삭제 실패:", error);
+      try {
+        const { ok, payload } = await deleteDetailAPI(id);
+        if (!ok) throw new Error(payload?.error || "삭제하지 못했습니다.");
+        setSavedDetails((prev) => prev.filter((f) => f.id !== id));
+        return;
+      } catch (e) {
+        console.error("감정 노트 삭제 실패:", e);
         toast.error("삭제하지 못했습니다.");
         return;
       }
-
-      setSavedNotes((prev) => prev.filter((f) => f.id !== id));
-      return;
     }
 
     const stored = getLocalNotes();
-    const filtered = stored.filter((f) => f.id !== id);
-    saveLocalNotes(filtered);
-    setSavedNotes(filtered);
+    const next = stored.map((note) => {
+      const filteredDetails = (note.details ?? []).filter(
+        (detail) => detail.id !== id
+      );
+      return { ...note, details: filteredDetails };
+    });
+
+    saveLocalNotes(next);
+    setSavedTriggerNotes(next);
+    setSavedDetails((prev) => prev.filter((f) => f.id !== id));
   };
-
-  // ✅ 헤더(지금 UI 반영)
-  const header = useMemo(() => {
-    if (step === 1) {
-      return {
-        badge: "STEP 1 · 사건 기록",
-        title: "오늘 당신에게 무슨 일이 있었는지 들려주세요.",
-        desc: "상황을 적고, 감정을 고르고, 생각을 찾아볼 거예요.",
-      };
-    }
-
-    if (step === 2 && !emotionSet && !showEmotionDetail) {
-      return {
-        badge: "STEP 2 · 감정 선택",
-        title: "지금 느낀 감정을 한 가지 골라볼까요?",
-        desc: "감정을 고르면, 그 감정의 의미를 짧게 확인한 뒤 진행해요.",
-      };
-    }
-
-    if (step === 2 && showEmotionDetail) {
-      return {
-        badge: "STEP 2 · 감정 확인",
-        title: "지금 이 순간의 감정을 인식해볼까요?",
-        desc: "긍정적 의미와 주의할 점을 확인하면 다음으로 넘어갈 수 있어요.",
-      };
-    }
-
-    if (step === 2 && emotionSet) {
-      return {
-        badge: "STEP 2 · 자동사고 찾기",
-        title: "감정 뒤에 숨어있는 생각을 찾아볼게요.",
-        desc: "가장 잘 맞는 생각 1개를 고르거나, 직접 적어도 좋아요.",
-      };
-    }
-
-    return {
-      badge: "STEP 3 · 다음 단계",
-      title: "다음 단계로 진행해볼까요?",
-      desc: "인지오류를 검토하게 될 거예요.",
-    };
-  }, [step, emotionSet, showEmotionDetail]);
 
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
-      {/* ✅ 타이틀 영역(지금 UI 반영) */}
-      <div className="mb-5">
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
-          {header.badge}
-        </div>
-
-        <h2 className="mt-3 text-slate-900 text-2xl font-extrabold tracking-tight">
-          {header.title}
-        </h2>
-
-        <p className="mt-1 text-sm text-slate-500">{header.desc}</p>
-      </div>
+      <CenterHeader
+        step={step}
+        emotionSet={emotionSet}
+        showEmotionDetail={showEmotionDetail}
+      />
 
       <FirstEmotionIntensityModal
         // ✅ deep일 때만 실제로 열리게 방지
@@ -589,164 +790,28 @@ export function CenterPanel({
       <div className="flex-1 space-y-6 overflow-y-auto" ref={containerRef}>
         {/* ================= Step 1: 사건 기록 (지금 UI 반영) ================= */}
         {step === 1 && (
-          <div className="space-y-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-slate-700 mb-2 text-base">
-                마음이 힘들었던 경험이나 불편했던 상황을 자유롭게 적어주세요.
-              </p>
-              <p className="text-blue-700 text-base">
-                💡 자세한 설명일수록 더욱 효과적입니다.
-              </p>
-            </div>
-
-            {/* ✅ 즐겨찾기 버튼: 오른쪽 정렬 */}
-            <div className="flex items-center justify-end">
-              <button
-                onClick={() => {
-                  if (!userInput.trim()) {
-                    toast.error("먼저 내용을 입력해주세요.");
-                    return;
-                  }
-
-                  const favorites = JSON.parse(
-                    localStorage.getItem("cbt-favorites") || "[]"
-                  );
-
-                  if (favorites.some((f: any) => f.text === userInput)) {
-                    toast.info("이미 즐겨찾기에 있습니다.");
-                    return;
-                  }
-
-                  if (favorites.length >= 10) {
-                    toast.warning("최대 10개까지 저장할 수 있습니다.");
-                    return;
-                  }
-
-                  favorites.unshift({
-                    id: Date.now().toString(),
-                    text: userInput,
-                    createdAt: Date.now(),
-                  });
-
-                  localStorage.setItem(
-                    "cbt-favorites",
-                    JSON.stringify(favorites)
-                  );
-                  toast.success("즐겨찾기에 추가되었습니다!");
-                }}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-yellow-300 hover:border-yellow-500 hover:bg-yellow-50 transition-all text-yellow-600 hover:text-yellow-700 text-sm"
-                title="즐겨찾기에 추가"
-              >
-                <Star className="size-4" />
-                즐겨찾기 추가
-              </button>
-            </div>
-
-            {/* ✅ 인풋 */}
-            <Textarea
-              value={userInput}
-              onChange={(e) => onInputChange(e.target.value)}
-              placeholder="여기에 직접 입력하세요..."
-              className="min-h-[120px] resize-none"
-            />
-
-            {/* ✅ 다음 버튼: 인풋 바로 아래 */}
-            <Button
-              onClick={onNext}
-              disabled={!userInput.trim()}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              다음 단계로 이동
-            </Button>
-
-            {/* ✅ 예시 섹션: 아래로 */}
-            <div className="space-y-2 pt-2">
-              <p className="text-slate-600 text-base">
-                또는 예시를 선택하세요.
-              </p>
-
-              <div className="space-y-2">
-                {randomExamples.map((example, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleExampleClick(example.text)}
-                    className="w-full text-left p-4 rounded-lg border border-slate-300 hover:border-blue-400 hover:bg-blue-50 transition-all text-[15px] text-slate-700 leading-6"
-                  >
-                    <span className="text-lg mr-2">{example.emoji}</span>
-                    {example.text}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                onClick={refreshExamples}
-                className="w-full flex items-center justify-center gap-2 p-3 rounded-lg border-2 border-indigo-300 hover:border-indigo-500 hover:bg-indigo-50 transition-all text-sm text-indigo-700"
-              >
-                <Shuffle className="size-4" />
-                다른 예시 보기
-              </button>
-            </div>
-
-            <p className="text-center text-slate-400 text-xs">
-              이 치료기법은 일반적인 인지행동치료 원리를 기반으로 AI를 활용해
-              생성되었습니다.
-            </p>
-          </div>
+          <IncidentStepCard
+            userInput={userInput}
+            onInputChange={handleInputChange}
+            onNext={onNext}
+            randomExamples={randomExamples}
+            onExampleClick={handleExampleClick}
+            onRefreshExamples={refreshExamples}
+            onSaveTrigger={handleSaveTriggerOnly}
+            onToggleSavedTriggers={toggleSavedTriggers}
+            showSavedTriggers={showSavedTriggers}
+            savedTriggers={savedTriggerNotes}
+            onPickTrigger={handleTriggerPick}
+            notesLoading={notesLoading}
+          />
         )}
 
         {/* ================= Step 2: 감정 선택 (목록) ================= */}
         {step === 2 && !emotionSet && !showEmotionDetail && (
-          <div className="space-y-4">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border-2 border-blue-200">
-              <h3 className="text-blue-900 mb-2 text-lg">
-                당신이 느낀 감정을 <strong>1가지</strong> 선택해주세요.
-              </h3>
-            </div>
-
-            {selectedEmotion && (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-xl text-center text-green-900 border-2 border-green-300 shadow-sm">
-                <span className="text-lg">
-                  선택된 감정:{" "}
-                  <strong className="text-xl">{selectedEmotion}</strong> ✓
-                </span>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-3 max-h-[550px] overflow-y-auto pr-2">
-              {EMOTIONS.map((emotion) => {
-                const isSelected = selectedEmotion === emotion.label;
-
-                return (
-                  <button
-                    key={emotion.id}
-                    onClick={() => handleEmotionSelect(emotion as EmotionData)}
-                    className={`text-left p-3 rounded-xl border-2 transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-blue-200 focus-visible:ring-offset-1 ${
-                      isSelected
-                        ? "border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg"
-                        : emotion.color + " border-2 hover:border-blue-300"
-                    }`}
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-slate-900 font-semibold">
-                          {emotion.label}
-                        </h3>
-                        {isSelected && (
-                          <Check className="size-4 text-blue-600" />
-                        )}
-                      </div>
-                      <p className="text-slate-700 text-xs leading-relaxed">
-                        {emotion.description}
-                      </p>
-                      <p className="text-slate-500 text-xs">
-                        💭 {emotion.physical}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <EmotionGrid
+            selectedEmotion={selectedEmotion}
+            onSelect={(emotion) => handleEmotionSelect(emotion)}
+          />
         )}
 
         {/* ================= Step 2: 감정 상세 ================= */}
@@ -754,421 +819,58 @@ export function CenterPanel({
           !emotionSet &&
           showEmotionDetail &&
           selectedEmotionData && (
-            <div className="space-y-3">
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-lg border-2 border-indigo-300">
-                <h2 className="text-indigo-900 text-base mb-1">
-                  지금 이 순간의 감정 인식하기: {selectedEmotionData.label}
-                </h2>
-                <p className="text-slate-700 text-xs">
-                  {selectedEmotionData.description}
-                </p>
-                <p className="text-slate-600 text-xs mt-1">
-                  💭 {selectedEmotionData.physical}
-                </p>
-              </div>
-
-              {/* 긍정적 측면 */}
-              <div className="rounded-lg border border-green-300 bg-green-50 p-3">
-                <h3 className="text-green-900 text-sm font-semibold">
-                  ✨ 그러나 {selectedEmotionData.label}의 긍정적인 측면도
-                  있습니다.
-                </h3>
-                <ul className="mt-2 space-y-2">
-                  {selectedEmotionData.positive.map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="flex gap-2 text-slate-700 text-sm leading-relaxed"
-                    >
-                      <span className="mt-[0.35rem] select-none text-slate-500">
-                        •
-                      </span>
-                      <span className="flex-1">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* 주의할 점 */}
-              <div className="rounded-lg border border-amber-300 bg-amber-50 p-3">
-                <h3 className="text-amber-900 text-sm font-semibold">
-                  ⚠️ {selectedEmotionData.label}의 주의할 점
-                </h3>
-                <ul className="mt-2 space-y-2">
-                  {selectedEmotionData.caution.map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="flex gap-2 text-slate-700 text-sm leading-relaxed"
-                    >
-                      <span className="mt-[0.35rem] select-none text-slate-500">
-                        •
-                      </span>
-                      <span className="flex-1">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* 확인 체크 */}
-              <div
-                className={`rounded-lg border-2 p-3 transition-all ${
-                  emotionDetailConfirmed
-                    ? "bg-green-50 border-green-300"
-                    : "bg-slate-50 border-slate-300"
-                }`}
-              >
-                <label className="flex items-center justify-between cursor-pointer select-none">
-                  <span className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={emotionDetailConfirmed}
-                      onChange={(e) =>
-                        setEmotionDetailConfirmed(e.target.checked)
-                      }
-                      className="h-4 w-4 accent-green-600"
-                    />
-                    <span
-                      className={`text-sm ${
-                        emotionDetailConfirmed
-                          ? "text-green-900"
-                          : "text-slate-700"
-                      }`}
-                    >
-                      위 내용을 확인했습니다
-                    </span>
-                  </span>
-
-                  <span className="text-xs text-slate-500">
-                    {emotionDetailConfirmed ? "확인됨" : "체크 필요"}
-                  </span>
-                </label>
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => {
-                    setShowEmotionDetail(false);
-                    setSelectedEmotionData(null);
-                    setEmotionDetailConfirmed(false);
-                  }}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  다른 감정 보기
-                </Button>
-
-                <Button
-                  onClick={handleSelectThisEmotion}
-                  disabled={!emotionDetailConfirmed}
-                  className={`flex-1 ${
-                    emotionDetailConfirmed
-                      ? "bg-indigo-600 hover:bg-indigo-700"
-                      : "bg-slate-300 cursor-not-allowed"
-                  }`}
-                >
-                  이 감정 다루기
-                </Button>
-              </div>
-
-              {!emotionDetailConfirmed && (
-                <p className="text-center text-slate-500 text-xs">
-                  💡 긍정적 의미/주의할 점을 확인하셨다면 체크 후 진행할 수
-                  있어요.
-                </p>
-              )}
-            </div>
+            <EmotionDetailCard
+              emotion={selectedEmotionData}
+              confirmed={emotionDetailConfirmed}
+              onConfirmChange={setEmotionDetailConfirmed}
+              onBack={() => {
+                setShowEmotionDetail(false);
+                setSelectedEmotionData(null);
+                setEmotionDetailConfirmed(false);
+              }}
+              onSelect={handleSelectThisEmotion}
+            />
           )}
 
         {/* ================= Step 2: AI 자동사고 생성 → 1개 선택 ================= */}
         {step === 2 && emotionSet && (
-          <div className="space-y-4">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <p className="text-slate-700">
-                <strong>{selectedEmotion}</strong> 뒤에 숨어있을 수 있는
-                생각들입니다. <strong>가장 잘 맞는 것을 1개 골라주세요.</strong>
-                <br />
-                만약 없으면 <strong>다시 만들기</strong>를 누르시거나{" "}
-                <strong>직접 적어주세요.</strong>
-              </p>
-            </div>
-
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="size-8 animate-spin text-blue-600 mb-4" />
-                <p className="text-slate-600">
-                  당신의 마음을 살펴보고 있습니다...
-                </p>
-
-                {/* ✅ 로딩 중일 때: 모달 step2에서 날린 블록을 여기(로딩 밑)에 표시 */}
-                {selectedEmotionData ? (
-                  <LoadingInsightCard
-                    emotion={selectedEmotion}
-                    emotionData={selectedEmotionData}
-                  />
-                ) : null}
-              </div>
-            ) : error ? (
-              <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg">
-                <p className="mb-2">{error}</p>
-                <Button
-                  onClick={() => {
-                    prefetchPromiseRef.current = null;
-                    prefetchKeyRef.current = null;
-                    startPrefetchThoughts();
-                  }}
-                  variant="outline"
-                  size="sm"
-                >
-                  다시 시도
-                </Button>
-              </div>
-            ) : generatedThoughts.length > 0 ? (
-              <>
-                <div className="flex justify-end">
-                  <Button
-                    onClick={() => {
-                      prefetchPromiseRef.current = null;
-                      prefetchKeyRef.current = null;
-
-                      // ✅ lite에서도 "다시 만들기"가 동작하도록 직접 생성 호출
-                      void finalizeEmotionAndShowThoughts(selectedEmotion);
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 border-indigo-300 text-indigo-700 hover:bg-indigo-50"
-                    title={
-                      currentPrefetchKey
-                        ? `key: ${currentPrefetchKey}`
-                        : undefined
-                    }
-                  >
-                    <RefreshCw className="size-4" />
-                    다시 만들기
-                  </Button>
-                </div>
-
-                {!showFavorites ? (
-                  <Button
-                    onClick={() => void loadFavorites()}
-                    variant="outline"
-                    className="w-full gap-2 border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-                  >
-                    <Bookmark className="size-4" />
-                    저장한 자동사고 불러오기
-                  </Button>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between bg-yellow-50 p-3 rounded-lg border border-yellow-300">
-                      <h3 className="text-yellow-900 font-semibold">
-                        저장한 자동사고 목록
-                      </h3>
-                      <Button
-                        onClick={() => setShowFavorites(false)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-yellow-700"
-                      >
-                        닫기
-                      </Button>
-                    </div>
-
-                    {notesLoading ? (
-                      <div className="flex items-center gap-2 text-slate-600 px-3 py-4">
-                        <Loader2 className="size-4 animate-spin text-yellow-600" />
-                        불러오는 중입니다...
-                      </div>
-                    ) : savedNotes.length === 0 ? (
-                      <div className="text-center py-8 text-slate-500">
-                        <Bookmark className="size-12 mx-auto mb-2 opacity-30" />
-                        <p>저장된 자동사고가 없습니다.</p>
-                        <p className="text-sm mt-1">
-                          마음에 드는 자동사고를 저장해보세요.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                        {savedNotes.map((fav) => (
-                          <div
-                            key={fav.id}
-                            className="bg-white p-3 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 transition-all"
-                          >
-                            <div className="flex items-start gap-2 mb-2">
-                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                {fav.emotion}
-                              </span>
-                            <span className="text-xs text-slate-400">
-                              {fav.title}
-                            </span>
-                          </div>
-                            <div className="space-y-2">
-                              <p className="text-slate-700 text-sm">
-                                {fav.automaticThought}
-                              </p>
-
-                              <p className="text-xs text-slate-500 line-clamp-2">
-                                {fav.trigger}
-                              </p>
-                              <span className="block h-2" />
-                            </div>
-
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={() => loadFromFavorites(fav)}
-                                size="sm"
-                                className="flex-1 bg-blue-600 hover:bg-blue-700"
-                              >
-                                이 생각으로 진행하기
-                              </Button>
-                              <Button
-                                onClick={() => void removeFromFavorites(fav.id)}
-                                variant="outline"
-                                size="sm"
-                                className="text-red-600 hover:bg-red-50"
-                              >
-                                삭제
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  {generatedThoughts.map((thought, index) => (
-                    <div key={index} className="flex items-start gap-2">
-                      <button
-                        onClick={() => handleThoughtSelect(index)}
-                        className={`flex-1 text-left p-4 rounded-lg border-2 transition-all relative ${
-                          selectedThoughtIndex === index
-                            ? "border-blue-600 bg-blue-50"
-                            : "border-slate-200 hover:border-blue-300 bg-white"
-                        }`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <span
-                            className={`flex-shrink-0 w-6 h-6 rounded-full text-white flex items-center justify-center text-sm ${
-                              selectedThoughtIndex === index
-                                ? "bg-blue-600"
-                                : "bg-slate-400"
-                            }`}
-                          >
-                            {index + 1}
-                          </span>
-                          <p className="text-slate-800 flex-1">{thought}</p>
-                          {selectedThoughtIndex === index && (
-                            <Check className="size-5 text-blue-600 flex-shrink-0" />
-                          )}
-                        </div>
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          addThoughtToFavorites(
-                            thought,
-                            selectedEmotion,
-                            emotionIntensity
-                          )
-                        }
-                        className="p-3 rounded-lg border-2 border-yellow-300 hover:border-yellow-500 hover:bg-yellow-50 transition-all text-yellow-600 hover:text-yellow-700 flex-shrink-0"
-                        title="즐겨찾기에 추가"
-                      >
-                        <Bookmark className="size-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="border-t-2 border-slate-300 pt-4">
-                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200 mb-3">
-                    <p className="text-indigo-900 mb-2">
-                      ✍️ 또는 당신의 생각을 직접 적어보세요
-                    </p>
-                    <p className="text-slate-600 text-sm">
-                      제안한 생각 중에 딱 맞는 것이 없다면, 당신의 진짜 생각을
-                      그대로 적어주세요.
-                    </p>
-                  </div>
-
-                  <Textarea
-                    value={customThought}
-                    onChange={(e) => {
-                      setCustomThought(e.target.value);
-                      if (
-                        e.target.value &&
-                        selectedThoughtIndex !== null &&
-                        selectedThoughtIndex !== 999
-                      ) {
-                        setSelectedThoughtIndex(null);
-                      }
-                    }}
-                    placeholder="예: 나는 이렇게 하면 안 된다고 생각해..."
-                    className="min-h-[80px] resize-none"
-                  />
-
-                  {customThought.trim() && (
-                    <div className="flex items-center justify-between mt-2">
-                      <Button
-                        onClick={() =>
-                          addThoughtToFavorites(
-                            customThought.trim(),
-                            selectedEmotion,
-                            emotionIntensity
-                          )
-                        }
-                        variant="outline"
-                        size="sm"
-                        className="gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-                      >
-                        <Bookmark className="size-4" />
-                        감정 노트에 저장
-                      </Button>
-                    </div>
-                  )}
-
-                  {customThought.trim() && (
-                    <Button
-                      onClick={() => setSelectedThoughtIndex(999)}
-                      className={`w-full mt-3 ${
-                        selectedThoughtIndex === 999
-                          ? "bg-purple-600 hover:bg-purple-700"
-                          : "bg-indigo-600 hover:bg-indigo-700"
-                      }`}
-                    >
-                      {selectedThoughtIndex === 999 && (
-                        <Check className="size-4 mr-2" />
-                      )}
-                      이 생각 선택하기
-                    </Button>
-                  )}
-                </div>
-
-                <Button
-                  onClick={() => {
-                    if (selectedThoughtIndex === 999 && customThought.trim()) {
-                      const storedIntensity = isDeep ? emotionIntensity : null;
-                      const newPair: EmotionThoughtPair = {
-                        emotion: selectedEmotion,
-                        intensity: storedIntensity,
-                        thought: customThought.trim(),
-                      };
-                      onSetEmotionThoughtPairs([
-                        ...emotionThoughtPairs,
-                        newPair,
-                      ]);
-                      onNext();
-                    } else {
-                      handleComplete();
-                    }
-                  }}
-                  disabled={selectedThoughtIndex === null}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                  다음 단계로 이동
-                </Button>
-              </>
-            ) : null}
-          </div>
+          <ThoughtSelectionCard
+            selectedEmotion={selectedEmotion}
+            selectedEmotionData={selectedEmotionData}
+            loading={loading}
+            error={error}
+            generatedThoughts={generatedThoughts}
+            selectedThoughtIndex={selectedThoughtIndex}
+            customThought={customThought}
+            showFavorites={showFavorites}
+            savedDetails={savedDetails}
+            notesLoading={notesLoading}
+            currentPrefetchKey={currentPrefetchKey}
+            activeNoteTrigger={activeNoteTrigger}
+            showNoteScopeOnly={Boolean(activeNoteId && useServerNotes)}
+            onSelectThought={handleThoughtSelect}
+            onRegenerate={() => {
+              prefetchPromiseRef.current = null;
+              prefetchKeyRef.current = null;
+              void finalizeEmotionAndShowThoughts(selectedEmotion);
+            }}
+            onRetry={() => {
+              prefetchPromiseRef.current = null;
+              prefetchKeyRef.current = null;
+              startPrefetchThoughts();
+            }}
+            onAddFavorite={(thought) =>
+              addThoughtToFavorites(thought, selectedEmotion, emotionIntensity)
+            }
+            onLoadFavorites={() => void loadFavorites()}
+            onCloseFavorites={() => setShowFavorites(false)}
+            onUseFavorite={loadFromFavorites}
+            onRemoveFavorite={(id) => void removeFromFavorites(id)}
+            onCustomThoughtChange={handleCustomThoughtChange}
+            onCustomThoughtSelect={handleCustomThoughtSelect}
+            onSubmit={submitThoughtSelection}
+            canSubmit={selectedThoughtIndex !== null}
+          />
         )}
 
         {/* ================= Step 3 이상: 완료 ================= */}
