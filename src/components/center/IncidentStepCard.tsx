@@ -69,7 +69,6 @@ export function IncidentStepCard({
 
       <Button
         onClick={onNext}
-        disabled={!userInput.trim()}
         className="w-full bg-blue-600 hover:bg-blue-700"
       >
         다음 단계로 이동

@@ -46,6 +46,7 @@ interface CenterPanelProps {
 }
 
 type PrefetchKey = string;
+const MIN_TRIGGER_LENGTH = 10;
 
 function makePrefetchKey(emotion: string, input: string): PrefetchKey {
   return `${emotion}::${input.trim()}`;
@@ -244,6 +245,14 @@ export function CenterPanel({
     handleInputChange(example);
   };
 
+  const handleStepOneNext = () => {
+    if (userInput.trim().length < MIN_TRIGGER_LENGTH) {
+      toast.error("상황을 10자 이상 입력해주세요.");
+      return;
+    }
+    onNext();
+  };
+
   // ✅ 공통: 감정 바뀔 때 상태 리셋(프리페치 무효화 포함)
   const resetForNewEmotion = () => {
     setEmotionDetailConfirmed(false);
@@ -269,6 +278,10 @@ export function CenterPanel({
     const triggerText = userInput.trim();
     if (!triggerText) {
       toast.error("먼저 상황을 입력해주세요.");
+      return;
+    }
+    if (triggerText.length < MIN_TRIGGER_LENGTH) {
+      toast.error("상황을 10자 이상 입력해주세요.");
       return;
     }
 
@@ -831,7 +844,7 @@ export function CenterPanel({
           <IncidentStepCard
             userInput={userInput}
             onInputChange={handleInputChange}
-            onNext={onNext}
+            onNext={handleStepOneNext}
             randomExamples={randomExamples}
             onExampleClick={handleExampleClick}
             onRefreshExamples={refreshExamples}

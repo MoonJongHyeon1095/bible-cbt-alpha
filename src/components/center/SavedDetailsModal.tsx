@@ -51,8 +51,8 @@ export function SavedDetailsModal({
         if (!next) onClose();
       }}
     >
-      <DialogContent className="max-w-5xl w-[97vw] bg-white">
-        <DialogTitle className="flex items-center gap-2 text-lg pr-10">
+      <DialogContent className="bg-white w-[98vw] sm:w-[90vw] max-w-5xl sm:max-w-6xl min-w-[380px] sm:min-w-[540px]">
+        <DialogTitle className="flex items-center gap-2 text-lg pr-14">
           <Bookmark className="size-5 text-yellow-600" />
           감정 노트에서 자동사고 불러오기
         </DialogTitle>
