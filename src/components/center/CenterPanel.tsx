@@ -117,6 +117,7 @@ export function CenterPanel({
     []
   );
   const [savingDetail, setSavingDetail] = useState(false);
+  const [savingDetailId, setSavingDetailId] = useState<string | null>(null);
   const [notesLoading, setNotesLoading] = useState(false);
 
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
@@ -183,25 +184,39 @@ export function CenterPanel({
     timestamp: row.created_at ?? new Date().toISOString(),
   });
 
-  const mapServerDetail = (row: any): EmotionNoteDetailWithNote => ({
-    id: row.id?.toString() ?? `${Date.now()}`,
-    noteId: row.note_id?.toString() ?? "",
-    automaticThought: row.automatic_thought ?? row.automaticThought ?? "",
-    emotion: row.emotion ?? "",
-    alternative: row.alternative ?? "",
-    createdAt: row.created_at ?? new Date().toISOString(),
-    noteTitle:
-      row.noteTitle ??
-      row.note_title ??
-      row.emotion_notes?.title ??
-      "",
-    noteTrigger:
-      row.noteTrigger ??
-      row.note_trigger ??
-      row.emotion_notes?.trigger ??
-      row.emotion_notes?.trigger_text ??
-      "",
-  });
+  const mapServerDetail = (row: any): EmotionNoteDetailWithNote => {
+    const resolvedNoteId =
+      row.note_id ??
+      row.noteId ??
+      row.note?.id ??
+      row.emotion_note_id ??
+      row.emotion_notes?.id ??
+      row.emotion_note?.id ??
+      null;
+
+    return {
+      id: row.id?.toString() ?? `${Date.now()}`,
+      noteId: resolvedNoteId != null ? resolvedNoteId.toString() : "",
+      automaticThought: row.automatic_thought ?? row.automaticThought ?? "",
+      emotion: row.emotion ?? "",
+      alternative: row.alternative ?? "",
+      createdAt: row.created_at ?? new Date().toISOString(),
+      noteTitle:
+        row.noteTitle ??
+        row.note_title ??
+        row.emotion_notes?.title ??
+        row.note?.title ??
+        "",
+      noteTrigger:
+        row.noteTrigger ??
+        row.note_trigger ??
+        row.emotion_notes?.trigger ??
+        row.emotion_notes?.trigger_text ??
+        row.note?.trigger ??
+        row.note?.trigger_text ??
+        "",
+    };
+  };
 
   const fetchServerNotes = async ({ silent = false } = {}) => {
     if (!useServerNotes) return;
@@ -512,6 +527,8 @@ export function CenterPanel({
   // 자동사고 선택
   const handleThoughtSelect = (index: number) => {
     setSelectedThoughtIndex(index);
+    // 다른 생각을 고르면 직접 입력한 내용은 초기화
+    setCustomThought("");
   };
 
   const handleCustomThoughtChange = (value: string) => {
@@ -527,6 +544,30 @@ export function CenterPanel({
 
   const handleCustomThoughtSelect = () => {
     setSelectedThoughtIndex(999);
+  };
+
+  const submitCustomThought = (customText: string) => {
+    const trimmed = customText.trim();
+    if (!trimmed) return;
+    if (trimmed.length < 10) {
+      toast.error("직접 입력한 생각을 10자 이상 적어주세요.");
+      return;
+    }
+
+    const storedIntensity = isDeep ? emotionIntensity : null;
+    const newPair: EmotionThoughtPair = {
+      emotion: selectedEmotion,
+      intensity: storedIntensity,
+      thought: trimmed,
+    };
+    setSelectedThoughtIndex(999);
+    setCustomThought(trimmed);
+    onSetEmotionThoughtPairs([...emotionThoughtPairs, newPair]);
+
+    if (containerRef.current) containerRef.current.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    onNext();
   };
 
   const submitThoughtSelection = () => {
@@ -632,9 +673,11 @@ export function CenterPanel({
     const nowIso = now.toISOString();
     const title = activeNoteTitle ?? formatAutoTitle(now);
 
+    setSavingDetail(true);
+    setSavingDetailId(thought || "__custom__");
+
     if (useServerNotes) {
       try {
-        setSavingDetail(true);
         setNotesLoading(true);
         let noteId = activeNoteId;
         let noteTitle = activeNoteTitle ?? title;
@@ -691,53 +734,62 @@ export function CenterPanel({
         return;
       } finally {
         setNotesLoading(false);
+        setSavingDetailId(null);
         setSavingDetail(false);
       }
     }
 
-    const notes = getLocalNotes();
-    const existingNote =
-      notes.find((n) => n.id === activeNoteId) ||
-      notes.find((n) => n.trigger === triggerText);
+    try {
+      const notes = getLocalNotes();
+      const existingNote =
+        notes.find((n) => n.id === activeNoteId) ||
+        notes.find((n) => n.trigger === triggerText);
 
-    const noteToUse =
-      existingNote ??
-      ({
+      const noteToUse =
+        existingNote ??
+        ({
+          id: Date.now().toString(),
+          title,
+          trigger: triggerText,
+          createdAt: nowIso,
+          timestamp: nowIso,
+          behavior: "",
+          frequency: 1,
+          details: [],
+        } as EmotionNote);
+
+      const detail: EmotionNoteDetail = {
         id: Date.now().toString(),
-        title,
-        trigger: triggerText,
+        noteId: noteToUse.id,
+        automaticThought: thought,
+        emotion,
+        alternative: "",
         createdAt: nowIso,
-        timestamp: nowIso,
-        behavior: "",
-        frequency: 1,
-        details: [],
-      } as EmotionNote);
+      };
 
-    const detail: EmotionNoteDetail = {
-      id: Date.now().toString(),
-      noteId: noteToUse.id,
-      automaticThought: thought,
-      emotion,
-      alternative: "",
-      createdAt: nowIso,
-    };
+      const updatedNotes = (() => {
+        const without = notes.filter((n) => n.id !== noteToUse.id);
+        const mergedDetails = [detail, ...(noteToUse.details ?? [])];
+        const mergedNote = { ...noteToUse, details: mergedDetails };
+        return [mergedNote, ...without];
+      })();
 
-    const updatedNotes = (() => {
-      const without = notes.filter((n) => n.id !== noteToUse.id);
-      const mergedDetails = [detail, ...(noteToUse.details ?? [])];
-      const mergedNote = { ...noteToUse, details: mergedDetails };
-      return [mergedNote, ...without];
-    })();
-
-    saveLocalNotes(updatedNotes);
-    setSavedTriggerNotes(updatedNotes);
-    setActiveNote(noteToUse.id, noteToUse.title, noteToUse.trigger);
-    setSavedDetails((prev) => [
-      { ...detail, noteTitle: noteToUse.title, noteTrigger: noteToUse.trigger },
-      ...prev,
-    ]);
-    toast.success("자동사고가 감정 노트에 저장되었습니다.");
-    setSavingDetail(false);
+      saveLocalNotes(updatedNotes);
+      setSavedTriggerNotes(updatedNotes);
+      setActiveNote(noteToUse.id, noteToUse.title, noteToUse.trigger);
+      setSavedDetails((prev) => [
+        {
+          ...detail,
+          noteTitle: noteToUse.title,
+          noteTrigger: noteToUse.trigger,
+        },
+        ...prev,
+      ]);
+      toast.success("자동사고가 감정 노트에 저장되었습니다.");
+    } finally {
+      setSavingDetailId(null);
+      setSavingDetail(false);
+    }
   };
 
   // 저장된 노트에서 자동사고 불러오기
@@ -746,13 +798,27 @@ export function CenterPanel({
     const thought = detail.automaticThought;
     const storedIntensity = isDeep ? emotionIntensity : null;
 
+    const matchedNote =
+      savedTriggerNotes.find((n) => n.id === detail.noteId) ||
+      (detail.noteTrigger
+        ? savedTriggerNotes.find((n) => n.trigger === detail.noteTrigger)
+        : null);
+    const resolvedNoteId =
+      matchedNote?.id || detail.noteId || activeNoteIdRef.current;
+    const resolvedTitle =
+      matchedNote?.title || detail.noteTitle || activeNoteTitle;
+    const resolvedTrigger =
+      matchedNote?.trigger || detail.noteTrigger || activeNoteTrigger;
+
     if (detail.noteTrigger) {
       handleInputChange(detail.noteTrigger, true);
     }
     setSelectedEmotion(emotion);
     setEmotionSet(true);
     setShowSavedDetailsModal(false);
-    setActiveNote(detail.noteId, detail.noteTitle, detail.noteTrigger);
+    if (resolvedNoteId) {
+      setActiveNote(resolvedNoteId, resolvedTitle, resolvedTrigger);
+    }
 
     const newPair: EmotionThoughtPair = {
       emotion,
@@ -908,8 +974,11 @@ export function CenterPanel({
           onLoadFavorites={() => void loadFavorites()}
           onCustomThoughtChange={handleCustomThoughtChange}
           onCustomThoughtSelect={handleCustomThoughtSelect}
+          onSubmitCustom={submitCustomThought}
           onSubmit={submitThoughtSelection}
           canSubmit={selectedThoughtIndex !== null}
+          savingDetail={savingDetail}
+          savingDetailId={savingDetailId}
         />
         )}
 

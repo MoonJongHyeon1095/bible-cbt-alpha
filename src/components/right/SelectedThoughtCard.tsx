@@ -1,4 +1,4 @@
-import { Bookmark } from "lucide-react";
+import { Bookmark, Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface SelectedThoughtCardProps {
@@ -7,6 +7,7 @@ interface SelectedThoughtCardProps {
   onSave?: () => void;
   canSave?: boolean;
   isLoggedIn?: boolean;
+  saving?: boolean;
 }
 
 export function SelectedThoughtCard({
@@ -15,6 +16,7 @@ export function SelectedThoughtCard({
   onSave,
   canSave = false,
   isLoggedIn = false,
+  saving = false,
 }: SelectedThoughtCardProps) {
   return (
     <div
@@ -28,9 +30,14 @@ export function SelectedThoughtCard({
             variant="outline"
             onClick={onSave}
             className="gap-1 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+            disabled={saving}
           >
-            <Bookmark className="size-4" />
-            북마크 저장
+            {saving ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Bookmark className="size-4" />
+            )}
+            {saving ? "저장 중..." : "감정노트에 대안사고 저장"}
           </Button>
         ) : null}
       </div>

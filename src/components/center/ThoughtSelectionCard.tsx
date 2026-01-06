@@ -1,4 +1,5 @@
 import { Bookmark, Check, Loader2, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { LoadingInsightCard } from "./LoadingInsightCard";
@@ -21,8 +22,11 @@ interface ThoughtSelectionCardProps {
   onLoadFavorites: () => void;
   onCustomThoughtChange: (value: string) => void;
   onCustomThoughtSelect: () => void;
+  onSubmitCustom: (value: string) => void;
   onSubmit: () => void;
   canSubmit: boolean;
+  savingDetail: boolean;
+  savingDetailId: string | null;
 }
 
 export function ThoughtSelectionCard({
@@ -42,9 +46,33 @@ export function ThoughtSelectionCard({
   onLoadFavorites,
   onCustomThoughtChange,
   onCustomThoughtSelect,
+  onSubmitCustom,
   onSubmit,
   canSubmit,
+  savingDetail,
+  savingDetailId,
 }: ThoughtSelectionCardProps) {
+  const customThoughtTrimmed = customThought.trim();
+  const isCustomTooShort =
+    customThoughtTrimmed.length > 0 && customThoughtTrimmed.length < 10;
+
+  const handleSaveCustomThought = () => {
+    if (isCustomTooShort) {
+      toast.error("직접 입력한 생각을 10자 이상 적어주세요.");
+      return;
+    }
+    onAddFavorite(customThoughtTrimmed);
+  };
+
+  const handleSelectCustomThought = () => {
+    if (isCustomTooShort) {
+      toast.error("직접 입력한 생각을 10자 이상 적어주세요.");
+      return;
+    }
+    onCustomThoughtSelect();
+    onSubmitCustom(customThoughtTrimmed);
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -111,42 +139,50 @@ export function ThoughtSelectionCard({
       </div>
 
       <div className="space-y-3">
-        {generatedThoughts.map((thought, index) => (
-          <div key={index} className="flex items-start gap-2">
-            <button
-              onClick={() => onSelectThought(index)}
-              className={`flex-1 text-left p-4 rounded-lg border-2 transition-all relative ${
-                selectedThoughtIndex === index
-                  ? "border-blue-600 bg-blue-50"
-                  : "border-slate-200 hover:border-blue-300 bg-white"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <span
-                  className={`flex-shrink-0 w-6 h-6 rounded-full text-white flex items-center justify-center text-sm ${
-                    selectedThoughtIndex === index
-                      ? "bg-blue-600"
-                      : "bg-slate-400"
-                  }`}
-                >
-                  {index + 1}
-                </span>
-                <p className="text-slate-800 flex-1">{thought}</p>
-                {selectedThoughtIndex === index && (
-                  <Check className="size-5 text-blue-600 flex-shrink-0" />
-                )}
-              </div>
-            </button>
+        {generatedThoughts.map((thought, index) => {
+          const isSavingThis = savingDetail && savingDetailId === thought;
+          return (
+            <div key={index} className="flex items-start gap-2">
+              <button
+                onClick={() => onSelectThought(index)}
+                className={`flex-1 text-left p-4 rounded-lg border-2 transition-all relative ${
+                  selectedThoughtIndex === index
+                    ? "border-blue-600 bg-blue-50"
+                    : "border-slate-200 hover:border-blue-300 bg-white"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <span
+                    className={`flex-shrink-0 w-6 h-6 rounded-full text-white flex items-center justify-center text-sm ${
+                      selectedThoughtIndex === index
+                        ? "bg-blue-600"
+                        : "bg-slate-400"
+                    }`}
+                  >
+                    {index + 1}
+                  </span>
+                  <p className="text-slate-800 flex-1">{thought}</p>
+                  {selectedThoughtIndex === index && (
+                    <Check className="size-5 text-blue-600 flex-shrink-0" />
+                  )}
+                </div>
+              </button>
 
-            <button
-              onClick={() => onAddFavorite(thought)}
-              className="p-3 rounded-lg border-2 border-yellow-300 hover:border-yellow-500 hover:bg-yellow-50 transition-all text-yellow-600 hover:text-yellow-700 flex-shrink-0"
-              title="즐겨찾기에 추가"
-            >
-              <Bookmark className="size-4" />
-            </button>
-          </div>
-        ))}
+              <button
+                onClick={() => onAddFavorite(thought)}
+                disabled={savingDetail}
+                className="p-3 rounded-lg border-2 border-yellow-300 hover:border-yellow-500 hover:bg-yellow-50 transition-all text-yellow-600 hover:text-yellow-700 flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+                title="즐겨찾기에 추가"
+              >
+                {isSavingThis ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Bookmark className="size-4" />
+                )}
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       <div className="border-t-2 border-slate-300 pt-4">
@@ -167,23 +203,33 @@ export function ThoughtSelectionCard({
           className="min-h-[80px] resize-none"
         />
 
-        {customThought.trim() && (
+        {customThoughtTrimmed && (
           <div className="flex items-center justify-between mt-2">
             <Button
-              onClick={() => onAddFavorite(customThought.trim())}
+              onClick={handleSaveCustomThought}
               variant="outline"
               size="sm"
-              className="gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+              disabled={savingDetail}
+              className="gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <Bookmark className="size-4" />
-              감정 노트에 저장
+              {savingDetail && savingDetailId === customThoughtTrimmed ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  저장 중...
+                </>
+              ) : (
+                <>
+                  <Bookmark className="size-4" />
+                  감정 노트에 저장
+                </>
+              )}
             </Button>
           </div>
         )}
 
-        {customThought.trim() && (
+        {customThoughtTrimmed && (
           <Button
-            onClick={onCustomThoughtSelect}
+            onClick={handleSelectCustomThought}
             className={`w-full mt-3 ${
               selectedThoughtIndex === 999
                 ? "bg-purple-600 hover:bg-purple-700"
@@ -191,18 +237,20 @@ export function ThoughtSelectionCard({
             }`}
           >
             {selectedThoughtIndex === 999 && <Check className="size-4 mr-2" />}
-            이 생각 선택하기
+            직접 입력한 생각으로 진행합니다.
           </Button>
         )}
       </div>
 
-      <Button
-        onClick={onSubmit}
-        disabled={!canSubmit}
-        className="w-full bg-blue-600 hover:bg-blue-700"
-      >
-        다음 단계로 이동
-      </Button>
+      {!customThoughtTrimmed && (
+        <Button
+          onClick={onSubmit}
+          disabled={!canSubmit}
+          className="w-full bg-blue-600 hover:bg-blue-700"
+        >
+          다음 단계로 이동
+        </Button>
+      )}
     </>
   );
 }

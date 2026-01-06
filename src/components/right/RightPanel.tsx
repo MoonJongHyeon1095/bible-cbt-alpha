@@ -143,6 +143,7 @@ export function RightPanel({
         if (parsed?.noteId) setActiveNoteIdState(String(parsed.noteId));
       } catch {
         /* ignore */
+        console.log("활성 노트 ID 읽기 실패");
       }
     };
     read();
@@ -334,12 +335,13 @@ export function RightPanel({
   const primaryEmotion = emotionThoughtPairs[0]?.emotion ?? "";
 
   const handleSaveScripture = async () => {
-    if (!bibleVerse) return;
+    if (!bibleVerse || savingScripture) return;
 
     const now = new Date().toISOString();
 
     if (!user) {
       try {
+        setSavingScripture(true);
         const existingRaw = localStorage.getItem("scripture_notes");
         const existing = existingRaw ? JSON.parse(existingRaw) : [];
         const newNote = {
@@ -356,6 +358,8 @@ export function RightPanel({
       } catch (e) {
         console.error("말씀 노트 로컬 저장 실패:", e);
         toast.error("말씀을 저장하지 못했습니다.");
+      } finally {
+        setSavingScripture(false);
       }
       return;
     }
@@ -380,6 +384,7 @@ export function RightPanel({
 
   const handleSavePrayer = async () => {
     if (!bibleVerse) return;
+    if (savingPrayer) return;
 
     const now = new Date().toISOString();
     const title = primaryEmotion
@@ -389,6 +394,7 @@ export function RightPanel({
 
     if (!user) {
       try {
+        setSavingPrayer(true);
         const existingRaw = localStorage.getItem("prayer_notes");
         const existing = existingRaw ? JSON.parse(existingRaw) : [];
         const newNote = {
@@ -404,6 +410,8 @@ export function RightPanel({
       } catch (e) {
         console.error("기도 노트 로컬 저장 실패:", e);
         toast.error("기도 노트를 저장하지 못했습니다.");
+      } finally {
+        setSavingPrayer(false);
       }
       return;
     }
@@ -554,6 +562,7 @@ export function RightPanel({
               thought={selectedAlternativeThought}
               canSave={Boolean(activeNoteIdState)}
               isLoggedIn={Boolean(user)}
+              saving={savingAlternative}
               onSave={handleSaveAlternative}
             />
             <Button
@@ -621,6 +630,7 @@ export function RightPanel({
                   thought={selectedAlternativeThought}
                   canSave={Boolean(activeNoteIdState)}
                   isLoggedIn={Boolean(user)}
+                  saving={savingAlternative}
                   onSave={handleSaveAlternative}
                 />
                 <BibleVerseCard
@@ -647,6 +657,7 @@ export function RightPanel({
               thought={selectedAlternativeThought}
               canSave={Boolean(activeNoteIdState)}
               isLoggedIn={Boolean(user)}
+              saving={savingAlternative}
               onSave={handleSaveAlternative}
             />
             {showBibleOfferInFinalArea && (

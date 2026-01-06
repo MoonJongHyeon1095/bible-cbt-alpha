@@ -1,4 +1,4 @@
-import { BookmarkPlus, Sparkles } from "lucide-react";
+import { BookmarkPlus, Loader2, Sparkles } from "lucide-react";
 import { Button } from "../ui/button";
 import type { BibleVerseResult } from "./types";
 
@@ -34,8 +34,12 @@ export function BibleVerseCard({
                 className="gap-2 border-amber-300 text-amber-800 hover:bg-amber-100"
                 disabled={!canSave || savingScripture}
               >
-                <BookmarkPlus className="size-4" />
-                말씀 저장
+                {savingScripture ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <BookmarkPlus className="size-4" />
+                )}
+                {savingScripture ? "저장 중..." : "말씀 저장"}
               </Button>
             )}
             {onSavePrayer && (
@@ -46,8 +50,12 @@ export function BibleVerseCard({
                 className="gap-2 border-blue-200 text-blue-800 hover:bg-blue-50"
                 disabled={!canSave || savingPrayer}
               >
-                <Sparkles className="size-4" />
-                기도 저장
+                {savingPrayer ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Sparkles className="size-4" />
+                )}
+                {savingPrayer ? "저장 중..." : "기도 저장"}
               </Button>
             )}
           </div>
