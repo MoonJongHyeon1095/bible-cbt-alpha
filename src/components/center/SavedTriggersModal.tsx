@@ -1,4 +1,5 @@
 import { Bookmark, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,15 @@ export function SavedTriggersModal({
   triggers,
   onSelect,
 }: SavedTriggersModalProps) {
+  const pageSize = 5;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(triggers.length / pageSize));
+  const paged = triggers.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [triggers, open]);
+
   return (
     <Dialog
       open={open}
@@ -55,7 +65,7 @@ export function SavedTriggersModal({
               </p>
             ) : (
               <div className="space-y-2">
-                {triggers.map((note) => (
+                {paged.map((note) => (
                   <button
                     key={note.id}
                     onClick={() => onSelect(note)}
@@ -69,6 +79,27 @@ export function SavedTriggersModal({
                     </div>
                   </button>
                 ))}
+                {triggers.length > pageSize && (
+                  <div className="flex items-center justify-center gap-3 pt-2 text-xs text-slate-600">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      className="px-3 py-1 rounded border border-slate-200 hover:border-indigo-300 hover:text-indigo-700 disabled:opacity-50"
+                      disabled={page === 1}
+                    >
+                      이전
+                    </button>
+                    <span>
+                      {page} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      className="px-3 py-1 rounded border border-slate-200 hover:border-indigo-300 hover:text-indigo-700 disabled:opacity-50"
+                      disabled={page === totalPages}
+                    >
+                      다음
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
