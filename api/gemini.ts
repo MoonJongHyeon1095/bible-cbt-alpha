@@ -1,6 +1,6 @@
 // api/gemini.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { json, readJson, requireAppKey } from "./_utils";
+import { handleCors, json, readJson, requireAppKey } from "./_utils";
 
 function extractTextFromGeminiPayload(payload: any): string {
   const t = payload?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -8,6 +8,7 @@ function extractTextFromGeminiPayload(payload: any): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (handleCors(req, res)) return;
   if (req.method !== "POST") return json(res, 405, { error: "Method Not Allowed" });
   if (!requireAppKey(req)) return json(res, 401, { error: "Unauthorized" });
 

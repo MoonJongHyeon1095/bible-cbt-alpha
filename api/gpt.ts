@@ -1,6 +1,6 @@
 // api/gpt.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { json, readJson, requireAppKey } from "./_utils";
+import { handleCors, json, readJson, requireAppKey } from "./_utils";
 
 function extractTextFromResponsesPayload(payload: any): string | null {
   try {
@@ -18,6 +18,7 @@ function extractTextFromResponsesPayload(payload: any): string | null {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (handleCors(req, res)) return;
   if (req.method !== "POST") return json(res, 405, { error: "Method Not Allowed" });
   if (!requireAppKey(req)) return json(res, 401, { error: "Unauthorized" });
 

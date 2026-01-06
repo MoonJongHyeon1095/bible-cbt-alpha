@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { json, readJson, requireAppKey } from "./_utils";
+import { handleCors, json, readJson, requireAppKey } from "./_utils";
 import { getAuthUser, supabaseServiceClient } from "./_supabaseAuth";
 
 const DETAILS_TABLE = "emotion_note_details";
@@ -30,6 +30,7 @@ function getOwnerUserId(row: any) {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
+    if (handleCors(req, res)) return;
     if (!requireAppKey(req)) return json(res, 401, { error: "Unauthorized" });
     const user = await getAuthUser(req);
     if (!user) return json(res, 401, { error: "Unauthorized" });

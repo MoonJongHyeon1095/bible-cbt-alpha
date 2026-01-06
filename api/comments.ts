@@ -1,7 +1,7 @@
 // api/comments.ts
 import { createClient } from "@supabase/supabase-js";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { json, readJson, requireAppKey } from "./_utils";
+import { handleCors, json, readJson, requireAppKey } from "./_utils";
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -16,6 +16,7 @@ function supabaseClient() {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
+    if (handleCors(req, res)) return;
     if (!requireAppKey(req)) return json(res, 401, { error: "Unauthorized" });
 
     const supabase = supabaseClient();
