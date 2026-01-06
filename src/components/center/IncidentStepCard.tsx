@@ -1,4 +1,4 @@
-import { Bookmark, Shuffle } from "lucide-react";
+import { Bookmark, Loader2, Shuffle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 
@@ -16,6 +16,7 @@ interface IncidentStepCardProps {
   onRefreshExamples: () => void;
   onSaveTrigger: () => void;
   onOpenSavedTriggers: () => void;
+  savingTrigger?: boolean;
 }
 
 export function IncidentStepCard({
@@ -27,6 +28,7 @@ export function IncidentStepCard({
   onRefreshExamples,
   onSaveTrigger,
   onOpenSavedTriggers,
+  savingTrigger = false,
 }: IncidentStepCardProps) {
   return (
     <div className="space-y-4">
@@ -43,10 +45,15 @@ export function IncidentStepCard({
         <button
           onClick={onSaveTrigger}
           className="flex items-center gap-2 px-3 py-2 rounded-lg border border-indigo-500 bg-indigo-600 text-white hover:bg-indigo-700 hover:border-indigo-600 transition-all text-sm font-semibold shadow-sm"
+          disabled={savingTrigger}
           title="감정노트에 저장"
         >
-          <Bookmark className="size-4" />
-          감정 노트에 저장
+          {savingTrigger ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Bookmark className="size-4" />
+          )}
+          {savingTrigger ? "저장 중..." : "감정 노트에 저장"}
         </button>
 
         <button

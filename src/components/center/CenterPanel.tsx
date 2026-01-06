@@ -130,6 +130,7 @@ export function CenterPanel({
   // 로딩/에러
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savingTrigger, setSavingTrigger] = useState(false);
 
   const [activeNoteTrigger, setActiveNoteTrigger] = useState<string | null>(
     null
@@ -290,6 +291,8 @@ export function CenterPanel({
   };
 
   const handleSaveTriggerOnly = async () => {
+    if (savingTrigger) return;
+
     const triggerText = userInput.trim();
     if (!triggerText) {
       toast.error("먼저 상황을 입력해주세요.");
@@ -303,6 +306,9 @@ export function CenterPanel({
     const now = new Date();
     const title = activeNoteTitle ?? formatAutoTitle(now);
 
+    setSavingTrigger(true);
+    await new Promise((resolve) => setTimeout(resolve, 0)); // allow UI to show spinner before potential sync branches
+
     if (useServerNotes) {
       const existing = savedTriggerNotes.find(
         (note) => note.trigger === triggerText
@@ -310,6 +316,7 @@ export function CenterPanel({
       if (existing) {
         setActiveNote(existing.id, existing.title, existing.trigger);
         toast.success("이미 저장된 상황을 불러왔습니다.");
+        setSavingTrigger(false);
         return;
       }
 
@@ -331,6 +338,7 @@ export function CenterPanel({
         toast.error("상황을 저장하지 못했습니다.");
       } finally {
         setNotesLoading(false);
+        setSavingTrigger(false);
       }
       return;
     }
@@ -345,26 +353,31 @@ export function CenterPanel({
         existingLocal.trigger
       );
       toast.success("이미 저장된 상황을 불러왔습니다.");
+      setSavingTrigger(false);
       return;
     }
 
-    const nowIso = now.toISOString();
-    const newNote: EmotionNote = {
-      id: Date.now().toString(),
-      title,
-      trigger: triggerText,
-      createdAt: nowIso,
-      timestamp: nowIso,
-      frequency: 1,
-      behavior: "",
-      details: [],
-    };
-    const current = getLocalNotes();
-    const next = [newNote, ...current];
-    saveLocalNotes(next);
-    setSavedTriggerNotes(next);
-    setActiveNote(newNote.id, newNote.title, newNote.trigger);
-    toast.success("상황이 저장되었습니다.");
+    try {
+      const nowIso = now.toISOString();
+      const newNote: EmotionNote = {
+        id: Date.now().toString(),
+        title,
+        trigger: triggerText,
+        createdAt: nowIso,
+        timestamp: nowIso,
+        frequency: 1,
+        behavior: "",
+        details: [],
+      };
+      const current = getLocalNotes();
+      const next = [newNote, ...current];
+      saveLocalNotes(next);
+      setSavedTriggerNotes(next);
+      setActiveNote(newNote.id, newNote.title, newNote.trigger);
+      toast.success("상황이 저장되었습니다.");
+    } finally {
+      setSavingTrigger(false);
+    }
   };
 
   const openSavedTriggersModal = async () => {
@@ -916,6 +929,7 @@ export function CenterPanel({
             onRefreshExamples={refreshExamples}
             onSaveTrigger={handleSaveTriggerOnly}
             onOpenSavedTriggers={openSavedTriggersModal}
+            savingTrigger={savingTrigger}
           />
         )}
 
