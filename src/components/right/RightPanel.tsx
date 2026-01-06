@@ -24,6 +24,7 @@ import { BibleVerseCard } from "./BibleVerseCard";
 import { FinalIntensityCard } from "./FinalIntensityCard";
 import { SelectedThoughtCard } from "./SelectedThoughtCard";
 import type { AlternativeThought, BibleVerseResult } from "./types";
+import { createAlternativeAPI } from "./utils/api";
 
 interface RightPanelProps {
   step: number;
@@ -78,11 +79,15 @@ export function RightPanel({
   const [bibleError, setBibleError] = useState<string | null>(null);
   const [savingScripture, setSavingScripture] = useState(false);
   const [savingPrayer, setSavingPrayer] = useState(false);
+  const [savingAlternative, setSavingAlternative] = useState(false);
 
   const [finalIntensities, setFinalIntensities] = useState<
     Record<string, number>
   >({});
   const [showFinalIntensity, setShowFinalIntensity] = useState(false);
+  const [activeNoteIdState, setActiveNoteIdState] = useState<string | null>(
+    null
+  );
 
   const autoAdvancedRef = useRef(false);
   const bibleChoiceLockedRef = useRef(false);
@@ -126,6 +131,27 @@ export function RightPanel({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasSelectedThought, step]);
+
+  useEffect(() => {
+    const key = "cbt_active_note";
+    const read = () => {
+      try {
+        const raw = sessionStorage.getItem(key);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        console.log("읽은 활성 노트 ID:", parsed?.noteId);
+        if (parsed?.noteId) setActiveNoteIdState(String(parsed.noteId));
+      } catch {
+        /* ignore */
+      }
+    };
+    read();
+    const handler = () => read();
+    window.addEventListener("cbt-active-note-update", handler as any);
+    return () => {
+      window.removeEventListener("cbt-active-note-update", handler as any);
+    };
+  }, []);
 
   useEffect(() => {
     if (
@@ -206,6 +232,33 @@ export function RightPanel({
       );
     } finally {
       setBibleLoading(false);
+    }
+  };
+
+  const handleSaveAlternative = async () => {
+    if (!user || !activeNoteIdState || !selectedAlternativeThought.trim()) {
+      toast.error("저장된 상황이 있을 때만 저장할 수 있습니다.");
+      return;
+    }
+
+    if (savingAlternative) return;
+    const altText = selectedAlternativeThought.trim();
+
+    try {
+      setSavingAlternative(true);
+      const numericId = Number(activeNoteIdState);
+      const noteId = Number.isNaN(numericId) ? activeNoteIdState : numericId;
+      const { ok, payload } = await createAlternativeAPI({
+        noteId,
+        alternative: altText,
+      });
+      if (!ok) throw new Error(payload?.error || "저장에 실패했습니다.");
+      toast.success("대안사고가 저장되었습니다.");
+    } catch (e) {
+      console.error("대안사고 저장 실패:", e);
+      toast.error("대안사고를 저장하지 못했습니다.");
+    } finally {
+      setSavingAlternative(false);
     }
   };
 
@@ -497,7 +550,11 @@ export function RightPanel({
 
         {showStep4AfterPickPanel && (
           <div className="space-y-4">
-            <SelectedThoughtCard thought={selectedAlternativeThought} />
+            <SelectedThoughtCard
+              thought={selectedAlternativeThought}
+              canSave={Boolean(activeNoteIdState)}
+              onSave={handleSaveAlternative}
+            />
             <Button
               onClick={() => {
                 onSetSelectedAlternativeThought("");
@@ -559,7 +616,11 @@ export function RightPanel({
 
             {!bibleLoading && !bibleError && bibleVerse && (
               <>
-                <SelectedThoughtCard thought={selectedAlternativeThought} />
+                <SelectedThoughtCard
+                  thought={selectedAlternativeThought}
+                  canSave={Boolean(activeNoteIdState)}
+                  onSave={handleSaveAlternative}
+                />
                 <BibleVerseCard
                   bibleVerse={bibleVerse}
                   onSaveScripture={handleSaveScripture}
@@ -580,7 +641,11 @@ export function RightPanel({
 
         {showFinalArea && (
           <div className="space-y-4">
-            <SelectedThoughtCard thought={selectedAlternativeThought} />
+            <SelectedThoughtCard
+              thought={selectedAlternativeThought}
+              canSave={Boolean(activeNoteIdState)}
+              onSave={handleSaveAlternative}
+            />
             {showBibleOfferInFinalArea && (
               <BibleOfferCard
                 onAccept={handleWantsBible}

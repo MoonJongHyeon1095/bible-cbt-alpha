@@ -11,7 +11,9 @@ import { ALL_EXAMPLES } from "./constants/examples";
 import { EmotionDetailCard } from "./EmotionDetailCard";
 import { EmotionGrid } from "./EmotionGrid";
 import { FirstEmotionIntensityModal } from "./FirstEmotionIntensityModal";
+import { SavedDetailsModal } from "./SavedDetailsModal";
 import { IncidentStepCard } from "./IncidentStepCard";
+import { SavedTriggersModal } from "./SavedTriggersModal";
 import { ThoughtSelectionCard } from "./ThoughtSelectionCard";
 import type {
   EmotionData,
@@ -109,7 +111,7 @@ export function CenterPanel({
   const [customThought, setCustomThought] = useState<string>("");
 
   // 저장된 자동사고(감정 노트)
-  const [showFavorites, setShowFavorites] = useState(false);
+  const [showSavedDetailsModal, setShowSavedDetailsModal] = useState(false);
   const [savedDetails, setSavedDetails] = useState<EmotionNoteDetailWithNote[]>(
     []
   );
@@ -119,7 +121,7 @@ export function CenterPanel({
   const [activeNoteTitle, setActiveNoteTitle] = useState<string | null>(null);
   const activeNoteIdRef = useRef<string | null>(null);
 
-  const [showSavedTriggers, setShowSavedTriggers] = useState(false);
+  const [showSavedTriggersModal, setShowSavedTriggersModal] = useState(false);
   const [savedTriggerNotes, setSavedTriggerNotes] = useState<EmotionNote[]>([]);
 
   // 로딩/에러
@@ -139,6 +141,20 @@ export function CenterPanel({
     setActiveNoteTitle(title ?? null);
     setActiveNoteTrigger(trigger ?? null);
     activeNoteIdRef.current = noteId;
+
+    try {
+      if (noteId) {
+        sessionStorage.setItem(
+          "cbt_active_note",
+          JSON.stringify({ noteId, title, trigger })
+        );
+      } else {
+        sessionStorage.removeItem("cbt_active_note");
+      }
+      window.dispatchEvent(new Event("cbt-active-note-update"));
+    } catch {
+      /* ignore */
+    }
   };
 
   /**
@@ -239,7 +255,7 @@ export function CenterPanel({
     setGeneratedThoughts([]);
     setSelectedThoughtIndex(null);
     setCustomThought("");
-    setShowFavorites(false);
+    setShowSavedDetailsModal(false);
 
     // 상태 초기화(안전)
     setEmotionSet(false);
@@ -322,33 +338,32 @@ export function CenterPanel({
     toast.success("상황이 저장되었습니다.");
   };
 
-  const toggleSavedTriggers = async () => {
-    const next = !showSavedTriggers;
-    setShowSavedTriggers(next);
-    if (next) {
-      if (useServerNotes) {
-        await fetchServerNotes();
-      } else {
-        const locals = getLocalNotes();
-        setSavedTriggerNotes(locals);
-      }
+  const openSavedTriggersModal = async () => {
+    setShowSavedTriggersModal(true);
+    if (useServerNotes) {
+      await fetchServerNotes();
+    } else {
+      const locals = getLocalNotes();
+      setSavedTriggerNotes(locals);
     }
   };
+
+  const closeSavedTriggersModal = () => setShowSavedTriggersModal(false);
 
   const handleTriggerPick = (note: EmotionNote) => {
     handleInputChange(note.trigger, true);
     setActiveNote(note.id, note.title, note.trigger);
     resetForNewEmotion();
-    setShowSavedTriggers(false);
+    setShowSavedTriggersModal(false);
     onNext();
   };
 
   useEffect(() => {
-    if (showFavorites) {
+    if (showSavedDetailsModal) {
       void fetchSavedDetails(activeNoteIdRef.current ?? undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showFavorites, useServerNotes]);
+  }, [showSavedDetailsModal, useServerNotes]);
 
   /**
    * ✅ 프리페치 시작 (deep에서 강도 모달 열리기 전에 미리 생성)
@@ -376,7 +391,7 @@ export function CenterPanel({
         setGeneratedThoughts(thoughts);
         setSelectedThoughtIndex(null);
         setCustomThought("");
-        setShowFavorites(false);
+    setShowSavedDetailsModal(false);
       }
     })()
       .catch((err) => {
@@ -425,7 +440,7 @@ export function CenterPanel({
       setGeneratedThoughts(thoughts);
       setSelectedThoughtIndex(null);
       setCustomThought("");
-      setShowFavorites(false);
+    setShowSavedDetailsModal(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
     } finally {
@@ -540,7 +555,7 @@ export function CenterPanel({
 
   // 저장된 자동사고 불러오기
   const loadFavorites = async () => {
-    setShowFavorites(true);
+    setShowSavedDetailsModal(true);
     await fetchSavedDetails(activeNoteIdRef.current ?? undefined);
   };
 
@@ -718,7 +733,7 @@ export function CenterPanel({
     }
     setSelectedEmotion(emotion);
     setEmotionSet(true);
-    setShowFavorites(false);
+    setShowSavedDetailsModal(false);
     setActiveNote(detail.noteId, detail.noteTitle, detail.noteTrigger);
 
     const newPair: EmotionThoughtPair = {
@@ -787,6 +802,24 @@ export function CenterPanel({
         isLoading={loading}
       />
 
+      <SavedTriggersModal
+        open={showSavedTriggersModal}
+        onClose={closeSavedTriggersModal}
+        loading={notesLoading}
+        triggers={savedTriggerNotes}
+        onSelect={handleTriggerPick}
+      />
+      <SavedDetailsModal
+        open={showSavedDetailsModal}
+        onClose={() => setShowSavedDetailsModal(false)}
+        loading={notesLoading}
+        details={savedDetails}
+        showNoteScopeOnly={Boolean(activeNoteId && useServerNotes)}
+        activeNoteTrigger={activeNoteTrigger}
+        onSelect={loadFromFavorites}
+        onDelete={(id) => void removeFromFavorites(id)}
+      />
+
       <div className="flex-1 space-y-6 overflow-y-auto" ref={containerRef}>
         {/* ================= Step 1: 사건 기록 (지금 UI 반영) ================= */}
         {step === 1 && (
@@ -798,11 +831,7 @@ export function CenterPanel({
             onExampleClick={handleExampleClick}
             onRefreshExamples={refreshExamples}
             onSaveTrigger={handleSaveTriggerOnly}
-            onToggleSavedTriggers={toggleSavedTriggers}
-            showSavedTriggers={showSavedTriggers}
-            savedTriggers={savedTriggerNotes}
-            onPickTrigger={handleTriggerPick}
-            notesLoading={notesLoading}
+            onOpenSavedTriggers={openSavedTriggersModal}
           />
         )}
 
@@ -834,43 +863,36 @@ export function CenterPanel({
 
         {/* ================= Step 2: AI 자동사고 생성 → 1개 선택 ================= */}
         {step === 2 && emotionSet && (
-          <ThoughtSelectionCard
-            selectedEmotion={selectedEmotion}
-            selectedEmotionData={selectedEmotionData}
-            loading={loading}
-            error={error}
-            generatedThoughts={generatedThoughts}
-            selectedThoughtIndex={selectedThoughtIndex}
-            customThought={customThought}
-            showFavorites={showFavorites}
-            savedDetails={savedDetails}
-            notesLoading={notesLoading}
-            currentPrefetchKey={currentPrefetchKey}
-            activeNoteTrigger={activeNoteTrigger}
-            showNoteScopeOnly={Boolean(activeNoteId && useServerNotes)}
-            onSelectThought={handleThoughtSelect}
-            onRegenerate={() => {
-              prefetchPromiseRef.current = null;
-              prefetchKeyRef.current = null;
-              void finalizeEmotionAndShowThoughts(selectedEmotion);
+        <ThoughtSelectionCard
+          selectedEmotion={selectedEmotion}
+          selectedEmotionData={selectedEmotionData}
+          loading={loading}
+          error={error}
+          generatedThoughts={generatedThoughts}
+          selectedThoughtIndex={selectedThoughtIndex}
+          customThought={customThought}
+          currentPrefetchKey={currentPrefetchKey}
+          activeNoteTrigger={activeNoteTrigger}
+          onSelectThought={handleThoughtSelect}
+          onRegenerate={() => {
+            prefetchPromiseRef.current = null;
+            prefetchKeyRef.current = null;
+            void finalizeEmotionAndShowThoughts(selectedEmotion);
             }}
             onRetry={() => {
               prefetchPromiseRef.current = null;
               prefetchKeyRef.current = null;
               startPrefetchThoughts();
             }}
-            onAddFavorite={(thought) =>
-              addThoughtToFavorites(thought, selectedEmotion, emotionIntensity)
-            }
-            onLoadFavorites={() => void loadFavorites()}
-            onCloseFavorites={() => setShowFavorites(false)}
-            onUseFavorite={loadFromFavorites}
-            onRemoveFavorite={(id) => void removeFromFavorites(id)}
-            onCustomThoughtChange={handleCustomThoughtChange}
-            onCustomThoughtSelect={handleCustomThoughtSelect}
-            onSubmit={submitThoughtSelection}
-            canSubmit={selectedThoughtIndex !== null}
-          />
+          onAddFavorite={(thought) =>
+            addThoughtToFavorites(thought, selectedEmotion, emotionIntensity)
+          }
+          onLoadFavorites={() => void loadFavorites()}
+          onCustomThoughtChange={handleCustomThoughtChange}
+          onCustomThoughtSelect={handleCustomThoughtSelect}
+          onSubmit={submitThoughtSelection}
+          canSubmit={selectedThoughtIndex !== null}
+        />
         )}
 
         {/* ================= Step 3 이상: 완료 ================= */}

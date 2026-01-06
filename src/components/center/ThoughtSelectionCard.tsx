@@ -1,9 +1,4 @@
-import {
-  Bookmark,
-  Check,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
+import { Bookmark, Check, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { LoadingInsightCard } from "./LoadingInsightCard";
@@ -17,20 +12,13 @@ interface ThoughtSelectionCardProps {
   generatedThoughts: string[];
   selectedThoughtIndex: number | null;
   customThought: string;
-  showFavorites: boolean;
-  savedDetails: EmotionNoteDetailWithNote[];
-  notesLoading: boolean;
   currentPrefetchKey: string | null;
   activeNoteTrigger?: string | null;
-  showNoteScopeOnly?: boolean;
   onSelectThought: (index: number) => void;
   onRegenerate: () => void;
   onRetry: () => void;
   onAddFavorite: (thought: string) => void;
   onLoadFavorites: () => void;
-  onCloseFavorites: () => void;
-  onUseFavorite: (note: EmotionNoteDetailWithNote) => void;
-  onRemoveFavorite: (id: string) => void;
   onCustomThoughtChange: (value: string) => void;
   onCustomThoughtSelect: () => void;
   onSubmit: () => void;
@@ -45,20 +33,13 @@ export function ThoughtSelectionCard({
   generatedThoughts,
   selectedThoughtIndex,
   customThought,
-  showFavorites,
-  savedDetails,
-  notesLoading,
   currentPrefetchKey,
   activeNoteTrigger,
-  showNoteScopeOnly,
   onSelectThought,
   onRegenerate,
   onRetry,
   onAddFavorite,
   onLoadFavorites,
-  onCloseFavorites,
-  onUseFavorite,
-  onRemoveFavorite,
   onCustomThoughtChange,
   onCustomThoughtSelect,
   onSubmit,
@@ -119,95 +100,14 @@ export function ThoughtSelectionCard({
         </Button>
       </div>
 
-      {!showFavorites ? (
-        <Button
-          onClick={onLoadFavorites}
-          variant="outline"
-          className="w-full gap-2 border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-        >
-          <Bookmark className="size-4" />
-          저장한 자동사고 불러오기
-        </Button>
-      ) : (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between bg-yellow-50 p-3 rounded-lg border border-yellow-300">
-            <div>
-              <h3 className="text-yellow-900 font-semibold">
-                저장한 자동사고 목록
-              </h3>
-              {showNoteScopeOnly && activeNoteTrigger ? (
-                <p className="text-xs text-slate-600 mt-1">
-                  트리거: {activeNoteTrigger}
-                </p>
-              ) : null}
-            </div>
-            <Button
-              onClick={onCloseFavorites}
-              variant="ghost"
-              size="sm"
-              className="text-yellow-700"
-            >
-              닫기
-            </Button>
-          </div>
-
-          {notesLoading ? (
-            <div className="flex items-center gap-2 text-slate-600 px-3 py-4">
-              <Loader2 className="size-4 animate-spin text-yellow-600" />
-              불러오는 중입니다...
-            </div>
-          ) : savedDetails.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
-              <Bookmark className="size-12 mx-auto mb-2 opacity-30" />
-              <p>저장된 자동사고가 없습니다.</p>
-              <p className="text-sm mt-1">마음에 드는 자동사고를 저장해보세요.</p>
-            </div>
-          ) : (
-            <div className="space-y-2 max-h-[300px] overflow-y-auto">
-              {savedDetails.map((fav) => (
-                <div
-                  key={fav.id}
-                  className="bg-white p-3 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 transition-all"
-                >
-                  <div className="flex items-start gap-2 mb-2">
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                      {fav.emotion || "감정"}
-                    </span>
-                    <span className="text-xs text-slate-400">
-                      {fav.noteTitle || "저장된 상황"}
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-slate-700 text-sm">{fav.automaticThought}</p>
-                    <p className="text-xs text-slate-500 line-clamp-2">
-                      {fav.noteTrigger}
-                    </p>
-                    <span className="block h-2" />
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => onUseFavorite(fav)}
-                      size="sm"
-                      className="flex-1 bg-blue-600 hover:bg-blue-700"
-                    >
-                      이 생각으로 진행하기
-                    </Button>
-                    <Button
-                      onClick={() => onRemoveFavorite(fav.id)}
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:bg-red-50"
-                    >
-                      삭제
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      <Button
+        onClick={onLoadFavorites}
+        variant="outline"
+        className="w-full gap-2 border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+      >
+        <Bookmark className="size-4" />
+        저장한 자동사고 불러오기
+      </Button>
 
       <div className="space-y-3">
         {generatedThoughts.map((thought, index) => (

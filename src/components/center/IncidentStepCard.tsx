@@ -1,4 +1,4 @@
-import { Bookmark, Loader2, Shuffle } from "lucide-react";
+import { Bookmark, Shuffle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import type { EmotionNote } from "./types";
@@ -16,11 +16,7 @@ interface IncidentStepCardProps {
   onExampleClick: (text: string) => void;
   onRefreshExamples: () => void;
   onSaveTrigger: () => void;
-  onToggleSavedTriggers: () => void;
-  showSavedTriggers: boolean;
-  savedTriggers: EmotionNote[];
-  onPickTrigger: (note: EmotionNote) => void;
-  notesLoading: boolean;
+  onOpenSavedTriggers: () => void;
 }
 
 export function IncidentStepCard({
@@ -31,11 +27,7 @@ export function IncidentStepCard({
   onExampleClick,
   onRefreshExamples,
   onSaveTrigger,
-  onToggleSavedTriggers,
-  showSavedTriggers,
-  savedTriggers,
-  onPickTrigger,
-  notesLoading,
+  onOpenSavedTriggers,
 }: IncidentStepCardProps) {
   return (
     <div className="space-y-4">
@@ -59,46 +51,14 @@ export function IncidentStepCard({
         </button>
 
         <button
-          onClick={onToggleSavedTriggers}
+          onClick={onOpenSavedTriggers}
           className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 hover:border-slate-400 hover:bg-slate-50 transition-all text-slate-700 text-sm"
           title="저장된 상황 불러오기"
         >
           저장된 상황 불러오기
         </button>
       </div>
-
-      {showSavedTriggers && (
-        <div className="border border-slate-200 rounded-lg p-3 space-y-2 bg-white">
-          <p className="text-sm text-slate-700 font-semibold">
-            저장된 상황 목록
-          </p>
-          {notesLoading ? (
-            <div className="flex items-center gap-2 text-slate-500 text-sm">
-              <Loader2 className="size-4 animate-spin" />
-              불러오는 중입니다...
-            </div>
-          ) : savedTriggers.length === 0 ? (
-            <p className="text-sm text-slate-500">아직 저장된 상황이 없습니다.</p>
-          ) : (
-            <div className="space-y-1 max-h-40 overflow-y-auto">
-              {savedTriggers.map((note) => (
-                <button
-                  key={note.id}
-                  onClick={() => onPickTrigger(note)}
-                  className="w-full text-left px-3 py-2 rounded-md border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-sm"
-                >
-                  <div className="text-slate-800 font-semibold">
-                    {note.title || "저장된 상황"}
-                  </div>
-                  <div className="text-slate-600 text-xs line-clamp-2">
-                    {note.trigger}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {/* 저장된 상황 불러오기는 모달로 분리 */}
 
       <Textarea
         value={userInput}
