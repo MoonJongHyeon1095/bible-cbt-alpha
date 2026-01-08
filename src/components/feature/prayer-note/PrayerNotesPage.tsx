@@ -1,6 +1,16 @@
 // src/components/prayer-note/PrayerNotesPage.tsx
 import type { User } from "@supabase/supabase-js";
-import { BookOpen, Edit2, Plus, Save, Trash2, X } from "lucide-react";
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  Edit2,
+  NotebookPen,
+  Plus,
+  Save,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "../../../lib/supabase/client";
@@ -16,6 +26,13 @@ interface PrayerNote {
   content: string;
   timestamp: string;
   tags: string[];
+  responses: PrayerNoteResponse[];
+}
+
+interface PrayerNoteResponse {
+  id: string;
+  content: string;
+  timestamp: string;
 }
 
 interface PrayerNotesPageProps {
@@ -30,6 +47,19 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
   const [content, setContent] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [responseDrafts, setResponseDrafts] = useState<
+    Record<string, string>
+  >({});
+  const [editingResponseNoteId, setEditingResponseNoteId] = useState<
+    string | null
+  >(null);
+  const [editingResponseId, setEditingResponseId] = useState<string | null>(
+    null
+  );
+  const [editingResponseContent, setEditingResponseContent] = useState("");
+  const [expandedResponses, setExpandedResponses] = useState<
+    Record<string, boolean>
+  >({});
   const titleRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -50,14 +80,56 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
     );
   };
 
+  const formatResponseTitle = (content: string) => {
+    const trimmed = content.trim();
+    if (trimmed.length <= 20) return trimmed;
+    return `${trimmed.slice(0, 20)}…`;
+  };
+
+  const normalizeLocalNotes = (rawNotes: unknown[]): PrayerNote[] => {
+    return rawNotes.map((note) => {
+      const rawNote = note as {
+        id?: string;
+        title?: string;
+        content?: string;
+        tags?: string[];
+        timestamp?: string;
+        responses?: PrayerNoteResponse[];
+      };
+      const safeTimestamp =
+        typeof rawNote.timestamp === "string" && rawNote.timestamp
+          ? rawNote.timestamp
+          : new Date().toISOString();
+      const responses = Array.isArray(rawNote.responses)
+        ? rawNote.responses.map((response) => ({
+            id: String(response.id ?? Date.now().toString()),
+            content: response.content ?? "",
+            timestamp: response.timestamp ?? safeTimestamp,
+          }))
+        : [];
+
+      return {
+        id: rawNote.id ? String(rawNote.id) : Date.now().toString(),
+        title: rawNote.title ?? "",
+        content: rawNote.content ?? "",
+        tags: Array.isArray(rawNote.tags) ? rawNote.tags : [],
+        timestamp: safeTimestamp,
+        responses,
+      };
+    });
+  };
+
   const loadNotes = async () => {
+    setLoading(true);
+
     // 로그인 사용자: Supabase에서 로드
     if (user) {
       try {
-        setLoading(true);
         const { data, error } = await supabase
           .from("prayer_notes")
-          .select("id, title, content, tags, created_at")
+          .select(
+            "id, title, content, tags, created_at, responses:prayer_note_responses ( id, content, created_at )"
+          )
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
@@ -70,6 +142,18 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
             content: row.content ?? "",
             tags: Array.isArray(row.tags) ? row.tags : [],
             timestamp: row.created_at ?? "",
+            responses:
+              row.responses
+                ?.map((response) => ({
+                  id: String(response.id),
+                  content: response.content ?? "",
+                  timestamp: response.created_at ?? "",
+                }))
+                .sort(
+                  (a, b) =>
+                    new Date(b.timestamp).getTime() -
+                    new Date(a.timestamp).getTime()
+                ) ?? [],
           })) ?? [];
 
         setNotes(mapped);
@@ -83,13 +167,21 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
     }
 
     // 비로그인: 로컬 저장소
-    const saved = localStorage.getItem("prayer_notes");
-    if (saved) {
-      try {
-        setNotes(JSON.parse(saved));
-      } catch (e) {
-        console.error("기도 노트 로드 실패:", e);
+    try {
+      const saved = localStorage.getItem("prayer_notes");
+      const parsed = saved ? JSON.parse(saved) : [];
+      const normalized = Array.isArray(parsed)
+        ? normalizeLocalNotes(parsed)
+        : [];
+      setNotes(normalized);
+      if (saved) {
+        localStorage.setItem("prayer_notes", JSON.stringify(normalized));
       }
+    } catch (e) {
+      console.error("기도 노트 로드 실패:", e);
+      setNotes([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -127,6 +219,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
             content: data.content ?? "",
             tags: Array.isArray(data.tags) ? data.tags : [],
             timestamp: data.created_at ?? new Date().toISOString(),
+            responses: [],
           };
           setNotes((prev) => [newNote, ...prev]);
         }
@@ -148,6 +241,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
       content: content.trim(),
       timestamp: new Date().toISOString(),
       tags,
+      responses: [],
     };
 
     const updated = [newNote, ...notes];
@@ -187,6 +281,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
                   content: data.content ?? "",
                   tags: Array.isArray(data.tags) ? data.tags : [],
                   timestamp: data.created_at ?? note.timestamp,
+                  responses: note.responses ?? [],
                 }
               : note
           );
@@ -219,8 +314,6 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("이 기도 노트를 삭제하시겠습니까?")) return;
-
     if (user) {
       try {
         setLoading(true);
@@ -245,6 +338,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
     } else {
       saveNotesLocally(updated);
     }
+    toast.success("기도 노트를 삭제했습니다.");
   };
 
   const handleEdit = (note: PrayerNote) => {
@@ -261,6 +355,189 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
     setTitle("");
     setContent("");
     setTags([]);
+  };
+
+  const resetResponseEdit = () => {
+    setEditingResponseNoteId(null);
+    setEditingResponseId(null);
+    setEditingResponseContent("");
+  };
+
+  const handleCreateResponse = async (noteId: string) => {
+    const contentValue = (responseDrafts[noteId] ?? "").trim();
+    if (!contentValue) {
+      toast.error("응답을 입력해주세요.");
+      return;
+    }
+
+    if (user) {
+      try {
+        const noteIdValue = Number(noteId);
+        if (!Number.isFinite(noteIdValue)) {
+          toast.error("응답을 저장할 수 없습니다.");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("prayer_note_responses")
+          .insert({
+            user_id: user.id,
+            prayer_note_id: noteIdValue,
+            content: contentValue,
+          })
+          .select("id, content, created_at")
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const newResponse: PrayerNoteResponse = {
+            id: String(data.id),
+            content: data.content ?? "",
+            timestamp: data.created_at ?? new Date().toISOString(),
+          };
+          setNotes((prev) =>
+            prev.map((note) =>
+              note.id === noteId
+                ? {
+                    ...note,
+                    responses: [newResponse, ...note.responses],
+                  }
+                : note
+            )
+          );
+        }
+      } catch (e) {
+        console.error("응답 저장 실패:", e);
+        toast.error("응답을 저장하지 못했습니다.");
+        return;
+      }
+    } else {
+      const newResponse: PrayerNoteResponse = {
+        id: Date.now().toString(),
+        content: contentValue,
+        timestamp: new Date().toISOString(),
+      };
+      const updated = notes.map((note) =>
+        note.id === noteId
+          ? {
+              ...note,
+              responses: [newResponse, ...note.responses],
+            }
+          : note
+      );
+      saveNotesLocally(updated);
+    }
+
+    setResponseDrafts((prev) => ({ ...prev, [noteId]: "" }));
+  };
+
+  const handleUpdateResponse = async (
+    noteId: string,
+    responseId: string
+  ) => {
+    const contentValue = editingResponseContent.trim();
+    if (!contentValue) {
+      toast.error("응답을 입력해주세요.");
+      return;
+    }
+
+    if (user) {
+      try {
+        const { data, error } = await supabase
+          .from("prayer_note_responses")
+          .update({ content: contentValue })
+          .eq("id", responseId)
+          .eq("user_id", user.id)
+          .select("id, content, created_at")
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setNotes((prev) =>
+            prev.map((note) =>
+              note.id === noteId
+                ? {
+                    ...note,
+                    responses: note.responses.map((response) =>
+                      response.id === responseId
+                        ? {
+                            ...response,
+                            content: data.content ?? "",
+                            timestamp:
+                              data.created_at ?? response.timestamp,
+                          }
+                        : response
+                    ),
+                  }
+                : note
+            )
+          );
+        }
+      } catch (e) {
+        console.error("응답 수정 실패:", e);
+        toast.error("응답을 수정하지 못했습니다.");
+        return;
+      }
+    } else {
+      const updated = notes.map((note) =>
+        note.id === noteId
+          ? {
+              ...note,
+              responses: note.responses.map((response) =>
+                response.id === responseId
+                  ? { ...response, content: contentValue }
+                  : response
+              ),
+            }
+          : note
+      );
+      saveNotesLocally(updated);
+    }
+
+    resetResponseEdit();
+  };
+
+  const handleDeleteResponse = async (
+    noteId: string,
+    responseId: string
+  ) => {
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from("prayer_note_responses")
+          .delete()
+          .eq("id", responseId)
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+      } catch (e) {
+        console.error("응답 삭제 실패:", e);
+        toast.error("응답을 삭제하지 못했습니다.");
+        return;
+      }
+    }
+
+    const updated = notes.map((note) =>
+      note.id === noteId
+        ? {
+            ...note,
+            responses: note.responses.filter(
+              (response) => response.id !== responseId
+            ),
+          }
+        : note
+    );
+
+    if (user) {
+      setNotes(updated);
+    } else {
+      saveNotesLocally(updated);
+    }
+
+    if (editingResponseId === responseId) {
+      resetResponseEdit();
+    }
+    toast.success("응답을 삭제했습니다.");
   };
 
   const formatDate = (timestamp: string) => {
@@ -384,56 +661,211 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
           <p className="text-slate-400">첫 번째 기도 노트를 작성해보세요.</p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {notes.map((note) => (
-            <Card
-              key={note.id}
-              className="p-5 hover:shadow-lg transition-shadow bg-white border-purple-100"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-lg text-slate-900 flex-1 mr-2">
-                  {note.title}
-                </h3>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => handleEdit(note)}
-                    className="text-purple-600 hover:text-purple-700 p-1"
-                    title="수정"
-                  >
-                    <Edit2 className="size-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(note.id)}
-                    className="text-red-600 hover:text-red-700 p-1"
-                    title="삭제"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
-              </div>
+        <div className="space-y-4">
+          {notes.map((note) => {
+            const responses = [...note.responses].sort(
+              (a, b) =>
+                new Date(b.timestamp).getTime() -
+                new Date(a.timestamp).getTime()
+            );
 
-              <p className="text-slate-600 text-sm mb-3 line-clamp-4 whitespace-pre-wrap">
-                {note.content}
-              </p>
-
-              {note.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {note.tags.map((tag, idx) => (
-                    <span
-                      key={idx}
-                      className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full"
+            return (
+              <Card
+                key={note.id}
+                className="p-5 hover:shadow-lg transition-shadow bg-white border-purple-100"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-lg text-slate-900 flex-1 mr-2">
+                    {note.title}
+                  </h3>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleEdit(note)}
+                      className="text-purple-600 hover:text-purple-700 p-1"
+                      title="수정"
                     >
-                      #{tag}
-                    </span>
-                  ))}
+                      <Edit2 className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(note.id)}
+                      className="text-red-600 hover:text-red-700 p-1"
+                      title="삭제"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </div>
-              )}
 
-              <p className="text-xs text-slate-400">
-                {formatDate(note.timestamp)}
-              </p>
-            </Card>
-          ))}
+                <p className="text-slate-600 text-sm mb-3 whitespace-pre-wrap">
+                  {note.content}
+                </p>
+
+                {note.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {note.tags.map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div className="bg-slate-50 p-4 rounded-lg mb-3">
+                  <p className="text-sm text-slate-600 mb-3 flex items-center gap-2">
+                    <NotebookPen className="size-4 text-slate-500" />
+                    응답 기록
+                  </p>
+                  {responses.length === 0 ? (
+                    <p className="text-sm text-slate-400">
+                      아직 응답이 없습니다.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {responses.map((response) => {
+                        const isEditing =
+                          editingResponseNoteId === note.id &&
+                          editingResponseId === response.id;
+                        const responseKey = `${note.id}-${response.id}`;
+                        const isExpanded = Boolean(
+                          expandedResponses[responseKey]
+                        );
+
+                        return (
+                          <div
+                            key={response.id}
+                            className="rounded-lg border border-slate-200 bg-white p-3"
+                          >
+                            {isEditing ? (
+                              <div className="space-y-2">
+                                <Textarea
+                                  value={editingResponseContent}
+                                  onChange={(e) =>
+                                    setEditingResponseContent(
+                                      e.target.value
+                                    )
+                                  }
+                                  className="min-h-[120px] border-slate-200"
+                                />
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() =>
+                                      handleUpdateResponse(
+                                        note.id,
+                                        response.id
+                                      )
+                                    }
+                                    className="bg-purple-600 hover:bg-purple-700"
+                                  >
+                                    <Save className="size-4 mr-2" />
+                                    수정 완료
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    onClick={resetResponseEdit}
+                                  >
+                                    <X className="size-4 mr-2" />
+                                    취소
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div>
+                                <div className="flex items-start justify-between gap-3">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setExpandedResponses((prev) => ({
+                                        ...prev,
+                                        [responseKey]: !isExpanded,
+                                      }))
+                                    }
+                                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                                    title={isExpanded ? "응답 접기" : "응답 펼치기"}
+                                  >
+                                    {isExpanded ? (
+                                      <ChevronDown className="size-4 text-slate-400" />
+                                    ) : (
+                                      <ChevronRight className="size-4 text-slate-400" />
+                                    )}
+                                    <span className="min-w-0 flex-1 text-sm text-slate-500">
+                                      {formatResponseTitle(response.content)}
+                                    </span>
+                                  </button>
+                                  <div className="flex shrink-0 items-center gap-1">
+                                    <button
+                                      onClick={() => {
+                                        setEditingResponseNoteId(note.id);
+                                        setEditingResponseId(response.id);
+                                        setEditingResponseContent(
+                                          response.content
+                                        );
+                                      }}
+                                      className="text-purple-600 hover:text-purple-700 p-1"
+                                      title="응답 수정"
+                                    >
+                                      <Edit2 className="size-4" />
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteResponse(
+                                          note.id,
+                                          response.id
+                                        )
+                                      }
+                                      className="text-red-600 hover:text-red-700 p-1"
+                                      title="응답 삭제"
+                                    >
+                                      <Trash2 className="size-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                                {isExpanded && (
+                                  <p className="mt-3 text-slate-700 whitespace-pre-wrap break-words">
+                                    {response.content}
+                                  </p>
+                                )}
+                                <p className="text-xs text-slate-400 mt-2">
+                                  {formatDate(response.timestamp)}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <div className="mt-4 space-y-2">
+                    <Textarea
+                      value={responseDrafts[note.id] ?? ""}
+                      onChange={(e) =>
+                        setResponseDrafts((prev) => ({
+                          ...prev,
+                          [note.id]: e.target.value,
+                        }))
+                      }
+                      placeholder="응답을 기록하세요..."
+                      className="min-h-[120px] border-slate-200"
+                    />
+                    <Button
+                      onClick={() => handleCreateResponse(note.id)}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      <Plus className="size-4 mr-2" />
+                      응답 추가
+                    </Button>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-400">
+                  {formatDate(note.timestamp)}
+                </p>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
