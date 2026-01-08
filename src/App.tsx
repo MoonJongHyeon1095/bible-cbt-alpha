@@ -7,7 +7,7 @@ import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
 import { AIChatPage } from "./components/feature/chat/AIChatPage";
 import { CommunityPage } from "./components/feature/CommunityPage";
-import { DashboardPage } from "./components/feature/DashboardPage";
+import { DashboardPage } from "./components/feature/dashboard/DashboardPage";
 import { PatternsPage } from "./components/feature/emotion-note/PatternsPage";
 import { HelplinePage } from "./components/feature/HelplinePage";
 import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPage";

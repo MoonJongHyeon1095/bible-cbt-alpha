@@ -50,7 +50,7 @@ export function CenterHeader({
   })();
 
   return (
-    <div className="mb-5">
+    <div className="mb-0">
       <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
         {header.badge}
       </div>

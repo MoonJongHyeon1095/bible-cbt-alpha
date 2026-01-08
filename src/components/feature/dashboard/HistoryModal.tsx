@@ -1,26 +1,32 @@
+import type { User } from "@supabase/supabase-js";
 import { Calendar, ChevronDown, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
+import { toast } from "sonner";
+import { normalizeSelectedCognitiveErrors } from "../../../lib/normalizeSelectedCognitiveErrors";
+import { supabase } from "../../../lib/supabase/client";
+import type { SessionHistory } from "../../../types/sessionHistory";
+import { Button } from "../../ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import type { User } from "@supabase/supabase-js";
-import { supabase } from "../../lib/supabase/client";
-import { toast } from "sonner";
-import type { SessionHistory } from "../../types/sessionHistory";
-import { normalizeSelectedCognitiveErrors } from "../../lib/normalizeSelectedCognitiveErrors";
+} from "../../ui/dialog";
 
 interface HistoryModalProps {
   open: boolean;
   onClose: () => void;
+  onUpdated: () => void;
   user: User | null;
 }
 
-export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
+export function HistoryModal({
+  open,
+  onClose,
+  onUpdated,
+  user,
+}: HistoryModalProps) {
   const [histories, setHistories] = useState<SessionHistory[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedErrors, setExpandedErrors] = useState<
@@ -48,6 +54,7 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
             "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors, selected_alternative_thought, positive_reframes, bible_verse"
           )
           .eq("user_id", user.id)
+          .is("soft_deleted_at", null)
           .order("timestamp", { ascending: false })
           .limit(50);
 
@@ -107,13 +114,15 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
         setLoading(true);
         const { error } = await supabase
           .from("session_history")
-          .delete()
+          .update({ soft_deleted_at: new Date().toISOString() })
           .eq("id", id)
-          .eq("user_id", user.id);
+          .eq("user_id", user.id)
+          .is("soft_deleted_at", null);
         if (error) throw error;
       } catch (e) {
         console.error("히스토리 삭제 실패:", e);
         toast.error("세션 기록을 삭제하지 못했습니다.");
+        return;
       } finally {
         setLoading(false);
       }
@@ -124,6 +133,35 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
     if (!user) {
       localStorage.setItem("cbt_history", JSON.stringify(updated));
     }
+    onUpdated();
+  };
+
+  const deleteAllHistories = async () => {
+    if (user) {
+      try {
+        setLoading(true);
+        const { error } = await supabase
+          .from("session_history")
+          .update({ soft_deleted_at: new Date().toISOString() })
+          .eq("user_id", user.id)
+          .is("soft_deleted_at", null);
+        if (error) throw error;
+      } catch (e) {
+        console.error("전체 히스토리 삭제 실패:", e);
+        toast.error("세션 기록을 모두 삭제하지 못했습니다.");
+        return;
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    setHistories([]);
+    setExpandedHistories({});
+    setExpandedErrors({});
+    if (!user) {
+      localStorage.removeItem("cbt_history");
+    }
+    onUpdated();
   };
 
   const formatDate = (timestamp: string) => {
@@ -165,18 +203,31 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
         aria-describedby="history-description"
       >
         <div className="sticky top-0 z-30 px-6 pt-6 pb-4 bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-slate-900/90 border-b border-slate-800">
-          <DialogHeader className="text-left">
-            <DialogTitle className="text-2xl text-white flex items-center gap-2">
-              <Calendar className="size-6 text-indigo-400" />
-              이전 기록 다시보기
-            </DialogTitle>
-            <DialogDescription
-              id="history-description"
-              className="text-slate-400"
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <DialogHeader className="text-left">
+              <DialogTitle className="text-2xl text-white flex items-center gap-2">
+                <Calendar className="size-6 text-indigo-400" />
+                이전 기록 다시보기
+              </DialogTitle>
+              <DialogDescription
+                id="history-description"
+                className="text-slate-400"
+              >
+                저장된 인지치료 세션 기록을 확인하고 관리할 수 있습니다.
+              </DialogDescription>
+            </DialogHeader>
+            <Button
+              type="button"
+              onClick={deleteAllHistories}
+              variant="ghost"
+              size="sm"
+              disabled={loading || histories.length === 0}
+              className="text-red-400 hover:text-red-300 hover:bg-red-950/30"
             >
-              저장된 인지치료 세션 기록을 확인하고 관리할 수 있습니다.
-            </DialogDescription>
-          </DialogHeader>
+              <Trash2 className="size-4 mr-2" />
+              전체 삭제
+            </Button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4 mt-4">
@@ -288,41 +339,37 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
                       <div className="space-y-2">
                         <p className="text-xs text-orange-400">⚠️ 인지오류</p>
                         <div className="space-y-2">
-                          {history.selectedCognitiveErrors.map(
-                            (error, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                onClick={() =>
-                                  toggleErrorDetail(history.id, idx)
-                                }
-                                className={`w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 ${
-                                  expandedErrors[history.id]?.has(idx)
-                                    ? "border-orange-400/60 bg-orange-500/15 text-slate-100 focus:ring-orange-300/60"
-                                    : "border-orange-500/30 bg-orange-500/5 text-slate-200 hover:bg-orange-500/10 focus:ring-orange-400/50"
-                                }`}
-                              >
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="text-sm font-semibold">
-                                    {error.title}
-                                  </span>
-                                  <ChevronDown
-                                    className={`size-4 transition-transform ${
-                                      expandedErrors[history.id]?.has(idx)
-                                        ? "rotate-180 text-orange-200"
-                                        : "text-orange-300"
-                                    }`}
-                                  />
-                                </div>
-                                {expandedErrors[history.id]?.has(idx) &&
-                                  error.detail && (
-                                    <p className="mt-2 text-sm leading-relaxed">
-                                      {error.detail}
-                                    </p>
-                                  )}
-                              </button>
-                            )
-                          )}
+                          {history.selectedCognitiveErrors.map((error, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => toggleErrorDetail(history.id, idx)}
+                              className={`w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 ${
+                                expandedErrors[history.id]?.has(idx)
+                                  ? "border-orange-400/60 bg-orange-500/15 text-slate-100 focus:ring-orange-300/60"
+                                  : "border-orange-500/30 bg-orange-500/5 text-slate-200 hover:bg-orange-500/10 focus:ring-orange-400/50"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-sm font-semibold">
+                                  {error.title}
+                                </span>
+                                <ChevronDown
+                                  className={`size-4 transition-transform ${
+                                    expandedErrors[history.id]?.has(idx)
+                                      ? "rotate-180 text-orange-200"
+                                      : "text-orange-300"
+                                  }`}
+                                />
+                              </div>
+                              {expandedErrors[history.id]?.has(idx) &&
+                                error.detail && (
+                                  <p className="mt-2 text-sm leading-relaxed">
+                                    {error.detail}
+                                  </p>
+                                )}
+                            </button>
+                          ))}
                         </div>
                       </div>
                     )}

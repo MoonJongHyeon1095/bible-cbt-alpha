@@ -16,10 +16,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { supabase } from "../../lib/supabase/client";
-import type { SessionHistory } from "../../types/sessionHistory";
-import { normalizeSelectedCognitiveErrors } from "../../lib/normalizeSelectedCognitiveErrors";
-import { Card } from "../ui/card";
+import { normalizeSelectedCognitiveErrors } from "../../../lib/normalizeSelectedCognitiveErrors";
+import { supabase } from "../../../lib/supabase/client";
+import type { SessionHistory } from "../../../types/sessionHistory";
+import { Card } from "../../ui/card";
 import { HistoryModal } from "./HistoryModal";
 
 export function DashboardPage({ user }: { user: User | null }) {
@@ -72,6 +72,7 @@ export function DashboardPage({ user }: { user: User | null }) {
           "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors, selected_alternative_thought, positive_reframes, bible_verse"
         )
         .eq("user_id", user?.id)
+        .is("soft_deleted_at", null)
         .order("timestamp", { ascending: false })
         .limit(200);
 
@@ -411,6 +412,7 @@ export function DashboardPage({ user }: { user: User | null }) {
       <HistoryModal
         open={showHistoryModal}
         onClose={() => setShowHistoryModal(false)}
+        onUpdated={loadData}
         user={user}
       />
     </div>

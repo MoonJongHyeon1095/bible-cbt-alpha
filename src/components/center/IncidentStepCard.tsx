@@ -34,7 +34,7 @@ export function IncidentStepCard({
     <div className="space-y-4">
       <div className="bg-blue-50 p-4 rounded-lg">
         <p className="text-slate-700 mb-2 text-base">
-          작성한 사건으로 세션을 진행합니다. <br /> 세션당 소요시간은 약{" "}
+          작성한 글을 토대로 세션을 진행합니다. <br /> 세션당 소요시간은 약{" "}
           <strong>5분</strong>입니다.
         </p>
         <p className="text-blue-700 text-base">
