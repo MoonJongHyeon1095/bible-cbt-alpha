@@ -37,7 +37,10 @@ export function LeftPanel({
     detailByIndex,
     detailError,
     detailLoading,
-    displayIndices,
+    pageIndices,
+    pinnedSelected,
+    pageIndex,
+    totalPages,
     empathyError,
     empathyLoading,
     generateEmpathy,
@@ -52,6 +55,8 @@ export function LeftPanel({
     rerollCandidates,
     runRankThenKickoffTop3Details,
     selected,
+    goPrevPage,
+    goNextPage,
     setShowIntensityModal,
     setTargetIntensity,
     showIntensityModal,
@@ -108,12 +113,17 @@ export function LeftPanel({
             detailByIndex={detailByIndex}
             detailLoading={detailLoading}
             detailError={detailError}
-            uiIndices={displayIndices}
+            uiIndices={pageIndices}
+            pinnedSelected={pinnedSelected}
+            pageIndex={pageIndex}
+            totalPages={totalPages}
             selected={selected}
             canConfirm={canConfirmSelection}
             onRetryRank={() => void runRankThenKickoffTop3Details()}
             onReroll={() => void rerollCandidates()}
             onToggleSelect={toggleSelect}
+            onPrevPage={goPrevPage}
+            onNextPage={goNextPage}
             onConfirm={handleConfirm2Errors}
           />
         )}

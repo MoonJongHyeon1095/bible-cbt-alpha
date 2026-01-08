@@ -57,12 +57,17 @@ type Props = {
   detailError: string | null;
 
   uiIndices: ErrorIndex[];
+  pinnedSelected: ErrorIndex[];
+  pageIndex: number;
+  totalPages: number;
   selected: ErrorIndex[];
   canConfirm: boolean;
 
   onRetryRank: () => void;
   onReroll: () => void;
   onToggleSelect: (idx: ErrorIndex) => void;
+  onPrevPage: () => void;
+  onNextPage: () => void;
   onConfirm: () => void;
 };
 
@@ -77,14 +82,109 @@ export function CognitiveErrorPickerCard({
   detailLoading,
   detailError,
   uiIndices,
+  pinnedSelected,
+  pageIndex,
+  totalPages,
   selected,
   canConfirm,
   onRetryRank,
   onReroll,
   onToggleSelect,
+  onPrevPage,
+  onNextPage,
   onConfirm,
 }: Props) {
   const selectedCount = selected.length;
+  const canPrev = pageIndex > 0;
+  const canNext = pageIndex < totalPages - 1;
+
+  const renderCard = (idx: ErrorIndex) => {
+    const meta = COGNITIVE_ERRORS[idx - 1];
+    const selectedOn = selected.includes(idx);
+
+    const rankItem = (ranked ?? []).find((x) => x.index === idx);
+    const detail = detailByIndex[idx];
+
+    return (
+      <button
+        key={idx}
+        onClick={() => onToggleSelect(idx)}
+        className={`w-full text-left p-4 rounded-lg border-2 transition-all relative ${
+          selectedOn
+            ? "border-green-600 bg-green-50"
+            : "border-slate-200 hover:border-green-300 bg-white"
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex-1">
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <p className="text-slate-900 font-medium">
+                  {meta?.title ?? "인지오류"}
+                </p>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                  {meta?.description ?? ""}
+                </p>
+              </div>
+
+              {(rankItem?.reason || rankItem?.evidenceQuote) && (
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-3">
+                  {rankItem?.reason && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-slate-500">
+                        🧾 이 인지오류로 본 이유
+                      </p>
+                      <p className="text-sm text-slate-700 leading-relaxed">
+                        {rankItem.reason}
+                      </p>
+                    </div>
+                  )}
+
+                  {rankItem?.evidenceQuote && (
+                    <div className="bg-blue-50 border-l-4 border-blue-400 p-2 rounded space-y-1">
+                      <p className="text-xs text-blue-600">📝 당신이 쓴 글</p>
+                      <p className="text-sm text-blue-900 italic whitespace-pre-line">
+                        "{rankItem.evidenceQuote}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {detail ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-amber-600">🔍 서술</p>
+
+                  <div className="text-base text-amber-950 leading-7 space-y-2">
+                    {splitToSentences(detail.analysis).map((line, i) => (
+                      <p key={i} className="whitespace-pre-line">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 text-slate-600 text-sm">
+                  {detailLoading ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="size-4 animate-spin" />
+                      <span>상세 서술을 불러오는 중...</span>
+                    </div>
+                  ) : (
+                    <span>상세 서술이 준비되는 대로 표시됩니다...</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {selectedOn && (
+            <Check className="size-5 text-green-600 flex-shrink-0" />
+          )}
+        </div>
+      </button>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -116,104 +216,36 @@ export function CognitiveErrorPickerCard({
             </div>
           )}
 
+          {pinnedSelected.length > 0 && (
+            <div className="space-y-3">
+              {pinnedSelected.map((idx) => renderCard(idx))}
+            </div>
+          )}
+
           <div className="space-y-3 max-h-[380px] overflow-y-auto">
-            {uiIndices.map((idx) => {
-              const meta = COGNITIVE_ERRORS[idx - 1];
-              const selectedOn = selected.includes(idx);
+            {uiIndices.map((idx) => renderCard(idx))}
+          </div>
 
-              const rankItem = (ranked ?? []).find((x) => x.index === idx);
-              const detail = detailByIndex[idx];
-
-              return (
-                <button
-                  key={idx}
-                  onClick={() => onToggleSelect(idx)}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all relative ${
-                    selectedOn
-                      ? "border-green-600 bg-green-50"
-                      : "border-slate-200 hover:border-green-300 bg-white"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1">
-                      {/* ✅ 카드 내부 전체를 gap으로 읽기 좋게 */}
-                      <div className="space-y-4">
-                        {/* 1) 타이틀 + 설명 */}
-                        <div className="space-y-1">
-                          <p className="text-slate-900 font-medium">
-                            {meta?.title ?? "인지오류"}
-                          </p>
-                          <p className="text-slate-500 text-sm leading-relaxed">
-                            {meta?.description ?? ""}
-                          </p>
-                        </div>
-
-                        {/* 2) 랭킹 근거 박스 (설명과 간격 확보) */}
-                        {(rankItem?.reason || rankItem?.evidenceQuote) && (
-                          <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-3">
-                            {rankItem?.reason && (
-                              <div className="space-y-1">
-                                <p className="text-xs text-slate-500">
-                                  🧾 이 인지오류로 본 이유
-                                </p>
-                                <p className="text-sm text-slate-700 leading-relaxed">
-                                  {rankItem.reason}
-                                </p>
-                              </div>
-                            )}
-
-                            {rankItem?.evidenceQuote && (
-                              <div className="bg-blue-50 border-l-4 border-blue-400 p-2 rounded space-y-1">
-                                <p className="text-xs text-blue-600">
-                                  📝 당신이 쓴 글
-                                </p>
-                                <p className="text-sm text-blue-900 italic whitespace-pre-line">
-                                  "{rankItem.evidenceQuote}"
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* 3) 서술 (근거 박스와도 간격 확보) */}
-                        {detail ? (
-                          <div className="space-y-2">
-                            <p className="text-xs text-amber-600">🔍 서술</p>
-
-                            <div className="text-base text-amber-950 leading-7 space-y-2">
-                              {splitToSentences(detail.analysis).map(
-                                (line, i) => (
-                                  <p key={i} className="whitespace-pre-line">
-                                    {line}
-                                  </p>
-                                )
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 text-slate-600 text-sm">
-                            {detailLoading ? (
-                              <div className="flex items-center gap-2">
-                                <Loader2 className="size-4 animate-spin" />
-                                <span>상세 서술을 불러오는 중...</span>
-                              </div>
-                            ) : (
-                              <span>
-                                상세 서술이 준비되는 대로 표시됩니다...
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {selectedOn && (
-                      <Check className="size-5 text-green-600 flex-shrink-0" />
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+          <div className="flex items-center justify-between text-sm text-slate-500">
+            <Button
+              onClick={onPrevPage}
+              disabled={!canPrev}
+              variant="outline"
+              size="sm"
+            >
+              이전
+            </Button>
+            <span>
+              {pageIndex + 1} / {totalPages}
+            </span>
+            <Button
+              onClick={onNextPage}
+              disabled={!canNext}
+              variant="outline"
+              size="sm"
+            >
+              다음
+            </Button>
           </div>
 
           {selectedCount > 0 && (

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   analyzeCognitiveErrorDetails,
   COGNITIVE_ERRORS,
@@ -75,13 +76,14 @@ export function useLeftPanelState({
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
 
-  // 후보 3개
-  const [candidate3, setCandidate3] = useState<ErrorIndex[]>([]);
+  const PAGE_SIZE = 3;
+
+  const [detailOrder, setDetailOrder] = useState<ErrorIndex[]>([]);
+  const [pageIndex, setPageIndex] = useState(0);
 
   // 선택(최대 2개)
   const [selected, setSelected] = useState<ErrorIndex[]>([]);
-  // 카드 표시 순서를 저장: 선택해도 위치가 유지되도록 별도 상태로 관리
-  const [displayIndices, setDisplayIndices] = useState<ErrorIndex[]>([]);
+  const [pinnedSelected, setPinnedSelected] = useState<ErrorIndex[]>([]);
 
   const pairKey = useMemo(() => {
     if (!currentPair) return "";
@@ -142,8 +144,10 @@ export function useLeftPanelState({
       setDetailLoading(false);
       setDetailError(null);
 
-      setCandidate3([]);
+      setDetailOrder([]);
+      setPageIndex(0);
       setSelected([]);
+      setPinnedSelected([]);
     }
 
     lastPairKeyRef.current = pairKey;
@@ -195,6 +199,14 @@ export function useLeftPanelState({
 
       const keyAtStart = pairKey;
 
+      setDetailOrder((prev) => {
+        const next = [...prev];
+        candidates.forEach((idx) => {
+          if (!next.includes(idx)) next.push(idx);
+        });
+        return next;
+      });
+
       setDetailLoading(true);
       setDetailError(null);
 
@@ -242,10 +254,12 @@ export function useLeftPanelState({
       setRanked(r.ranked);
 
       setDetailByIndex({});
+      setDetailOrder([]);
+      setPageIndex(0);
       setSelected([]);
+      setPinnedSelected([]);
 
       const top3 = r.ranked.map((x) => x.index).slice(0, 3);
-      setCandidate3(top3);
 
       if (top3.length > 0) {
         void fetchDetails(top3);
@@ -297,16 +311,17 @@ export function useLeftPanelState({
     }
 
     if (next.length === 0) {
-      setDetailError(
-        "더 이상 새로운 후보가 없습니다. 다시 분석하려면 새 랭킹을 만들어야 해요."
-      );
+      toast.error("더 이상 새로운 인지오류 후보가 없습니다.");
       return;
     }
 
-    setCandidate3(next);
+    setPinnedSelected(selected);
+    setPageIndex(0);
+
     void fetchDetails(next);
   }, [
     currentPair,
+    detailOrder,
     ranked,
     selected,
     detailByIndex,
@@ -316,7 +331,10 @@ export function useLeftPanelState({
 
   const toggleSelect = useCallback((idx: ErrorIndex) => {
     setSelected((prev) => {
-      if (prev.includes(idx)) return prev.filter((x) => x !== idx);
+      if (prev.includes(idx)) {
+        setPinnedSelected((pinned) => pinned.filter((x) => x !== idx));
+        return prev.filter((x) => x !== idx);
+      }
       if (prev.length >= 2) return prev;
       return [...prev, idx];
     });
@@ -334,30 +352,37 @@ export function useLeftPanelState({
     onNext();
   }, [detailByIndex, onNext, onSelectCognitiveErrors, selected]);
 
+  const nonSelectedOrder = useMemo(
+    () => detailOrder.filter((idx) => !pinnedSelected.includes(idx)),
+    [detailOrder, pinnedSelected]
+  );
+  const orderedForPaging = useMemo(
+    () => [...nonSelectedOrder].reverse(),
+    [nonSelectedOrder]
+  );
+  const totalPages = Math.max(1, Math.ceil(orderedForPaging.length / PAGE_SIZE));
+  const pageSlice = useMemo(() => {
+    const start = pageIndex * PAGE_SIZE;
+    return orderedForPaging.slice(start, start + PAGE_SIZE);
+  }, [orderedForPaging, pageIndex]);
+
   useEffect(() => {
-    // 선택/새 후보가 있어도 기존 순서 유지 + 새 항목은 뒤에 추가
-    setDisplayIndices((prev) => {
-      const need = new Set<ErrorIndex>([...selected, ...candidate3]);
-      const kept = prev.filter((idx) => need.has(idx));
-      const seen = new Set<ErrorIndex>(kept);
+    if (pageIndex > totalPages - 1) {
+      setPageIndex(Math.max(0, totalPages - 1));
+    }
+  }, [pageIndex, totalPages]);
 
-      candidate3.forEach((idx) => {
-        if (!seen.has(idx)) {
-          kept.push(idx);
-          seen.add(idx);
-        }
-      });
+  const pageIndices = pageSlice;
 
-      selected.forEach((idx) => {
-        if (!seen.has(idx)) {
-          kept.push(idx);
-          seen.add(idx);
-        }
-      });
+  const goPrevPage = useCallback(() => {
+    setPinnedSelected(selected);
+    setPageIndex((prev) => Math.max(0, prev - 1));
+  }, [selected]);
 
-      return kept;
-    });
-  }, [candidate3, selected]);
+  const goNextPage = useCallback(() => {
+    setPinnedSelected(selected);
+    setPageIndex((prev) => Math.min(totalPages - 1, prev + 1));
+  }, [selected, totalPages]);
 
   const canConfirmSelection = useMemo(() => {
     if (selected.length !== 2) return false;
@@ -372,7 +397,10 @@ export function useLeftPanelState({
     detailByIndex,
     detailError,
     detailLoading,
-    displayIndices,
+    pageIndices,
+    pinnedSelected,
+    pageIndex,
+    totalPages,
     empathyError,
     empathyLoading,
     generateEmpathy,
@@ -387,6 +415,8 @@ export function useLeftPanelState({
     rerollCandidates,
     runRankThenKickoffTop3Details,
     selected,
+    goPrevPage,
+    goNextPage,
     setShowIntensityModal,
     setTargetIntensity,
     showIntensityModal,
