@@ -348,8 +348,7 @@ export function RightPanel({
           id: Date.now().toString(),
           reference: bibleVerse.reference,
           verse: bibleVerse.verse,
-          reflection: "",
-          favorite: false,
+          reflections: [],
           timestamp: now,
         };
         const updated = [newNote, ...existing];
@@ -370,7 +369,6 @@ export function RightPanel({
         user_id: user.id,
         reference: bibleVerse.reference,
         verse: bibleVerse.verse,
-        reflection: "",
       });
       if (error) throw error;
       toast.success("말씀 노트에 저장되었습니다.");

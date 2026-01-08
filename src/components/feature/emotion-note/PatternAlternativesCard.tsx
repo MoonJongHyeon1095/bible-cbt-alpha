@@ -1,4 +1,4 @@
-import { Save, Trash2 } from "lucide-react";
+import { Loader2, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../../ui/button";
@@ -66,7 +66,6 @@ export function PatternAlternativesCard({
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("이 대안 사고를 삭제하시겠습니까?")) return;
     setDeletingId(id);
     try {
       await onDeleteAlternative(id);
@@ -124,7 +123,11 @@ export function PatternAlternativesCard({
                 disabled={deletingId === alt.id}
                 className="text-red-600 hover:bg-red-50"
               >
-                <Trash2 className="size-4 mr-1" />
+                {deletingId === alt.id ? (
+                  <Loader2 className="size-4 mr-1 animate-spin" />
+                ) : (
+                  <Trash2 className="size-4 mr-1" />
+                )}
                 삭제
               </Button>
             </div>

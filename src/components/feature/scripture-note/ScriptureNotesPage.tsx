@@ -12,7 +12,13 @@ interface ScriptureNote {
   id: string;
   reference: string;
   verse: string;
-  reflection: string;
+  timestamp: string;
+  reflections: ScriptureNoteReflection[];
+}
+
+interface ScriptureNoteReflection {
+  id: string;
+  content: string;
   timestamp: string;
 }
 
@@ -26,8 +32,18 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [reference, setReference] = useState("");
   const [verse, setVerse] = useState("");
-  const [reflection, setReflection] = useState("");
   const [loading, setLoading] = useState(false);
+  const [reflectionDrafts, setReflectionDrafts] = useState<
+    Record<string, string>
+  >({});
+  const [editingReflectionNoteId, setEditingReflectionNoteId] = useState<
+    string | null
+  >(null);
+  const [editingReflectionId, setEditingReflectionId] = useState<string | null>(
+    null
+  );
+  const [editingReflectionContent, setEditingReflectionContent] =
+    useState("");
   const referenceRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -40,6 +56,51 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
     }
   }, [isCreating, editingId]);
 
+  const normalizeLocalNotes = (rawNotes: unknown[]): ScriptureNote[] => {
+    return rawNotes.map((note) => {
+      const rawNote = note as {
+        id?: string;
+        reference?: string;
+        verse?: string;
+        timestamp?: string;
+        reflections?: ScriptureNoteReflection[];
+        reflection?: string;
+      };
+      const safeTimestamp =
+        typeof rawNote.timestamp === "string" && rawNote.timestamp
+          ? rawNote.timestamp
+          : new Date().toISOString();
+      const existingReflections = Array.isArray(rawNote.reflections)
+        ? rawNote.reflections.map((reflection) => ({
+            id: String(reflection.id ?? Date.now().toString()),
+            content: reflection.content ?? "",
+            timestamp: reflection.timestamp ?? safeTimestamp,
+          }))
+        : [];
+      const legacyReflection =
+        typeof rawNote.reflection === "string"
+          ? rawNote.reflection.trim()
+          : "";
+      const normalizedReflections = [...existingReflections];
+
+      if (legacyReflection) {
+        normalizedReflections.unshift({
+          id: `legacy-${rawNote.id ?? Date.now().toString()}`,
+          content: legacyReflection,
+          timestamp: safeTimestamp,
+        });
+      }
+
+      return {
+        id: rawNote.id ? String(rawNote.id) : Date.now().toString(),
+        reference: rawNote.reference ?? "",
+        verse: rawNote.verse ?? "",
+        timestamp: safeTimestamp,
+        reflections: normalizedReflections,
+      };
+    });
+  };
+
   const loadNotes = async () => {
     setLoading(true);
 
@@ -48,7 +109,9 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
       try {
         const { data, error } = await supabase
           .from("scripture_notes")
-          .select("id, reference, verse, reflection, created_at")
+          .select(
+            "id, reference, verse, created_at, reflections:scripture_note_reflections ( id, content, created_at )"
+          )
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
@@ -59,8 +122,19 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             id: String(row.id),
             reference: row.reference ?? "",
             verse: row.verse ?? "",
-            reflection: row.reflection ?? "",
             timestamp: row.created_at ?? "",
+            reflections:
+              row.reflections
+                ?.map((reflection) => ({
+                  id: String(reflection.id),
+                  content: reflection.content ?? "",
+                  timestamp: reflection.created_at ?? "",
+                }))
+                .sort(
+                  (a, b) =>
+                    new Date(b.timestamp).getTime() -
+                    new Date(a.timestamp).getTime()
+                ) ?? [],
           })) ?? [];
 
         setNotes(mapped);
@@ -76,7 +150,14 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
     // 비로그인: 로컬 저장소
     try {
       const saved = localStorage.getItem("scripture_notes");
-      setNotes(saved ? JSON.parse(saved) : []);
+      const parsed = saved ? JSON.parse(saved) : [];
+      const normalized = Array.isArray(parsed)
+        ? normalizeLocalNotes(parsed)
+        : [];
+      setNotes(normalized);
+      if (saved) {
+        localStorage.setItem("scripture_notes", JSON.stringify(normalized));
+      }
     } catch (e) {
       console.error("말씀 노트 로드 실패:", e);
       setNotes([]);
@@ -106,9 +187,8 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             user_id: user.id,
             reference: reference.trim(),
             verse: verse.trim(),
-            reflection: reflection.trim(),
           })
-          .select("id, reference, verse, reflection, created_at")
+          .select("id, reference, verse, created_at")
           .single();
 
         if (error) throw error;
@@ -117,8 +197,8 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             id: String(data.id),
             reference: data.reference ?? "",
             verse: data.verse ?? "",
-            reflection: data.reflection ?? "",
             timestamp: data.created_at ?? new Date().toISOString(),
+            reflections: [],
           };
           setNotes((prev) => [newNote, ...prev]);
         }
@@ -137,8 +217,8 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
       id: Date.now().toString(),
       reference: reference.trim(),
       verse: verse.trim(),
-      reflection: reflection.trim(),
       timestamp: new Date().toISOString(),
+      reflections: [],
     };
 
     const updated = [newNote, ...notes];
@@ -161,11 +241,10 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
           .update({
             reference: reference.trim(),
             verse: verse.trim(),
-            reflection: reflection.trim(),
           })
           .eq("id", id)
           .eq("user_id", user.id)
-          .select("id, reference, verse, reflection, created_at")
+          .select("id, reference, verse, created_at")
           .single();
 
         if (error) throw error;
@@ -176,8 +255,8 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                   id: String(data.id),
                   reference: data.reference ?? "",
                   verse: data.verse ?? "",
-                  reflection: data.reflection ?? "",
                   timestamp: data.created_at ?? note.timestamp,
+                  reflections: note.reflections ?? [],
                 }
               : note
           );
@@ -200,7 +279,6 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             ...note,
             reference: reference.trim(),
             verse: verse.trim(),
-            reflection: reflection.trim(),
           }
         : note
     );
@@ -210,8 +288,6 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("이 말씀 노트를 삭제하시겠습니까?")) return;
-
     if (user) {
       try {
         setLoading(true);
@@ -236,13 +312,13 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
     } else {
       saveNotesLocally(updated);
     }
+    toast.success("말씀 노트를 삭제했습니다.");
   };
 
   const handleEdit = (note: ScriptureNote) => {
     setEditingId(note.id);
     setReference(note.reference);
     setVerse(note.verse);
-    setReflection(note.reflection);
     setIsCreating(true);
   };
 
@@ -251,7 +327,189 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
     setEditingId(null);
     setReference("");
     setVerse("");
-    setReflection("");
+  };
+
+  const resetReflectionEdit = () => {
+    setEditingReflectionNoteId(null);
+    setEditingReflectionId(null);
+    setEditingReflectionContent("");
+  };
+
+  const handleCreateReflection = async (noteId: string) => {
+    const content = (reflectionDrafts[noteId] ?? "").trim();
+    if (!content) {
+      toast.error("묵상을 입력해주세요.");
+      return;
+    }
+
+    if (user) {
+      try {
+        const noteIdValue = Number(noteId);
+        if (!Number.isFinite(noteIdValue)) {
+          toast.error("묵상을 저장할 수 없습니다.");
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("scripture_note_reflections")
+          .insert({
+            user_id: user.id,
+            scripture_note_id: noteIdValue,
+            content,
+          })
+          .select("id, content, created_at")
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const newReflection: ScriptureNoteReflection = {
+            id: String(data.id),
+            content: data.content ?? "",
+            timestamp: data.created_at ?? new Date().toISOString(),
+          };
+          setNotes((prev) =>
+            prev.map((note) =>
+              note.id === noteId
+                ? {
+                    ...note,
+                    reflections: [newReflection, ...note.reflections],
+                  }
+                : note
+            )
+          );
+        }
+      } catch (e) {
+        console.error("묵상 저장 실패:", e);
+        toast.error("묵상을 저장하지 못했습니다.");
+        return;
+      }
+    } else {
+      const newReflection: ScriptureNoteReflection = {
+        id: Date.now().toString(),
+        content,
+        timestamp: new Date().toISOString(),
+      };
+      const updated = notes.map((note) =>
+        note.id === noteId
+          ? {
+              ...note,
+              reflections: [newReflection, ...note.reflections],
+            }
+          : note
+      );
+      saveNotesLocally(updated);
+    }
+
+    setReflectionDrafts((prev) => ({ ...prev, [noteId]: "" }));
+  };
+
+  const handleUpdateReflection = async (
+    noteId: string,
+    reflectionId: string
+  ) => {
+    const content = editingReflectionContent.trim();
+    if (!content) {
+      toast.error("묵상을 입력해주세요.");
+      return;
+    }
+
+    if (user) {
+      try {
+        const { data, error } = await supabase
+          .from("scripture_note_reflections")
+          .update({ content })
+          .eq("id", reflectionId)
+          .eq("user_id", user.id)
+          .select("id, content, created_at")
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setNotes((prev) =>
+            prev.map((note) =>
+              note.id === noteId
+                ? {
+                    ...note,
+                    reflections: note.reflections.map((reflection) =>
+                      reflection.id === reflectionId
+                        ? {
+                            ...reflection,
+                            content: data.content ?? "",
+                            timestamp:
+                              data.created_at ?? reflection.timestamp,
+                          }
+                        : reflection
+                    ),
+                  }
+                : note
+            )
+          );
+        }
+      } catch (e) {
+        console.error("묵상 수정 실패:", e);
+        toast.error("묵상을 수정하지 못했습니다.");
+        return;
+      }
+    } else {
+      const updated = notes.map((note) =>
+        note.id === noteId
+          ? {
+              ...note,
+              reflections: note.reflections.map((reflection) =>
+                reflection.id === reflectionId
+                  ? { ...reflection, content }
+                  : reflection
+              ),
+            }
+          : note
+      );
+      saveNotesLocally(updated);
+    }
+
+    resetReflectionEdit();
+  };
+
+  const handleDeleteReflection = async (
+    noteId: string,
+    reflectionId: string
+  ) => {
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from("scripture_note_reflections")
+          .delete()
+          .eq("id", reflectionId)
+          .eq("user_id", user.id);
+
+        if (error) throw error;
+      } catch (e) {
+        console.error("묵상 삭제 실패:", e);
+        toast.error("묵상을 삭제하지 못했습니다.");
+        return;
+      }
+    }
+
+    const updated = notes.map((note) =>
+      note.id === noteId
+        ? {
+            ...note,
+            reflections: note.reflections.filter(
+              (reflection) => reflection.id !== reflectionId
+            ),
+          }
+        : note
+    );
+
+    if (user) {
+      setNotes(updated);
+    } else {
+      saveNotesLocally(updated);
+    }
+
+    if (editingReflectionId === reflectionId) {
+      resetReflectionEdit();
+    }
+    toast.success("묵상을 삭제했습니다.");
   };
 
   const formatDate = (timestamp: string) => {
@@ -319,18 +577,6 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
               />
             </div>
 
-            <div>
-              <label className="text-sm text-slate-700 mb-2 block">
-                묵상 / 적용 (선택사항)
-              </label>
-              <Textarea
-                value={reflection}
-                onChange={(e) => setReflection(e.target.value)}
-                placeholder="이 말씀을 통해 깨달은 점, 적용하고 싶은 내용을 자유롭게 적어보세요..."
-                className="min-h-[150px] border-amber-200"
-              />
-            </div>
-
             <div className="flex gap-2">
               <Button
                 onClick={() =>
@@ -369,23 +615,30 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
         </Card>
       ) : (
         <div className="space-y-4">
-          {notes.map((note) => (
-            <Card
-              key={note.id}
-              className="p-6 hover:shadow-lg transition-shadow bg-white border-amber-100"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-xl text-amber-900 flex-1">
-                  {note.reference}
-                </h3>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => handleEdit(note)}
-                    className="text-amber-600 hover:text-amber-700 p-1"
-                    title="수정"
-                  >
-                    <Edit2 className="size-4" />
-                  </button>
+          {notes.map((note) => {
+            const reflections = [...note.reflections].sort(
+              (a, b) =>
+                new Date(b.timestamp).getTime() -
+                new Date(a.timestamp).getTime()
+            );
+
+            return (
+              <Card
+                key={note.id}
+                className="p-6 hover:shadow-lg transition-shadow bg-white border-amber-100"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-xl text-amber-900 flex-1">
+                    {note.reference}
+                  </h3>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleEdit(note)}
+                      className="text-amber-600 hover:text-amber-700 p-1"
+                      title="수정"
+                    >
+                      <Edit2 className="size-4" />
+                    </button>
                   <button
                     onClick={() => handleDelete(note.id)}
                     className="text-red-600 hover:text-red-700 p-1"
@@ -393,29 +646,139 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                   >
                     <Trash2 className="size-4" />
                   </button>
+                  </div>
                 </div>
-              </div>
 
-              <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-3">
-                <p className="text-slate-700 italic leading-relaxed whitespace-pre-wrap">
-                  "{note.verse}"
-                </p>
-              </div>
-
-              {note.reflection && (
-                <div className="bg-slate-50 p-4 rounded-lg mb-3">
-                  <p className="text-sm text-slate-600 mb-1">💭 묵상 / 적용:</p>
-                  <p className="text-slate-700 whitespace-pre-wrap">
-                    {note.reflection}
+                <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-3">
+                  <p className="text-slate-700 italic leading-relaxed whitespace-pre-wrap">
+                    "{note.verse}"
                   </p>
                 </div>
-              )}
 
-              <p className="text-xs text-slate-400">
-                {formatDate(note.timestamp)}
-              </p>
-            </Card>
-          ))}
+                <div className="bg-slate-50 p-4 rounded-lg mb-3">
+                  <p className="text-sm text-slate-600 mb-3">💭 묵상 기록</p>
+                  {reflections.length === 0 ? (
+                    <p className="text-sm text-slate-400">
+                      아직 묵상이 없습니다.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {reflections.map((reflection) => {
+                        const isEditing =
+                          editingReflectionNoteId === note.id &&
+                          editingReflectionId === reflection.id;
+
+                        return (
+                          <div
+                            key={reflection.id}
+                            className="rounded-lg border border-slate-200 bg-white p-3"
+                          >
+                            {isEditing ? (
+                              <div className="space-y-2">
+                                <Textarea
+                                  value={editingReflectionContent}
+                                  onChange={(e) =>
+                                    setEditingReflectionContent(
+                                      e.target.value
+                                    )
+                                  }
+                                  className="min-h-[120px] border-slate-200"
+                                />
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() =>
+                                      handleUpdateReflection(
+                                        note.id,
+                                        reflection.id
+                                      )
+                                    }
+                                    className="bg-amber-600 hover:bg-amber-700"
+                                  >
+                                    <Save className="size-4 mr-2" />
+                                    수정 완료
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    onClick={resetReflectionEdit}
+                                  >
+                                    <X className="size-4 mr-2" />
+                                    취소
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div>
+                                <div className="flex items-start justify-between">
+                                  <p className="text-slate-700 whitespace-pre-wrap">
+                                    {reflection.content}
+                                  </p>
+                                  <div className="flex gap-1">
+                                    <button
+                                      onClick={() => {
+                                        setEditingReflectionNoteId(note.id);
+                                        setEditingReflectionId(reflection.id);
+                                        setEditingReflectionContent(
+                                          reflection.content
+                                        );
+                                      }}
+                                      className="text-amber-600 hover:text-amber-700 p-1"
+                                      title="묵상 수정"
+                                    >
+                                      <Edit2 className="size-4" />
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteReflection(
+                                          note.id,
+                                          reflection.id
+                                        )
+                                      }
+                                      className="text-red-600 hover:text-red-700 p-1"
+                                      title="묵상 삭제"
+                                    >
+                                      <Trash2 className="size-4" />
+                                    </button>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-slate-400 mt-2">
+                                  {formatDate(reflection.timestamp)}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <div className="mt-4 space-y-2">
+                    <Textarea
+                      value={reflectionDrafts[note.id] ?? ""}
+                      onChange={(e) =>
+                        setReflectionDrafts((prev) => ({
+                          ...prev,
+                          [note.id]: e.target.value,
+                        }))
+                      }
+                      placeholder="묵상을 기록하세요..."
+                      className="min-h-[120px] border-slate-200"
+                    />
+                    <Button
+                      onClick={() => handleCreateReflection(note.id)}
+                      className="bg-amber-600 hover:bg-amber-700"
+                    >
+                      <Plus className="size-4 mr-2" />
+                      묵상 추가
+                    </Button>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-400">
+                  {formatDate(note.timestamp)}
+                </p>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
