@@ -29,6 +29,7 @@ export function HistoryModal({
 }: HistoryModalProps) {
   const [histories, setHistories] = useState<SessionHistory[]>([]);
   const [loading, setLoading] = useState(false);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
   const [expandedErrors, setExpandedErrors] = useState<
     Record<string, Set<number>>
   >({});
@@ -40,6 +41,11 @@ export function HistoryModal({
       loadHistories();
     }
   }, [open, user]);
+  useEffect(() => {
+    if (!open) {
+      setConfirmDeleteAll(false);
+    }
+  }, [open]);
 
   const loadHistories = async () => {
     setLoading(true);
@@ -162,6 +168,16 @@ export function HistoryModal({
     }
     onUpdated();
   };
+  const requestDeleteAll = () => {
+    setConfirmDeleteAll(true);
+  };
+  const confirmDeleteAllHistories = async () => {
+    await deleteAllHistories();
+    setConfirmDeleteAll(false);
+  };
+  const cancelDeleteAll = () => {
+    setConfirmDeleteAll(false);
+  };
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -214,10 +230,10 @@ export function HistoryModal({
               저장된 인지치료 세션 기록을 확인하고 관리할 수 있습니다.
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex flex-col items-end gap-2">
             <Button
               type="button"
-              onClick={deleteAllHistories}
+              onClick={requestDeleteAll}
               variant="ghost"
               size="sm"
               disabled={loading || histories.length === 0}
@@ -226,6 +242,33 @@ export function HistoryModal({
               <Trash2 className="size-4 mr-2" />
               전체 삭제
             </Button>
+            {confirmDeleteAll && (
+              <div className="flex flex-wrap items-center justify-end gap-3 rounded-lg border border-red-500/40 bg-red-950/30 px-3 py-2 text-sm text-red-100">
+                <span>이전 세션 기록이 모두 삭제됩니다.</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    onClick={confirmDeleteAllHistories}
+                    variant="destructive"
+                    size="sm"
+                    disabled={loading}
+                    className="bg-red-600 text-white hover:bg-red-500"
+                  >
+                    삭제
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={cancelDeleteAll}
+                    variant="outline"
+                    size="sm"
+                    disabled={loading}
+                    className="border-white/70 bg-transparent text-white"
+                  >
+                    취소
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

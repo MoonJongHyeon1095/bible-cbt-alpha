@@ -42,6 +42,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Form fields
   const [title, setTitle] = useState("");
@@ -598,17 +599,14 @@ export function PatternsPage({ user }: PatternsPageProps) {
     if (!user) {
       saveLocalPatterns(updated);
     }
+    setConfirmDeleteId(null);
   };
 
   const requestDelete = (id: string) => {
-    toast("이 감정 패턴을 삭제할까요?", {
-      action: {
-        label: "삭제",
-        onClick: () => {
-          handleDelete(id);
-        },
-      },
-    });
+    setConfirmDeleteId(id);
+  };
+  const cancelDelete = () => {
+    setConfirmDeleteId(null);
   };
 
   const incrementFrequency = async (id: string) => {
@@ -1044,6 +1042,36 @@ export function PatternsPage({ user }: PatternsPageProps) {
                     </button>
                   </div>
                 </div>
+                {confirmDeleteId === pattern.id && (
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+                    <span>
+                      이 노트와 관련된 자동사고, 대안사고, 행동의 기록도
+                      삭제됩니다.
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        onClick={() => handleDelete(pattern.id)}
+                        variant="destructive"
+                        size="sm"
+                        disabled={loading}
+                        className="bg-red-600 text-white hover:bg-red-500"
+                      >
+                        삭제
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={cancelDelete}
+                        variant="outline"
+                        size="sm"
+                        disabled={loading}
+                        className="border-red-200 text-red-700 hover:bg-red-100"
+                      >
+                        취소
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

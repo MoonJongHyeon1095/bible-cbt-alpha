@@ -5,14 +5,11 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
-import { AIChatPage } from "./components/feature/chat/AIChatPage";
-import { CommunityPage } from "./components/feature/CommunityPage";
 import { DashboardPage } from "./components/feature/dashboard/DashboardPage";
 import { PatternsPage } from "./components/feature/emotion-note/PatternsPage";
 import { HelplinePage } from "./components/feature/HelplinePage";
 import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPage";
 import { ScriptureNotesPage } from "./components/feature/scripture-note/ScriptureNotesPage";
-import { VoicePage } from "./components/feature/VoicePage";
 import { CommentSection } from "./components/footer/CommentSection";
 import { Navigation } from "./components/header/navigation/Navigation";
 import { Toaster } from "./components/ui/sonner";
@@ -123,9 +120,6 @@ export default function App() {
       case "dashboard":
         return <DashboardPage user={user} />;
 
-      case "ai-chat":
-        return <AIChatPage />;
-
       case "prayer-notes":
         return <PrayerNotesPage user={user} />;
 
@@ -134,12 +128,6 @@ export default function App() {
 
       case "patterns":
         return <PatternsPage user={user} />;
-
-      case "community":
-        return <CommunityPage />;
-
-      case "voice":
-        return <VoicePage />;
 
       case "helpline":
         return <HelplinePage />;

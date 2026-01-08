@@ -275,7 +275,7 @@ export function DashboardPage({ user }: { user: User | null }) {
         <Card className="p-12 text-center">
           <p className="text-slate-500 text-lg mb-4">아직 데이터가 없습니다.</p>
           <p className="text-slate-400">
-            마음생각고쳐쓰기를 완료하면 통계가 표시됩니다.
+            마음생각 다시 쓰기를 완료하면 통계가 표시됩니다.
           </p>
         </Card>
       ) : (
