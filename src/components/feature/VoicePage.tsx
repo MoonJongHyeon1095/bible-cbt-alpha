@@ -88,7 +88,7 @@ export function VoicePage() {
           음성 입력
         </h1>
         <p className="text-slate-600">
-          말로 경험을 입력하고 마음생각 다시쓰기에서 사용하세요.
+          말로 경험을 입력하고 마음생각 다시 쓰기에서 사용하세요.
         </p>
       </div>
 
@@ -182,7 +182,7 @@ export function VoicePage() {
                     disabled={!transcript}
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                   >
-                    마음생각 다시쓰기에서 사용하기
+                    마음생각 다시 쓰기에서 사용하기
                   </Button>
                   <Button
                     onClick={() => setTranscript("")}

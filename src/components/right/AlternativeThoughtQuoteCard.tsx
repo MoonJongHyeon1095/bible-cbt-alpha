@@ -7,7 +7,7 @@ export function AlternativeThoughtQuoteCard() {
         <br />
         생각을 바꾸면 고통도 바뀐다."
       </p>
-      <p className="text-indigo-300 text-sm">— 마음생각 다시쓰기 핵심 원리</p>
+      <p className="text-indigo-300 text-sm">— 마음생각 다시 쓰기 핵심 원리</p>
     </div>
   );
 }
