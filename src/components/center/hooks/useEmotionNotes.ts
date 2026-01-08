@@ -7,6 +7,7 @@ import type {
   EmotionNoteDetail,
   EmotionNoteDetailWithNote,
 } from "../types";
+import { validateUserText } from "../../../utils/validation";
 import {
   createDetailAPI,
   createNoteAPI,
@@ -482,6 +483,11 @@ export function useEmotionNotes({
     const emotion = detail.emotion || selectedEmotion;
     const thought = detail.automaticThought;
     const storedIntensity = isDeep ? emotionIntensity : null;
+    const validation = validateUserText(thought);
+    if (!validation.ok) {
+      toast.error(validation.message);
+      return;
+    }
 
     const matchedNote =
       savedTriggerNotes.find((n) => n.id === detail.noteId) ||

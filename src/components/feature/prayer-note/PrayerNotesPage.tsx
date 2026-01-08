@@ -4,6 +4,7 @@ import { BookOpen, Edit2, Plus, Save, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "../../../lib/supabase/client";
+import { EMOTIONS } from "../../center/constants/emotions";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
@@ -27,7 +28,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [tags, setTags] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const titleRef = useRef<HTMLInputElement | null>(null);
 
@@ -41,11 +42,13 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
     }
   }, [isCreating, editingId]);
 
-  const parseTags = (raw: string) =>
-    raw
-      .split(",")
-      .map((t) => t.trim())
-      .filter((t) => t);
+  const emotionTags = EMOTIONS.map((emotion) => emotion.label);
+
+  const toggleTag = (tag: string) => {
+    setTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
 
   const loadNotes = async () => {
     // 로그인 사용자: Supabase에서 로드
@@ -101,8 +104,6 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
       return;
     }
 
-    const tagList = parseTags(tags);
-
     // 로그인 상태: Supabase에 저장
     if (user) {
       try {
@@ -113,7 +114,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
             user_id: user.id,
             title: title.trim(),
             content: content.trim(),
-            tags: tagList,
+            tags,
           })
           .select("id, title, content, tags, created_at")
           .single();
@@ -146,7 +147,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
       title: title.trim(),
       content: content.trim(),
       timestamp: new Date().toISOString(),
-      tags: tagList,
+      tags,
     };
 
     const updated = [newNote, ...notes];
@@ -160,8 +161,6 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
       return;
     }
 
-    const tagList = parseTags(tags);
-
     // 로그인 상태: Supabase 업데이트
     if (user) {
       try {
@@ -171,7 +170,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
           .update({
             title: title.trim(),
             content: content.trim(),
-            tags: tagList,
+            tags,
           })
           .eq("id", id)
           .eq("user_id", user.id)
@@ -210,7 +209,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
             ...note,
             title: title.trim(),
             content: content.trim(),
-            tags: tagList,
+            tags,
           }
         : note
     );
@@ -252,7 +251,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
     setEditingId(note.id);
     setTitle(note.title);
     setContent(note.content);
-    setTags(note.tags.join(", "));
+    setTags(note.tags);
     setIsCreating(true);
   };
 
@@ -261,7 +260,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
     setEditingId(null);
     setTitle("");
     setContent("");
-    setTags("");
+    setTags([]);
   };
 
   const formatDate = (timestamp: string) => {
@@ -283,7 +282,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
             <BookOpen className="size-8 text-purple-600" />
             기도 노트
           </h1>
-          <p className="text-slate-600">"아무 말 일단 써놓음"</p>
+          <p className="text-slate-600">기도와 응답을 기록하세요.</p>
         </div>
         {!isCreating && (
           <Button
@@ -325,14 +324,27 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
 
             <div>
               <label className="text-sm text-slate-700 mb-2 block">
-                태그 (쉼표로 구분)
+                태그 (감정 선택)
               </label>
-              <Input
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="예: 가족, 건강, 감사"
-                className="border-purple-200"
-              />
+              <div className="flex flex-wrap gap-2">
+                {emotionTags.map((tag) => {
+                  const selected = tags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => toggleTag(tag)}
+                      className={`rounded-full border px-3 py-1 text-xs transition ${
+                        selected
+                          ? "bg-purple-600 text-white border-purple-600"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-purple-300"
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="flex gap-2">
