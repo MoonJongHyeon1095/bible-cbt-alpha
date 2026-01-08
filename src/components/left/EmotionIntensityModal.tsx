@@ -1,5 +1,6 @@
 // src/components/left/EmotionIntensityModal.tsx
-import { Heart, Info } from "lucide-react";
+import { ChevronDown, Heart, Info } from "lucide-react";
+import { useState } from "react";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -28,6 +29,9 @@ export function EmotionIntensityModal({
   onConfirm,
   onCancel,
 }: EmotionIntensityModalProps) {
+  const [showEmotionControl, setShowEmotionControl] = useState(false);
+  const [showEmotionValue, setShowEmotionValue] = useState(false);
+
   return (
     <Dialog
       open={open}
@@ -58,24 +62,45 @@ export function EmotionIntensityModal({
           </div>
 
           {/* 설명 섹션 1: 감정 인식의 중요성 */}
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6 space-y-3">
-            <div className="flex items-start gap-3">
-              <Info className="size-6 text-blue-600 flex-shrink-0 mt-1" />
-              <div className="space-y-2">
-                <h3 className="text-blue-900 text-xl">
-                  🎯 감정을 조절할 수 있다는 것은...
-                </h3>
-                <p className="text-blue-800 leading-relaxed">
+          <div className="rounded-lg border border-slate-200 bg-white">
+            <button
+              type="button"
+              onClick={() => setShowEmotionControl((prev) => !prev)}
+              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+              aria-expanded={showEmotionControl}
+            >
+              <div className="flex items-center gap-3">
+                <span className="inline-flex size-7 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                  <Info className="size-4" />
+                </span>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-slate-500">
+                    감정의 인식
+                  </p>
+                  <h3 className="text-slate-800 text-sm font-semibold">
+                    감정을 조절할 수 있다는 것은...
+                  </h3>
+                </div>
+              </div>
+              <ChevronDown
+                className={`size-4 text-slate-500 transition-transform ${
+                  showEmotionControl ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {showEmotionControl && (
+              <div className="border-t border-slate-200 px-4 pb-4 pt-3 space-y-2">
+                <p className="text-slate-700 leading-relaxed">
                   많은 사람들이 부정적인 감정에 압도되어{" "}
                   <strong>"나는 이 감정을 어쩔 수 없어"</strong>라고 생각합니다.
                   하지만 심리학자 앨버트 엘리스(Albert Ellis)의 연구에 따르면,
-                  <strong className="text-blue-900">
+                  <strong className="text-slate-900">
                     {" "}
                     감정이 조절 가능하다는 것을 인식하는 순간 이미 변화가 시작
                   </strong>
                   됩니다.
                 </p>
-                <p className="text-blue-800 leading-relaxed">
+                <p className="text-slate-700 leading-relaxed">
                   감정의 강도를 스스로 설정해보는 것은{" "}
                   <strong>"내가 이 감정의 주인"</strong>이라는
                   자기효능감(Self-efficacy)을 높여줍니다. 실제로 목표 강도를
@@ -84,23 +109,44 @@ export function EmotionIntensityModal({
                   결과가 있습니다.
                 </p>
               </div>
-            </div>
+            )}
           </div>
 
           {/* 설명 섹션 2: 강도 조절의 효과 */}
-          <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-6 space-y-3">
-            <div className="flex items-start gap-3">
-              <Info className="size-6 text-purple-600 flex-shrink-0 mt-1" />
-              <div className="space-y-2">
-                <h3 className="text-purple-900 text-xl">
-                  💡 하지만 그 감정 역시도 소중합니다.
-                </h3>
-                <p className="text-purple-800 leading-relaxed">
+          <div className="rounded-lg border border-slate-200 bg-white">
+            <button
+              type="button"
+              onClick={() => setShowEmotionValue((prev) => !prev)}
+              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+              aria-expanded={showEmotionValue}
+            >
+              <div className="flex items-center gap-3">
+                <span className="inline-flex size-7 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                  <Info className="size-4" />
+                </span>
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-slate-500">
+                    감정의 조절
+                  </p>
+                  <h3 className="text-slate-800 text-sm font-semibold">
+                    하지만 그 감정 역시도 소중합니다.
+                  </h3>
+                </div>
+              </div>
+              <ChevronDown
+                className={`size-4 text-slate-500 transition-transform ${
+                  showEmotionValue ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {showEmotionValue && (
+              <div className="border-t border-slate-200 px-4 pb-4 pt-3 space-y-2">
+                <p className="text-slate-700 leading-relaxed">
                   부정적인 감정을 완전히 없애려고 하면 오히려 역효과가 납니다.
                   감정은 우리에게 중요한 신호를 보내주는 <strong>정보</strong>
                   이기 때문입니다.
                 </p>
-                <p className="text-purple-800 leading-relaxed">
+                <p className="text-slate-700 leading-relaxed">
                   예를 들어, 100점 만점의 분노를 30-40점 정도로 낮추면,
                   <strong> 여전히 문제를 인식하면서도 이성적으로 대처</strong>할
                   수 있게 됩니다. 감정이 너무 높으면 판단력이 흐려지지만, 적절한
@@ -108,13 +154,13 @@ export function EmotionIntensityModal({
                   가 됩니다.
                 </p>
               </div>
-            </div>
+            )}
           </div>
 
           {/* 현재 감정 강도 */}
           <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-xl p-6">
             <p className="text-slate-700 text-lg mb-4">
-              <strong>현재 "{emotion}" 감정의 강도</strong>
+              당신이 측정한<strong> "{emotion}" </strong>의 강도
             </p>
             <div className="flex items-center justify-center">
               <div className="text-6xl font-bold text-red-600">
@@ -129,11 +175,27 @@ export function EmotionIntensityModal({
             <p className="text-slate-700 text-lg mb-2">
               <strong>얼마나 낮추면 편하실까요?</strong>
             </p>
-            <p className="text-slate-600 text-sm mb-6">
-              저희는 강도를 줄일 기술이 몇 가지 있습니다. 만일 당신이 원하시면
-              강도를 줄일 수 있습니다. 그러나 당신의 장점이 바로 그 감정에서
-              나오는 것이니, 적절하게 줄이면 좋겠습니다.
-            </p>
+            <div className="mb-6 rounded-lg border border-emerald-200/70 bg-white/70 px-4 py-3 shadow-sm">
+              <p className="text-xs uppercase tracking-wide text-emerald-600">
+                여기 가상의 다이얼이 있습니다.
+              </p>
+              <ul className="mt-2 space-y-2 text-sm text-slate-700">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 size-2 rounded-full bg-emerald-500" />
+                  <span>
+                    다이얼을 돌려 <strong>{emotion}</strong>의 강도를 조절할 수
+                    있다면, 몇 점으로 맞추고 싶으신가요?
+                  </span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1 size-2 rounded-full bg-emerald-500" />
+                  <span>
+                    그 감정은 당신의 장점이기도 하니, 적절한 수준으로만 낮춰보면
+                    좋겠습니다.
+                  </span>
+                </li>
+              </ul>
+            </div>
 
             <div className="space-y-6">
               <div className="text-center">

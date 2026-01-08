@@ -15,7 +15,7 @@ export function FinalIntensityCard({
   return (
     <div className="bg-white p-4 rounded border border-purple-300 mb-4">
       <p className="text-purple-800 mb-3">
-        <strong>감정이 좋아졌다면 얼마나 좋아졌는지 기록해주세요:</strong>
+        <strong>감정이 좋아졌다면 얼마나 좋아졌는지 기록해주세요.</strong>
       </p>
 
       <div className="space-y-4">
@@ -35,7 +35,9 @@ export function FinalIntensityCard({
 
               <Slider
                 value={[currentValue]}
-                onValueChange={(val: number[]) => onChange(pair.emotion, val[0])}
+                onValueChange={(val: number[]) =>
+                  onChange(pair.emotion, val[0])
+                }
                 min={0}
                 max={100}
                 step={5}
