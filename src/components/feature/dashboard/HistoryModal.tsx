@@ -35,7 +35,6 @@ export function HistoryModal({
   const [expandedHistories, setExpandedHistories] = useState<
     Record<string, boolean>
   >({});
-
   useEffect(() => {
     if (open) {
       loadHistories();

@@ -1,4 +1,4 @@
-import { Save, Trash2 } from "lucide-react";
+import { Loader2, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../../ui/button";
@@ -68,7 +68,6 @@ export function PatternDetailsCard({
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("이 자동사고를 삭제하시겠습니까?")) return;
     setDeletingId(id);
     try {
       await onDeleteDetail(id);
@@ -126,7 +125,11 @@ export function PatternDetailsCard({
                 disabled={deletingId === detail.id}
                 className="text-red-600 hover:bg-red-50"
               >
-                <Trash2 className="size-4 mr-1" />
+                {deletingId === detail.id ? (
+                  <Loader2 className="size-4 mr-1 animate-spin" />
+                ) : (
+                  <Trash2 className="size-4 mr-1" />
+                )}
                 삭제
               </Button>
             </div>

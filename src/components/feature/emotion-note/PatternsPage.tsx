@@ -578,8 +578,6 @@ export function PatternsPage({ user }: PatternsPageProps) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("이 패턴을 삭제하시겠습니까?")) return;
-
     if (user) {
       try {
         setLoading(true);
@@ -600,6 +598,17 @@ export function PatternsPage({ user }: PatternsPageProps) {
     if (!user) {
       saveLocalPatterns(updated);
     }
+  };
+
+  const requestDelete = (id: string) => {
+    toast("이 감정 패턴을 삭제할까요?", {
+      action: {
+        label: "삭제",
+        onClick: () => {
+          handleDelete(id);
+        },
+      },
+    });
   };
 
   const incrementFrequency = async (id: string) => {
@@ -1027,7 +1036,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
                       <Edit2 className="size-4" />
                     </button>
                     <button
-                      onClick={() => handleDelete(pattern.id)}
+                      onClick={() => requestDelete(pattern.id)}
                       className="text-red-600 hover:text-red-700 p-1"
                       title="삭제"
                     >
