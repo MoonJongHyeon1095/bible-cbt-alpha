@@ -1,8 +1,8 @@
 import type { User } from "@supabase/supabase-js";
-import { BookMarked, Edit2, Plus, Save, Star, Trash2, X } from "lucide-react";
+import { BookMarked, Edit2, Plus, Save, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "../../../lib/supabase/client";
 import { toast } from "sonner";
+import { supabase } from "../../../lib/supabase/client";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
@@ -14,7 +14,6 @@ interface ScriptureNote {
   verse: string;
   reflection: string;
   timestamp: string;
-  favorite: boolean;
 }
 
 interface ScriptureNotesPageProps {
@@ -28,7 +27,6 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   const [reference, setReference] = useState("");
   const [verse, setVerse] = useState("");
   const [reflection, setReflection] = useState("");
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [loading, setLoading] = useState(false);
   const referenceRef = useRef<HTMLInputElement | null>(null);
 
@@ -50,7 +48,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
       try {
         const { data, error } = await supabase
           .from("scripture_notes")
-          .select("id, reference, verse, reflection, favorite, created_at")
+          .select("id, reference, verse, reflection, created_at")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
@@ -62,7 +60,6 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             reference: row.reference ?? "",
             verse: row.verse ?? "",
             reflection: row.reflection ?? "",
-            favorite: !!row.favorite,
             timestamp: row.created_at ?? "",
           })) ?? [];
 
@@ -111,7 +108,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             verse: verse.trim(),
             reflection: reflection.trim(),
           })
-          .select("id, reference, verse, reflection, favorite, created_at")
+          .select("id, reference, verse, reflection, created_at")
           .single();
 
         if (error) throw error;
@@ -121,7 +118,6 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             reference: data.reference ?? "",
             verse: data.verse ?? "",
             reflection: data.reflection ?? "",
-            favorite: !!data.favorite,
             timestamp: data.created_at ?? new Date().toISOString(),
           };
           setNotes((prev) => [newNote, ...prev]);
@@ -143,7 +139,6 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
       verse: verse.trim(),
       reflection: reflection.trim(),
       timestamp: new Date().toISOString(),
-      favorite: false,
     };
 
     const updated = [newNote, ...notes];
@@ -170,7 +165,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
           })
           .eq("id", id)
           .eq("user_id", user.id)
-          .select("id, reference, verse, reflection, favorite, created_at")
+          .select("id, reference, verse, reflection, created_at")
           .single();
 
         if (error) throw error;
@@ -182,7 +177,6 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                   reference: data.reference ?? "",
                   verse: data.verse ?? "",
                   reflection: data.reflection ?? "",
-                  favorite: !!data.favorite,
                   timestamp: data.created_at ?? note.timestamp,
                 }
               : note
@@ -244,53 +238,6 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
     }
   };
 
-  const toggleFavorite = async (id: string) => {
-    const target = notes.find((n) => n.id === id);
-    if (!target) return;
-
-    if (user) {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from("scripture_notes")
-          .update({ favorite: !target.favorite })
-          .eq("id", id)
-          .eq("user_id", user.id)
-          .select("id, reference, verse, reflection, favorite, created_at")
-          .single();
-
-        if (error) throw error;
-        if (data) {
-          setNotes((prev) =>
-            prev.map((note) =>
-              note.id === id
-                ? {
-                    id: String(data.id),
-                    reference: data.reference ?? "",
-                    verse: data.verse ?? "",
-                    reflection: data.reflection ?? "",
-                    favorite: !!data.favorite,
-                    timestamp: data.created_at ?? note.timestamp,
-                  }
-                : note
-            )
-          );
-        }
-      } catch (e) {
-        console.error("즐겨찾기 토글 실패:", e);
-        toast.error("즐겨찾기를 변경하지 못했습니다.");
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
-    const updated = notes.map((note) =>
-      note.id === id ? { ...note, favorite: !note.favorite } : note
-    );
-    saveNotesLocally(updated);
-  };
-
   const handleEdit = (note: ScriptureNote) => {
     setEditingId(note.id);
     setReference(note.reference);
@@ -318,10 +265,6 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
     });
   };
 
-  const displayedNotes = showFavoritesOnly
-    ? notes.filter((n) => n.favorite)
-    : notes;
-
   return (
     <div className="max-w-[1400px] mx-auto px-8 py-8">
       <div className="mb-8 flex items-center justify-between">
@@ -330,21 +273,9 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             <BookMarked className="size-8 text-amber-600" />
             말씀 노트
           </h1>
-          <p className="text-slate-600">은혜받은 말씀과 묵상을 기록하세요.</p>
+          <p className="text-slate-600">말씀과 묵상을 기록하세요.</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            variant={showFavoritesOnly ? "default" : "outline"}
-            className={
-              showFavoritesOnly
-                ? "bg-yellow-600 hover:bg-yellow-700"
-                : "border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-            }
-          >
-            <Star className="size-5 mr-2" />
-            즐겨찾기만
-          </Button>
           {!isCreating && (
             <Button
               onClick={() => setIsCreating(true)}
@@ -428,44 +359,25 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             말씀 노트를 불러오는 중입니다...
           </p>
         </Card>
-      ) : displayedNotes.length === 0 ? (
+      ) : notes.length === 0 ? (
         <Card className="p-12 text-center">
           <BookMarked className="size-16 text-slate-300 mx-auto mb-4" />
           <p className="text-slate-500 text-lg mb-2">
-            {showFavoritesOnly
-              ? "즐겨찾기한 말씀이 없습니다."
-              : "아직 말씀 노트가 없습니다."}
+            아직 말씀 노트가 없습니다.
           </p>
-          <p className="text-slate-400">
-            {showFavoritesOnly
-              ? "별표를 클릭하여 말씀을 즐겨찾기해보세요."
-              : "첫 번째 말씀 노트를 작성해보세요."}
-          </p>
+          <p className="text-slate-400">첫 번째 말씀 노트를 작성해보세요.</p>
         </Card>
       ) : (
         <div className="space-y-4">
-          {displayedNotes.map((note) => (
+          {notes.map((note) => (
             <Card
               key={note.id}
               className="p-6 hover:shadow-lg transition-shadow bg-white border-amber-100"
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2 flex-1">
-                  <button
-                    onClick={() => toggleFavorite(note.id)}
-                    className={`${
-                      note.favorite ? "text-yellow-500" : "text-slate-300"
-                    } hover:text-yellow-600 transition-colors`}
-                    title={note.favorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}
-                  >
-                    <Star
-                      className={`size-6 ${
-                        note.favorite ? "fill-current" : ""
-                      }`}
-                    />
-                  </button>
-                  <h3 className="text-xl text-amber-900">{note.reference}</h3>
-                </div>
+                <h3 className="text-xl text-amber-900 flex-1">
+                  {note.reference}
+                </h3>
                 <div className="flex gap-1">
                   <button
                     onClick={() => handleEdit(note)}
