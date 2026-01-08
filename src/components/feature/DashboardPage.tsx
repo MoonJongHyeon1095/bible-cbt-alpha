@@ -20,12 +20,14 @@ import { supabase } from "../../lib/supabase/client";
 import type { SessionHistory } from "../../types/sessionHistory";
 import { normalizeSelectedCognitiveErrors } from "../../lib/normalizeSelectedCognitiveErrors";
 import { Card } from "../ui/card";
+import { HistoryModal } from "./HistoryModal";
 
 export function DashboardPage({ user }: { user: User | null }) {
   const [histories, setHistories] = useState<SessionHistory[]>([]);
   const [emotionTrends, setEmotionTrends] = useState<any[]>([]);
   const [topEmotions, setTopEmotions] = useState<any[]>([]);
   const [cognitiveErrorStats, setCognitiveErrorStats] = useState<any[]>([]);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -173,11 +175,24 @@ export function DashboardPage({ user }: { user: User | null }) {
   return (
     <div className="max-w-[1800px] mx-auto px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
-          <LayoutDashboard className="size-8 text-purple-600" />
-          나의 감정 대시보드
-        </h1>
-        <p className="text-slate-600">당신의 감정 여정을 한눈에 확인하세요.</p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
+              <LayoutDashboard className="size-8 text-purple-600" />
+              나의 감정 대시보드
+            </h1>
+            <p className="text-slate-600">
+              당신의 감정 여정을 한눈에 확인하세요.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowHistoryModal(true)}
+            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
+          >
+            세션 기록 보기
+          </button>
+        </div>
       </div>
 
       {/* 통계 카드 */}
@@ -392,6 +407,12 @@ export function DashboardPage({ user }: { user: User | null }) {
           </Card>
         </div>
       )}
+
+      <HistoryModal
+        open={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        user={user}
+      />
     </div>
   );
 }

@@ -9,7 +9,6 @@ import { HistoryModal } from "./feature/HistoryModal";
 import { CbtMode } from "./header/navigation/ModePicker";
 import { LeftPanel } from "./left/LeftPanel";
 import { RightPanel } from "./right/RightPanel";
-import { ToolDock } from "./tool/ToolDock";
 
 export function CBTSessionPage({
   mode,
@@ -159,12 +158,12 @@ export function CBTSessionPage({
       {/* ✅ PWA 단일 화면 */}
       <div className="mb-8">{renderStepScreen()}</div>
 
-      {/* ✅ 툴 도크 */}
-      <ToolDock
+      {/* 툴 도크 비활성화 */}
+      {/* <ToolDock
         onReset={resetAll}
         onOpenHistory={() => setShowHistoryModal(true)}
         onOpenEmail={() => setShowEmailModal(true)}
-      />
+      /> */}
 
       {/* ✅ 모달들 */}
       <HistoryModal
