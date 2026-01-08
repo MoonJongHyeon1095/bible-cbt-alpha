@@ -110,7 +110,7 @@ export function LeftPanel({
       return {
         badge: "STEP 3 · 공감 및 목표",
         title: "생각 속 오류를 함께 찾아볼까요?",
-        desc: "모종의 오류 가능성을 검토해보려 합니다.",
+        desc: "숨어있는 오류 가능성을 검토해보려 합니다.",
       };
     }
 

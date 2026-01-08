@@ -36,12 +36,6 @@ export function MobileTabBar({
     };
   }, []);
 
-  const splitLabel = (label: string) => {
-    const top = label.slice(0, 2);
-    const bottom = label.slice(2, 4);
-    return { top, bottom };
-  };
-
   const content = (
     <div
       ref={barRef}
@@ -53,7 +47,10 @@ export function MobileTabBar({
         bottom: 0,
       }}
     >
-      <div className="max-w-[1800px] mx-auto px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2">
+      <div
+        className="max-w-[1800px] mx-auto px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2"
+        style={{ WebkitTextSizeAdjust: "100%" }}
+      >
         <div className="flex items-stretch gap-1 overflow-x-auto">
           <button
             onClick={onHomeRefresh}
@@ -62,14 +59,18 @@ export function MobileTabBar({
           >
             <div className="flex flex-col items-center gap-1">
               <Home className="size-5" />
-              <span className="text-[8px] font-semibold leading-none">홈</span>
+              <span
+                className="font-semibold leading-none"
+                style={{ fontSize: "8px", lineHeight: 1 }}
+              >
+                홈
+              </span>
             </div>
           </button>
 
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = currentPage === item.id;
-            const { top, bottom } = splitLabel(item.label);
             return (
               <button
                 key={item.id}
@@ -82,9 +83,11 @@ export function MobileTabBar({
               >
                 <div className="flex flex-col items-center gap-1">
                   <Icon className="size-5" />
-                  <span className="text-[8px] font-semibold leading-[1.1]">
-                    <span className="block">{top}</span>
-                    <span className="block">{bottom}</span>
+                  <span
+                    className="font-semibold text-center whitespace-nowrap max-w-[64px] truncate"
+                    style={{ fontSize: "8px", lineHeight: 1 }}
+                  >
+                    {item.label}
                   </span>
                 </div>
               </button>

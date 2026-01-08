@@ -5,7 +5,7 @@ import type { EmotionThoughtPair } from "../types";
 import type { SelectedCognitiveError } from "../types/sessionHistory";
 import { CenterPanel } from "./center/CenterPanel";
 import { EmailModal } from "./feature/EmailModal";
-import { HistoryModal } from "./feature/HistoryModal";
+import { HistoryModal } from "./feature/dashboard/HistoryModal";
 import { CbtMode } from "./header/navigation/ModePicker";
 import { LeftPanel } from "./left/LeftPanel";
 import { RightPanel } from "./right/RightPanel";
@@ -169,6 +169,7 @@ export function CBTSessionPage({
       <HistoryModal
         open={showHistoryModal}
         onClose={() => setShowHistoryModal(false)}
+        onUpdated={() => {}}
         user={user}
       />
 

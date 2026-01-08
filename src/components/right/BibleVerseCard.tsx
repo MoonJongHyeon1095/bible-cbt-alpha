@@ -21,17 +21,19 @@ export function BibleVerseCard({
 }: BibleVerseCardProps) {
   return (
     <div className="bg-amber-50 p-6 rounded-xl border-2 border-amber-400">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <p className="text-amber-900 text-xl">📖 {bibleVerse.reference}</p>
+      <div className="flex flex-col gap-3 mb-3 sm:flex-row sm:items-start sm:justify-between">
+        <p className="text-amber-900 text-lg sm:text-xl flex-1 min-w-0 break-words">
+          📖 {bibleVerse.reference}
+        </p>
 
         {(onSaveScripture || onSavePrayer) && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end shrink-0">
             {onSaveScripture && (
               <Button
                 onClick={onSaveScripture}
                 variant="outline"
                 size="sm"
-                className="gap-2 border-amber-300 text-amber-800 hover:bg-amber-100"
+                className="gap-2 border-amber-300 text-amber-800 hover:bg-amber-100 w-full sm:w-auto"
                 disabled={!canSave || savingScripture}
               >
                 {savingScripture ? (
@@ -47,7 +49,7 @@ export function BibleVerseCard({
                 onClick={onSavePrayer}
                 variant="outline"
                 size="sm"
-                className="gap-2 border-blue-200 text-blue-800 hover:bg-blue-50"
+                className="gap-2 border-blue-200 text-blue-800 hover:bg-blue-50 w-full sm:w-auto"
                 disabled={!canSave || savingPrayer}
               >
                 {savingPrayer ? (
