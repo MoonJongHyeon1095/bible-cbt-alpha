@@ -1,4 +1,5 @@
 import { Home } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { NavSharedProps } from "./types";
 
@@ -13,6 +14,28 @@ export function MobileTabBar({
   onNavigate,
   onHomeRefresh,
 }: MobileTabBarProps) {
+  const barRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const updateHeight = () => {
+      if (!barRef.current) return;
+      const height = barRef.current.getBoundingClientRect().height;
+      document.documentElement.style.setProperty(
+        "--mobile-tabbar-height",
+        `${height}px`,
+      );
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => {
+      window.removeEventListener("resize", updateHeight);
+      document.documentElement.style.removeProperty("--mobile-tabbar-height");
+    };
+  }, []);
+
   const splitLabel = (label: string) => {
     const top = label.slice(0, 2);
     const bottom = label.slice(2, 4);
@@ -21,6 +44,7 @@ export function MobileTabBar({
 
   const content = (
     <div
+      ref={barRef}
       className="z-50 border-t border-slate-200 bg-white shadow-[0_-6px_16px_rgba(15,23,42,0.08)]"
       style={{
         position: "fixed",

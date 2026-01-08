@@ -155,7 +155,16 @@ export default function App() {
         onChangeMode={(next) => setMode(next)}
       />
 
-      <main className={isNativeMobile ? "pb-24" : "pb-16"}>{renderPage()}</main>
+      <main
+        className={isNativeMobile ? undefined : "pb-16"}
+        style={
+          isNativeMobile
+            ? { paddingBottom: "var(--mobile-tabbar-height, 96px)" }
+            : undefined
+        }
+      >
+        {renderPage()}
+      </main>
 
       {/* Footer: 모바일에서는 숨김 */}
       {isDesktop && (
