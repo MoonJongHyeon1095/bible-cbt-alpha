@@ -14,7 +14,7 @@ export function CenterHeader({
       return {
         badge: "STEP 1 · 사건 기록",
         title: "오늘 당신에게 무슨 일이 있었는지 들려주세요.",
-        desc: "상황을 적고, 감정을 고르고, 생각을 찾아볼 거예요.",
+        desc: "마음이 힘들었던 경험이나 불편했던 상황을 자유롭게 적어주세요.",
       };
     }
 

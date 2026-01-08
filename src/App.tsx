@@ -1,5 +1,8 @@
 // src/App.tsx
+import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style } from "@capacitor/status-bar";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
 import { AIChatPage } from "./components/feature/chat/AIChatPage";
@@ -11,13 +14,12 @@ import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPag
 import { ScriptureNotesPage } from "./components/feature/scripture-note/ScriptureNotesPage";
 import { VoicePage } from "./components/feature/VoicePage";
 import { CommentSection } from "./components/footer/CommentSection";
-import { Navigation } from "./components/header/Navigation";
-import { authHelpers } from "./lib/supabase/auth";
-import { toast } from "sonner";
+import { Navigation } from "./components/header/navigation/Navigation";
 import { Toaster } from "./components/ui/sonner";
+import { authHelpers } from "./lib/supabase/auth";
 
 import type { User } from "@supabase/supabase-js";
-import type { CbtMode } from "./components/header/ModePicker";
+import type { CbtMode } from "./components/header/navigation/ModePicker";
 
 const CBT_MODE_STORAGE_KEY = "cbt-mode";
 const DEFAULT_MODE: CbtMode = { detailMode: "lite", toneMode: "christian" };
@@ -32,6 +34,7 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isDesktop, setIsDesktop] = useState<boolean>(getIsDesktop);
+  const isNativeMobile = !isDesktop && Capacitor.isNativePlatform();
 
   // ✅ 전역 모드 상태(단일 소스)
   const [mode, setMode] = useState<CbtMode>(DEFAULT_MODE);
@@ -73,6 +76,22 @@ export default function App() {
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
+
+  useEffect(() => {
+    if (!isNativeMobile || Capacitor.getPlatform() !== "ios") return;
+
+    const applyStatusBarStyle = async () => {
+      try {
+        await StatusBar.setOverlaysWebView({ overlay: false });
+        await StatusBar.setBackgroundColor({ color: "#ffffff" });
+        await StatusBar.setStyle({ style: Style.Dark });
+      } catch {
+        // ignore
+      }
+    };
+
+    applyStatusBarStyle();
+  }, [isNativeMobile]);
 
   const checkUser = async () => {
     try {
@@ -153,17 +172,24 @@ export default function App() {
         onChangeMode={(next) => setMode(next)}
       />
 
-      <main className="pb-16">{renderPage()}</main>
+      <main
+        className={isNativeMobile ? undefined : "pb-16"}
+        style={
+          isNativeMobile
+            ? { paddingBottom: "var(--mobile-tabbar-height, 96px)" }
+            : undefined
+        }
+      >
+        {renderPage()}
+      </main>
 
       {/* Footer: 모바일에서는 숨김 */}
       {isDesktop && (
-        <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-16">
+        <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-8">
           <div className="max-w-[1800px] mx-auto px-8">
             <div className="text-center mb-8">
               <div className="inline-block bg-white border border-slate-200 shadow-sm rounded-2xl px-10 py-5 mb-6">
-                <p className="text-slate-500 text-sm mb-1">
-                  Copyright © 2025
-                </p>
+                <p className="text-slate-500 text-sm mb-1">Copyright © 2025</p>
                 <p className="text-slate-800 text-lg tracking-wide">
                   617ALLIANCE
                 </p>

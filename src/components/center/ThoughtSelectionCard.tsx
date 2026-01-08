@@ -1,4 +1,4 @@
-import { Bookmark, Check, Loader2, RefreshCw } from "lucide-react";
+import { Bookmark, Check, FolderOpen, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
@@ -133,8 +133,8 @@ export function ThoughtSelectionCard({
           size="sm"
           className="gap-2 border-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50"
         >
-          <Bookmark className="size-4" />
-          감정 노트에서 자동사고 불러오기
+          <FolderOpen className="size-4" />
+          감정 노트에서 불러오기
         </Button>
       </div>
 

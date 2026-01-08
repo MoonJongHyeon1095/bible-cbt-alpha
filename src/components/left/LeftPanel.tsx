@@ -9,7 +9,7 @@ import {
 } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
 import type { SelectedCognitiveError } from "../../types/sessionHistory";
-import type { CbtMode } from "../header/ModePicker";
+import type { CbtMode } from "../header/navigation/ModePicker";
 import { Card } from "../ui/card";
 import { CognitiveErrorPickerCard } from "./CognitiveErrorPickerCard";
 import { EmotionIntensityModal } from "./EmotionIntensityModal";
@@ -110,14 +110,14 @@ export function LeftPanel({
       return {
         badge: "STEP 3 · 공감 및 목표",
         title: "생각 속 오류를 함께 찾아볼까요?",
-        desc: "제안된 오류를 검토하고 맞다고 느끼는 것을 선택하세요.",
+        desc: "모종의 오류 가능성을 검토해보려 합니다.",
       };
     }
 
     if (step === 3 && intensitySet) {
       return {
         badge: "STEP 3 · 인지오류 검토",
-        title: "생각 속 오류를 함께 찾아볼까요?",
+        title: "인지오류 중 2가지를 선택해주세요.",
         desc: "제안된 오류를 검토하고 맞다고 느끼는 것을 선택하세요.",
       };
     }

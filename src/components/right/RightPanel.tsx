@@ -13,7 +13,7 @@ import type {
   SelectedCognitiveError,
   SessionHistory,
 } from "../../types/sessionHistory";
-import type { CbtMode } from "../header/ModePicker";
+import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { AlternativeThoughtCard } from "./AlternativeThoughtCard";

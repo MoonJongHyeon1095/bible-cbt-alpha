@@ -37,7 +37,7 @@ export function SelectedThoughtCard({
             ) : (
               <Bookmark className="size-4" />
             )}
-            {saving ? "저장 중..." : "감정노트에 대안사고 저장"}
+            {saving ? "저장 중..." : "감정노트에 저장"}
           </Button>
         ) : null}
       </div>

@@ -1,4 +1,4 @@
-import { Bookmark, Loader2, Shuffle } from "lucide-react";
+import { Bookmark, FolderOpen, Loader2, Shuffle } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 
@@ -34,7 +34,8 @@ export function IncidentStepCard({
     <div className="space-y-4">
       <div className="bg-blue-50 p-4 rounded-lg">
         <p className="text-slate-700 mb-2 text-base">
-          마음이 힘들었던 경험이나 불편했던 상황을 자유롭게 적어주세요.
+          작성한 사건으로 세션을 진행합니다. <br /> 세션당 소요시간은 약{" "}
+          <strong>5분</strong>입니다.
         </p>
         <p className="text-blue-700 text-base">
           💡 자세한 설명일수록 더욱 효과적입니다.
@@ -59,10 +60,10 @@ export function IncidentStepCard({
         <button
           onClick={onOpenSavedTriggers}
           className="flex items-center gap-2 px-3 py-2 rounded-lg border border-indigo-300 bg-indigo-50 hover:border-indigo-500 hover:bg-indigo-100 transition-all text-indigo-700 text-sm font-semibold shadow-sm"
-          title="감정 노트에서 불러오기"
+          title="불러오기"
         >
-          <Bookmark className="size-4" />
-          감정 노트에서 불러오기
+          <FolderOpen className="size-4" />
+          불러오기
         </button>
       </div>
       {/* 저장된 상황 불러오기는 모달로 분리 */}
@@ -74,10 +75,7 @@ export function IncidentStepCard({
         className="min-h-[120px] resize-none"
       />
 
-      <Button
-        onClick={onNext}
-        className="w-full bg-blue-600 hover:bg-blue-700"
-      >
+      <Button onClick={onNext} className="w-full bg-blue-600 hover:bg-blue-700">
         다음 단계로 이동
       </Button>
 

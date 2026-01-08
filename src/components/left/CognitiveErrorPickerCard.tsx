@@ -94,10 +94,6 @@ export function CognitiveErrorPickerCard({
           <strong>{emotionLabel}의 문장</strong>
         </p>
         <p className="text-slate-700 italic mb-1">"{thoughtText}"</p>
-
-        <p className="text-slate-700 text-sm mt-3">
-          아래 인지오류 후보 중 <strong>2가지를 선택</strong>해주세요.
-        </p>
       </div>
 
       {rankLoading && !ranked ? (

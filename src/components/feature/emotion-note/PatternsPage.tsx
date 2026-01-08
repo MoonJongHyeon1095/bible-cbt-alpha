@@ -11,26 +11,22 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { EMOTIONS } from "../../center/constants/emotions";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import { PatternAlternativesCard } from "./PatternAlternativesCard";
 import { PatternDetailsCard } from "./PatternDetailsCard";
-import type {
-  Pattern,
-  PatternAlternative,
-  PatternDetail,
-} from "./types";
-import { EMOTIONS } from "../../center/constants/emotions";
+import type { Pattern, PatternAlternative, PatternDetail } from "./types";
 import {
+  createAlternativeAPI,
   createDetailAPI,
   createNoteAPI,
+  deleteAlternativeAPI,
   deleteDetailAPI,
   deleteNoteAPI,
   fetchNotesAPI,
-  createAlternativeAPI,
-  deleteAlternativeAPI,
   updateAlternativeAPI,
   updateDetailAPI,
   updateNoteAPI,
@@ -100,9 +96,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
     const details = Array.isArray(rawDetails)
       ? rawDetails
           .map(mapDetailRow)
-          .sort(
-            (a: PatternDetail, b: PatternDetail) =>
-              (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
+          .sort((a: PatternDetail, b: PatternDetail) =>
+            (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
           )
       : [];
     const rawAlternatives =
@@ -126,10 +121,14 @@ export function PatternsPage({ user }: PatternsPageProps) {
   };
 
   const sortDetailsDesc = (list: PatternDetail[]) =>
-    [...list].sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+    [...list].sort((a, b) =>
+      (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
+    );
 
   const sortAlternativesDesc = (list: PatternAlternative[]) =>
-    [...list].sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+    [...list].sort((a, b) =>
+      (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
+    );
 
   const loadPatterns = async () => {
     setLoading(true);
@@ -138,7 +137,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
     if (user) {
       try {
         const { ok, payload } = await fetchNotesAPI(true);
-        if (!ok) throw new Error(payload?.error || "감정 노트를 불러오지 못했습니다.");
+        if (!ok)
+          throw new Error(payload?.error || "감정 노트를 불러오지 못했습니다.");
 
         const mapped = Array.isArray(payload?.notes)
           ? payload.notes.map(mapPatternRow)
@@ -185,7 +185,9 @@ export function PatternsPage({ user }: PatternsPageProps) {
         const alternatives: PatternAlternative[] = Array.isArray(
           payload.note.alternatives
         )
-          ? sortAlternativesDesc(payload.note.alternatives.map(mapAlternativeRow))
+          ? sortAlternativesDesc(
+              payload.note.alternatives.map(mapAlternativeRow)
+            )
           : [];
         const newPattern: Pattern = {
           id: String(payload.note.id),
@@ -284,7 +286,9 @@ export function PatternsPage({ user }: PatternsPageProps) {
         p.id === patternId
           ? {
               ...p,
-              alternatives: p.alternatives.filter((a) => a.id !== alternativeId),
+              alternatives: p.alternatives.filter(
+                (a) => a.id !== alternativeId
+              ),
             }
           : p
       )
@@ -309,7 +313,14 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
     updateDetailForPattern(editingId, detail);
     saveLocalPatterns(
-      patterns.map((p) => (p.id === editingId ? { ...p, details: p.details.map((d) => (d.id === detail.id ? detail : d)) } : p))
+      patterns.map((p) =>
+        p.id === editingId
+          ? {
+              ...p,
+              details: p.details.map((d) => (d.id === detail.id ? detail : d)),
+            }
+          : p
+      )
     );
   };
 
@@ -386,7 +397,9 @@ export function PatternsPage({ user }: PatternsPageProps) {
         p.id === editingId
           ? {
               ...p,
-              alternatives: p.alternatives.filter((a) => a.id !== alternativeId),
+              alternatives: p.alternatives.filter(
+                (a) => a.id !== alternativeId
+              ),
             }
           : p
       )
@@ -508,7 +521,9 @@ export function PatternsPage({ user }: PatternsPageProps) {
           behavior: behavior.trim(),
         });
         if (!ok || !notePayload?.note) {
-          throw new Error(notePayload?.error || "감정 노트를 수정하지 못했습니다.");
+          throw new Error(
+            notePayload?.error || "감정 노트를 수정하지 못했습니다."
+          );
         }
 
         const nextDetails = Array.isArray(notePayload.note.details)
@@ -569,7 +584,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
       try {
         setLoading(true);
         const { ok, payload } = await deleteNoteAPI(id);
-        if (!ok) throw new Error(payload?.error || "감정 노트를 삭제하지 못했습니다.");
+        if (!ok)
+          throw new Error(payload?.error || "감정 노트를 삭제하지 못했습니다.");
       } catch (e) {
         console.error("패턴 삭제 실패:", e);
         toast.error("감정 노트를 삭제하지 못했습니다.");
@@ -599,7 +615,9 @@ export function PatternsPage({ user }: PatternsPageProps) {
           frequency: nextFrequency,
         });
         if (!ok || !payload?.note) {
-          throw new Error(payload?.error || "발생 횟수를 업데이트하지 못했습니다.");
+          throw new Error(
+            payload?.error || "발생 횟수를 업데이트하지 못했습니다."
+          );
         }
 
         const data = payload.note;
@@ -728,7 +746,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
             onClick={() => setIsCreating(true)}
             className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
           >
-            <Plus className="size-5 mr-2" />새 감정패턴 추가
+            <Plus className="size-5 mr-2" />
+            추가
           </Button>
         )}
       </div>
@@ -738,7 +757,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
         <Card className="p-6 mb-6 bg-indigo-50 border-2 border-indigo-200">
           <div className="flex items-start justify-between mb-4 gap-4">
             <h3 className="text-lg text-slate-900">
-              {editingId ? "감정패턴 수정" : "새 감정패턴 추가"}
+              {editingId ? "감정패턴 수정" : "추가"}
             </h3>
             <div className="flex gap-2">
               <Button
@@ -819,7 +838,9 @@ export function PatternsPage({ user }: PatternsPageProps) {
                           <Button
                             size="sm"
                             onClick={handleAddDetail}
-                            disabled={!emotion.trim() || !automaticThought.trim()}
+                            disabled={
+                              !emotion.trim() || !automaticThought.trim()
+                            }
                             className="bg-yellow-500 text-slate-900 hover:bg-yellow-600"
                           >
                             <Save className="size-4 mr-1" />
@@ -827,8 +848,13 @@ export function PatternsPage({ user }: PatternsPageProps) {
                           </Button>
                         </div>
                         <div>
-                          <p className="text-xs text-slate-600 mb-2">감정 선택</p>
-                          <EmotionSelector value={emotion} onSelect={setEmotion} />
+                          <p className="text-xs text-slate-600 mb-2">
+                            감정 선택
+                          </p>
+                          <EmotionSelector
+                            value={emotion}
+                            onSelect={setEmotion}
+                          />
                         </div>
                         <Textarea
                           value={automaticThought}
@@ -839,7 +865,10 @@ export function PatternsPage({ user }: PatternsPageProps) {
                       </div>
 
                       <PatternDetailsCard
-                        details={patterns.find((p) => p.id === editingId)?.details ?? []}
+                        details={
+                          patterns.find((p) => p.id === editingId)?.details ??
+                          []
+                        }
                         onUpdateDetail={handleDetailUpdate}
                         onDeleteDetail={handleDetailDelete}
                       />
@@ -885,7 +914,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
                       <PatternAlternativesCard
                         alternatives={
-                          patterns.find((p) => p.id === editingId)?.alternatives ?? []
+                          patterns.find((p) => p.id === editingId)
+                            ?.alternatives ?? []
                         }
                         onUpdateAlternative={handleAlternativeUpdate}
                         onDeleteAlternative={handleAlternativeDelete}
@@ -917,9 +947,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
                   type="button"
                   onClick={() => {
                     const targetId = mostFrequentPattern.id;
-                    const el = document.getElementById(
-                      `pattern-${targetId}`
-                    );
+                    const el = document.getElementById(`pattern-${targetId}`);
                     if (el) {
                       el.scrollIntoView({ behavior: "smooth", block: "start" });
                     }
@@ -967,19 +995,11 @@ export function PatternsPage({ user }: PatternsPageProps) {
               key={pattern.id}
               className="p-6 hover:shadow-lg transition-shadow bg-white border-indigo-100"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <h3 className="text-xl text-slate-900 mb-2 flex items-center gap-2">
-                    {pattern.title}
-                    <span className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
-                      {pattern.frequency}회 발생
-                    </span>
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    최초 기록: {formatDate(pattern.timestamp)}
-                  </p>
-                </div>
-                <div className="flex gap-1">
+              <div className="mb-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
+                    {pattern.frequency}회 발생
+                  </span>
                   <button
                     onClick={() => incrementFrequency(pattern.id)}
                     className="text-green-600 hover:text-green-700 px-3 py-1 bg-green-50 rounded text-sm"
@@ -988,20 +1008,32 @@ export function PatternsPage({ user }: PatternsPageProps) {
                   >
                     +1회
                   </button>
-                  <button
-                    onClick={() => handleEdit(pattern)}
-                    className="text-indigo-600 hover:text-indigo-700 p-1"
-                    title="수정"
-                  >
-                    <Edit2 className="size-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(pattern.id)}
-                    className="text-red-600 hover:text-red-700 p-1"
-                    title="삭제"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
+                </div>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <h3 className="text-xl text-slate-900 mb-2">
+                      {pattern.title}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      최초 기록: {formatDate(pattern.timestamp)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleEdit(pattern)}
+                      className="text-indigo-600 hover:text-indigo-700 p-1"
+                      title="수정"
+                    >
+                      <Edit2 className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(pattern.id)}
+                      className="text-red-600 hover:text-red-700 p-1"
+                      title="삭제"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
 

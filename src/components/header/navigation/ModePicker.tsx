@@ -1,8 +1,14 @@
 // src/components/header/ModePicker.tsx
 import { SlidersHorizontal } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "../ui/button";
-import { ToggleRow } from "../ui/mode-switch";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
+import { Button } from "../../ui/button";
+import { ToggleRow } from "../../ui/mode-switch";
 
 export type CbtMode = {
   detailMode: "lite" | "deep";
@@ -49,7 +55,7 @@ export function ModePicker({
 
   // ✅ 바깥 클릭 시 닫기
   useEffect(() => {
-    const onDown = (e: MouseEvent) => {
+    const onDown = (e: globalThis.MouseEvent) => {
       if (!show) return;
       const root = rootRef.current;
       if (!root) return;
@@ -96,7 +102,7 @@ export function ModePicker({
         size="icon"
         aria-label="세션 모드 설정"
         title={`세션 모드 설정 (${subtitle})`}
-        onClick={(e) => {
+        onClick={(e: ReactMouseEvent<HTMLButtonElement>) => {
           const el = e.currentTarget as unknown as HTMLElement;
           const next = !show;
 

@@ -26,6 +26,9 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
   const [expandedErrors, setExpandedErrors] = useState<
     Record<string, Set<number>>
   >({});
+  const [expandedHistories, setExpandedHistories] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     if (open) {
@@ -148,6 +151,13 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
     });
   };
 
+  const toggleHistory = (historyId: string) => {
+    setExpandedHistories((prev) => ({
+      ...prev,
+      [historyId]: !prev[historyId],
+    }));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
@@ -185,134 +195,39 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
                 key={history.id}
                 className="bg-slate-800/50 backdrop-blur-md border border-slate-700 rounded-xl p-5 space-y-4"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm text-slate-400">
-                        {formatDate(history.timestamp)}
+                <div className="flex items-start justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => toggleHistory(history.id)}
+                    className="flex-1 text-left"
+                    aria-expanded={expandedHistories[history.id] ?? false}
+                  >
+                    <div className="flex items-start gap-2">
+                      <span
+                        className={`mt-0.5 inline-flex size-7 items-center justify-center rounded-full border ${
+                          expandedHistories[history.id]
+                            ? "border-indigo-300/70 bg-indigo-500/20"
+                            : "border-indigo-400/50 bg-indigo-500/10"
+                        } shadow-[0_0_0_1px_rgba(255,255,255,0.08)]`}
+                      >
+                        <ChevronDown
+                          className={`size-4 transition-transform ${
+                            expandedHistories[history.id]
+                              ? "rotate-180 text-indigo-100"
+                              : "text-indigo-200"
+                          }`}
+                        />
                       </span>
-                    </div>
-
-                    <div className="space-y-6">
-                      {/* 경험 */}
-                      <div className="space-y-2">
-                        <p className="text-xs text-indigo-400">📝 경험</p>
-                        <div className="rounded-lg border border-indigo-500/20 bg-indigo-500/5 p-3">
-                          <p className="text-slate-200 leading-relaxed">
-                            {history.userInput}
-                          </p>
-                        </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-slate-100 leading-relaxed">
+                          {history.userInput || "경험"}
+                        </p>
+                        <span className="text-xs text-slate-400">
+                          {formatDate(history.timestamp)}
+                        </span>
                       </div>
-
-                      {/* 감정-자동사고 */}
-                      {history.emotionThoughtPairs.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-xs text-purple-400">
-                            💭 감정 & 자동사고
-                          </p>
-                          <div className="space-y-2">
-                            {history.emotionThoughtPairs.map((pair, idx) => (
-                              <div
-                                key={idx}
-                                className="rounded-lg border border-purple-300/40 bg-purple-900/30 p-3 space-y-2"
-                              >
-                                <div className="flex flex-wrap items-center gap-2 -ml-1">
-                                  <span className="inline-flex items-center rounded-full border-2 border-purple-100 bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-50 shadow-[0_0_0_1px_rgba(255,255,255,0.3)]">
-                                    {pair.emotion}
-                                  </span>
-                                  {pair.intensity != null && (
-                                    <span className="inline-flex items-center rounded-full border-2 border-purple-100 bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-50 shadow-[0_0_0_1px_rgba(255,255,255,0.3)]">
-                                      강도 {pair.intensity}/100
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-sm text-slate-200 leading-relaxed">
-                                  {pair.thought}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 인지오류 */}
-                      {history.selectedCognitiveErrors.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-xs text-orange-400">
-                            ⚠️ 인지오류
-                          </p>
-                          <div className="space-y-2">
-                            {history.selectedCognitiveErrors.map(
-                              (error, idx) => (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  onClick={() =>
-                                    toggleErrorDetail(history.id, idx)
-                                  }
-                                  className={`w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 ${
-                                    expandedErrors[history.id]?.has(idx)
-                                      ? "border-orange-400/60 bg-orange-500/15 text-slate-100 focus:ring-orange-300/60"
-                                      : "border-orange-500/30 bg-orange-500/5 text-slate-200 hover:bg-orange-500/10 focus:ring-orange-400/50"
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-between gap-2">
-                                    <span className="text-sm font-semibold">
-                                      {error.title}
-                                    </span>
-                                    <ChevronDown
-                                      className={`size-4 transition-transform ${
-                                        expandedErrors[history.id]?.has(idx)
-                                          ? "rotate-180 text-orange-200"
-                                          : "text-orange-300"
-                                      }`}
-                                    />
-                                  </div>
-                                  {expandedErrors[history.id]?.has(idx) &&
-                                    error.detail && (
-                                      <p className="mt-2 text-sm leading-relaxed">
-                                        {error.detail}
-                                      </p>
-                                    )}
-                                </button>
-                              )
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 대안사고 */}
-                      {history.selectedAlternativeThought && (
-                        <div className="space-y-2">
-                          <p className="text-xs text-green-400">
-                            ✨ 대안사고
-                          </p>
-                          <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3">
-                            <p className="text-sm text-slate-200 italic leading-relaxed">
-                              {history.selectedAlternativeThought}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 성경 말씀 */}
-                      {history.bibleVerse && (
-                        <div className="space-y-2">
-                          <p className="text-xs text-amber-400">
-                            📖 성경 말씀
-                          </p>
-                          <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-3 space-y-2">
-                            <p className="text-amber-300 text-sm font-semibold">
-                              {history.bibleVerse.reference}
-                            </p>
-                            <p className="text-slate-200 text-sm italic leading-relaxed">
-                              "{history.bibleVerse.verse}"
-                            </p>
-                          </div>
-                        </div>
-                      )}
                     </div>
-                  </div>
+                  </button>
 
                   {/* 삭제 버튼 */}
                   <Button
@@ -324,6 +239,122 @@ export function HistoryModal({ open, onClose, user }: HistoryModalProps) {
                     <Trash2 className="size-4" />
                   </Button>
                 </div>
+
+                {expandedHistories[history.id] && (
+                  <div className="space-y-6">
+                    {/* 경험 */}
+                    <div className="space-y-2">
+                      <p className="text-xs text-indigo-400">📝 경험</p>
+                      <div className="rounded-lg border border-indigo-500/20 bg-indigo-500/5 p-3">
+                        <p className="text-slate-200 leading-relaxed">
+                          {history.userInput}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 감정-자동사고 */}
+                    {history.emotionThoughtPairs.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-purple-400">
+                          💭 감정 & 자동사고
+                        </p>
+                        <div className="space-y-2">
+                          {history.emotionThoughtPairs.map((pair, idx) => (
+                            <div
+                              key={idx}
+                              className="rounded-lg border border-purple-300/40 bg-purple-900/30 p-3 space-y-2"
+                            >
+                              <div className="flex flex-wrap items-center gap-2 -ml-1">
+                                <span className="inline-flex items-center rounded-full border-2 border-purple-100 bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-50 shadow-[0_0_0_1px_rgba(255,255,255,0.3)]">
+                                  {pair.emotion}
+                                </span>
+                                {pair.intensity != null && (
+                                  <span className="inline-flex items-center rounded-full border-2 border-purple-100 bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-50 shadow-[0_0_0_1px_rgba(255,255,255,0.3)]">
+                                    강도 {pair.intensity}/100
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-slate-200 leading-relaxed">
+                                {pair.thought}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 인지오류 */}
+                    {history.selectedCognitiveErrors.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-orange-400">⚠️ 인지오류</p>
+                        <div className="space-y-2">
+                          {history.selectedCognitiveErrors.map(
+                            (error, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() =>
+                                  toggleErrorDetail(history.id, idx)
+                                }
+                                className={`w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 ${
+                                  expandedErrors[history.id]?.has(idx)
+                                    ? "border-orange-400/60 bg-orange-500/15 text-slate-100 focus:ring-orange-300/60"
+                                    : "border-orange-500/30 bg-orange-500/5 text-slate-200 hover:bg-orange-500/10 focus:ring-orange-400/50"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-sm font-semibold">
+                                    {error.title}
+                                  </span>
+                                  <ChevronDown
+                                    className={`size-4 transition-transform ${
+                                      expandedErrors[history.id]?.has(idx)
+                                        ? "rotate-180 text-orange-200"
+                                        : "text-orange-300"
+                                    }`}
+                                  />
+                                </div>
+                                {expandedErrors[history.id]?.has(idx) &&
+                                  error.detail && (
+                                    <p className="mt-2 text-sm leading-relaxed">
+                                      {error.detail}
+                                    </p>
+                                  )}
+                              </button>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 대안사고 */}
+                    {history.selectedAlternativeThought && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-green-400">✨ 대안사고</p>
+                        <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3">
+                          <p className="text-sm text-slate-200 italic leading-relaxed">
+                            {history.selectedAlternativeThought}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 성경 말씀 */}
+                    {history.bibleVerse && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-amber-400">📖 성경 말씀</p>
+                        <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-3 space-y-2">
+                          <p className="text-amber-300 text-sm font-semibold">
+                            {history.bibleVerse.reference}
+                          </p>
+                          <p className="text-slate-200 text-sm italic leading-relaxed">
+                            "{history.bibleVerse.verse}"
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))
           )}

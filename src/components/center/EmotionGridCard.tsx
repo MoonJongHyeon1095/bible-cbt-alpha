@@ -7,7 +7,10 @@ interface EmotionGridProps {
   onSelect: (emotion: EmotionData) => void;
 }
 
-export function EmotionGrid({ selectedEmotion, onSelect }: EmotionGridProps) {
+export function EmotionGridCard({
+  selectedEmotion,
+  onSelect,
+}: EmotionGridProps) {
   return (
     <div className="space-y-4">
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border-2 border-blue-200">
@@ -19,8 +22,8 @@ export function EmotionGrid({ selectedEmotion, onSelect }: EmotionGridProps) {
       {selectedEmotion && (
         <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-xl text-center text-green-900 border-2 border-green-300 shadow-sm">
           <span className="text-lg">
-            선택된 감정:{" "}
-            <strong className="text-xl">{selectedEmotion}</strong> ✓
+            선택된 감정: <strong className="text-xl">{selectedEmotion}</strong>{" "}
+            ✓
           </span>
         </div>
       )}

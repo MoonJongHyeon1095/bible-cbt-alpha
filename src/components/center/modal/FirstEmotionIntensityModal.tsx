@@ -1,14 +1,14 @@
 // src/components/center/FirstEmotionIntensityModal.tsx
 import { Heart, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "../ui/dialog";
-import { Slider } from "../ui/slider";
+} from "../../ui/dialog";
+import { Slider } from "../../ui/slider";
 
 interface FirstEmotionIntensityModalProps {
   open: boolean;

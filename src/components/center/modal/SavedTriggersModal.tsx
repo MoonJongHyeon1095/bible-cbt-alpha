@@ -5,8 +5,8 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "../ui/dialog";
-import type { EmotionNote } from "./types";
+} from "../../ui/dialog";
+import type { EmotionNote } from "../types";
 
 interface SavedTriggersModalProps {
   open: boolean;
@@ -92,7 +92,9 @@ export function SavedTriggersModal({
                       {page} / {totalPages}
                     </span>
                     <button
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      onClick={() =>
+                        setPage((p) => Math.min(totalPages, p + 1))
+                      }
                       className="px-3 py-1 rounded border border-slate-200 hover:border-indigo-300 hover:text-indigo-700 disabled:opacity-50"
                       disabled={page === totalPages}
                     >

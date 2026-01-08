@@ -1,13 +1,13 @@
 // src/components/prayer-note/PrayerNotesPage.tsx
+import type { User } from "@supabase/supabase-js";
 import { BookOpen, Edit2, Plus, Save, Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "../../../lib/supabase/client";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
-import { supabase } from "../../../lib/supabase/client";
-import { toast } from "sonner";
-import type { User } from "@supabase/supabase-js";
 
 interface PrayerNote {
   id: string;
@@ -283,11 +283,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
             <BookOpen className="size-8 text-purple-600" />
             기도 노트
           </h1>
-          <p className="text-slate-600">
-            {user
-              ? "로그인 상태에서 작성한 노트는 Supabase에 안전하게 저장됩니다."
-              : "로그인 시 기도 노트를 Supabase에 저장할 수 있습니다."}
-          </p>
+          <p className="text-slate-600">"아무 말 일단 써놓음"</p>
         </div>
         {!isCreating && (
           <Button
