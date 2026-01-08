@@ -29,7 +29,7 @@ export const authHelpers = {
     return { session, error };
   },
 
-  signInWithGoogle() {
+  async signInWithGoogle() {
     const redirectTo =
       Capacitor.isNativePlatform()
         ? "com.example.cbt://auth-callback"
@@ -37,9 +37,21 @@ export const authHelpers = {
           ? window.location.origin
           : undefined;
 
-    return supabase.auth.signInWithOAuth({
+    console.log("[auth] signInWithGoogle start:", {
+      isNative: Capacitor.isNativePlatform(),
+      redirectTo,
+    });
+
+    const result = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo },
     });
+
+    console.log("[auth] signInWithGoogle result:", {
+      hasUrl: Boolean(result.data?.url),
+      error: result.error ? result.error.message : null,
+    });
+
+    return result;
   },
 };

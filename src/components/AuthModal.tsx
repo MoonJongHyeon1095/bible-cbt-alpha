@@ -1,5 +1,5 @@
 import { Lock, LogIn, Mail, User, UserPlus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { authHelpers } from "../lib/supabase/auth";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
@@ -12,6 +12,7 @@ import {
 } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { supabase } from "../lib/supabase/client";
 
 interface AuthModalProps {
   open: boolean;
@@ -26,6 +27,18 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) return;
+      setLoading(false);
+      setError("");
+      onSuccess();
+      onClose();
+    });
+
+    return () => data.subscription.unsubscribe();
+  }, [onClose, onSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,9 +67,19 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      const { error } = await authHelpers.signInWithGoogle();
+      const { data, error } = await authHelpers.signInWithGoogle();
       if (error) throw error;
-      // OAuth 리다이렉트가 처리됨
+      console.log("[auth] google sign-in data:", {
+        hasUrl: Boolean(data?.url),
+      });
+
+      if (data?.url && typeof window !== "undefined") {
+        window.location.assign(data.url);
+        return;
+      }
+
+      setError("구글 로그인 리다이렉트 URL이 없습니다.");
+      setLoading(false);
     } catch (err: any) {
       setError(err.message || "구글 로그인 실패");
       setLoading(false);
