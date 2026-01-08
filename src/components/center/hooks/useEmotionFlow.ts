@@ -4,6 +4,7 @@ import { generateExtendedAutomaticThoughts } from "../../../lib/ai";
 import type { EmotionThoughtPair } from "../../../types";
 import type { CbtMode } from "../../header/navigation/ModePicker";
 import type { EmotionData } from "../types";
+import { validateUserText } from "../../../utils/validation";
 
 type PrefetchKey = string;
 const MIN_TRIGGER_LENGTH = 10;
@@ -197,6 +198,11 @@ export function useEmotionFlow({
     if (!trimmed) return;
     if (trimmed.length < MIN_TRIGGER_LENGTH) {
       toast.error("직접 입력한 생각을 10자 이상 적어주세요.");
+      return;
+    }
+    const validation = validateUserText(trimmed);
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
 

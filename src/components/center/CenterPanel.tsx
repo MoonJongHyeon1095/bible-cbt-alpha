@@ -17,6 +17,7 @@ import { SavedDetailsModal } from "./modal/SavedDetailsModal";
 import { SavedTriggersModal } from "./modal/SavedTriggersModal";
 import { ThoughtSelectionCard } from "./ThoughtSelectionCard";
 import type { EmotionNote } from "./types";
+import { validateUserText } from "../../utils/validation";
 
 interface CenterPanelProps {
   step: number;
@@ -105,10 +106,24 @@ export function CenterPanel({
       toast.error("상황을 10자 이상 입력해주세요.");
       return;
     }
+    const validation = validateUserText(userInput);
+    if (!validation.ok) {
+      toast.error(validation.message);
+      return;
+    }
     onNext();
   };
 
   const handleTriggerPick = (note: EmotionNote) => {
+    if (note.trigger.trim().length < MIN_TRIGGER_LENGTH) {
+      toast.error("상황을 10자 이상 입력해주세요.");
+      return;
+    }
+    const validation = validateUserText(note.trigger);
+    if (!validation.ok) {
+      toast.error(validation.message);
+      return;
+    }
     handleInputChange(note.trigger, true);
     notes.setActiveNote(note.id, note.title, note.trigger);
     flow.resetForNewEmotion();

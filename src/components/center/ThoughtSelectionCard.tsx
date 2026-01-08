@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { LoadingInsightCard } from "./LoadingInsightCard";
 import type { EmotionData } from "./types";
+import { validateUserText } from "../../utils/validation";
 
 interface ThoughtSelectionCardProps {
   selectedEmotion: string;
@@ -59,6 +60,11 @@ export function ThoughtSelectionCard({
   const handleSaveCustomThought = () => {
     if (isCustomTooShort) {
       toast.error("직접 입력한 생각을 10자 이상 적어주세요.");
+      return;
+    }
+    const validation = validateUserText(customThoughtTrimmed);
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
     onAddFavorite(customThoughtTrimmed);
