@@ -114,7 +114,6 @@ export function WebCompactNav({
           }}
         >
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: 16 }}>메뉴</div>
             {user && (
               <div style={{ marginTop: 8 }}>
                 <div

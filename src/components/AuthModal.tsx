@@ -29,8 +29,13 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    if (!open && !loading) return;
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) return;
+      if (event !== "SIGNED_IN" && event !== "TOKEN_REFRESHED") return;
+      if (!open && !loading) return;
+
       setLoading(false);
       setError("");
       onSuccess();
@@ -38,7 +43,7 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
     });
 
     return () => data.subscription.unsubscribe();
-  }, [onClose, onSuccess]);
+  }, [loading, onClose, onSuccess, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
