@@ -1,5 +1,12 @@
 import type { User } from "@supabase/supabase-js";
-import { Brain, Calendar, Heart, LayoutDashboard, Target } from "lucide-react";
+import {
+  Brain,
+  Calendar,
+  Heart,
+  History,
+  LayoutDashboard,
+  Target,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Bar,
@@ -191,6 +198,7 @@ export function DashboardPage({ user }: { user: User | null }) {
             onClick={() => setShowHistoryModal(true)}
             className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
           >
+            <History className="mr-2 size-4" />
             세션 기록 보기
           </button>
         </div>
