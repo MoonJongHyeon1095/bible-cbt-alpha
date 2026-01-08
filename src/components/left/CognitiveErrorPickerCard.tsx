@@ -261,7 +261,7 @@ export function CognitiveErrorPickerCard({
             className="w-full gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
           >
             <RefreshCw className="size-4" />
-            다른 인지오류를 검토합니다. (선택한 것은 고정)
+            다른 인지오류를 검토합니다.
           </Button>
 
           <Button
