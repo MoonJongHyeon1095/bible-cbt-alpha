@@ -1,7 +1,7 @@
 {
-  "name": "마음생각고쳐쓰기 - 617ALLIANCE",
+  "name": "마음생각 다시쓰기 - 617ALLIANCE",
   "short_name": "마음생각",
-  "description": "기독교 기반 마음생각고쳐쓰기 플랫폼",
+  "description": "성경적 인지치료 플랫폼",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -24,7 +24,7 @@
   "categories": ["health", "lifestyle", "medical"],
   "shortcuts": [
     {
-      "name": "마음생각고쳐쓰기 시작",
+      "name": "마음생각 다시쓰기 시작",
       "short_name": "세션",
       "description": "새로운 세션 시작",
       "url": "/?page=cbt",
