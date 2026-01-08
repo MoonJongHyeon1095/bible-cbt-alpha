@@ -1,5 +1,5 @@
 // src/components/center/FirstEmotionIntensityModal.tsx
-import { Heart, Sparkles } from "lucide-react";
+import { ChevronDown, Heart, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../../ui/button";
 import {
@@ -40,9 +40,10 @@ export function FirstEmotionIntensityModal({
   onClose,
   isLoading,
 }: FirstEmotionIntensityModalProps) {
-  // 0: 설명, 1: 강도 측정, 2: 줄이기 선택
+  // 0: 설명 + 강도 측정, 1: 줄이기 선택
   const [modalStep, setModalStep] = useState(0);
   const [wantsToReduce, setWantsToReduce] = useState<boolean | null>(null);
+  const [showIntro, setShowIntro] = useState(false);
 
   // ✅ 강도 측정 완료 순간에 프리페치를 “딱 1번만” 호출
   const prefetchFiredRef = useRef(false);
@@ -51,6 +52,7 @@ export function FirstEmotionIntensityModal({
     if (!open) return;
     setModalStep(0);
     setWantsToReduce(null);
+    setShowIntro(false);
     prefetchFiredRef.current = false;
   }, [open, emotion]);
 
@@ -65,12 +67,6 @@ export function FirstEmotionIntensityModal({
 
   const handleNext = () => {
     if (modalStep === 0) {
-      setModalStep(1);
-      return;
-    }
-
-    // step 1 -> step 2 (강도 측정 완료)
-    if (modalStep === 1) {
       if (intensity <= 0) return;
 
       // ✅ 여기서 prefetch 시작
@@ -79,12 +75,12 @@ export function FirstEmotionIntensityModal({
         onPrefetchThoughts?.();
       }
 
-      setModalStep(2);
+      setModalStep(1);
       return;
     }
 
-    // step 2 -> confirm
-    if (modalStep === 2) {
+    // step 1 -> confirm
+    if (modalStep === 1) {
       if (wantsToReduce === null) return;
       onConfirm();
     }
@@ -128,53 +124,65 @@ export function FirstEmotionIntensityModal({
             </p>
           </div>
 
-          {/* Step 0 */}
+          {/* Step 0: 설명 + 강도 측정 */}
           {modalStep === 0 && (
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-8 space-y-4">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="size-8 text-blue-600 flex-shrink-0 mt-1" />
-                  <div className="space-y-4 flex-1">
-                    <p className="text-blue-800 leading-relaxed text-lg">
+              <div className="rounded-lg border border-slate-200 bg-white">
+                <button
+                  type="button"
+                  onClick={() => setShowIntro((prev) => !prev)}
+                  className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                  aria-expanded={showIntro}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex size-7 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                      <Sparkles className="size-4" />
+                    </span>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-slate-500">
+                        감정 인식
+                      </p>
+                      <h3 className="text-slate-800 text-sm font-semibold">
+                        왜 강도를 측정하나요?
+                      </h3>
+                    </div>
+                  </div>
+                  <ChevronDown
+                    className={`size-4 text-slate-500 transition-transform ${
+                      showIntro ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {showIntro && (
+                  <div className="border-t border-slate-200 px-4 pb-4 pt-3 space-y-3">
+                    <p className="text-slate-700 leading-relaxed">
                       많은 사람들이 부정적인 감정을 느낄 때{" "}
                       <strong>"그냥 기분이 안 좋아"</strong>라고만 생각합니다.
-                      <br />
-                      <br />
                       하지만 심리학 연구에 따르면,{" "}
-                      <strong className="text-blue-900">
+                      <strong className="text-slate-900">
                         감정을 구체적으로 인식하고 숫자로 표현하는 순간, 뇌의
                         편도체(감정 중추)가 진정되기 시작
                       </strong>
                       합니다.
                     </p>
 
-                    <div className="bg-white rounded-lg p-6 border border-blue-200">
-                      <p className="text-slate-800 leading-relaxed text-lg mb-3">
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                      <p className="text-slate-800 leading-relaxed text-sm">
                         💡 "{emotion}"의 강도를 측정한다는 것은, 그것을 관찰의
                         대상으로 삼는다는 뜻입니다.
                       </p>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
-              <Button
-                onClick={handleNext}
-                className="w-full py-7 text-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-              >
-                다음: {emotion}의 강도 측정하기 →
-              </Button>
-            </div>
-          )}
-
-          {/* Step 1 */}
-          {modalStep === 1 && (
-            <div className="space-y-6">
               <div className="bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-rose-300 rounded-xl p-8">
-                <p className="text-slate-800 text-2xl mb-6 text-center">
-                  <strong>
-                    지금 이 순간, "{emotion}"의 강도는 얼마인가요?
-                  </strong>
+                <p className="text-slate-800 text-xl sm:text-2xl mb-6 text-center leading-snug max-w-2xl mx-auto">
+                  <strong>지금 이 순간,</strong>{" "}
+                  <span className="font-semibold text-slate-900">
+                    "{emotion}"
+                  </span>
+                  <strong>의 강도는 얼마인가요?</strong>
                 </p>
 
                 <div className="space-y-6">
@@ -186,7 +194,7 @@ export function FirstEmotionIntensityModal({
                       <div className="text-2xl text-slate-600 mt-2">/ 100</div>
                     </div>
 
-                    <div className="mt-4 text-slate-700 text-xl">
+                    <div className="mt-4 text-slate-700 text-base sm:text-lg leading-relaxed max-w-xl mx-auto">
                       {getIntensityDescription()}
                     </div>
                   </div>
@@ -203,7 +211,7 @@ export function FirstEmotionIntensityModal({
                       className="w-full"
                     />
 
-                    <div className="flex justify-between text-base text-slate-500 mt-3">
+                    <div className="flex justify-between text-xs sm:text-sm text-slate-500 mt-3">
                       <span>0 (전혀 안 느껴짐)</span>
                       <span>50 (중간)</span>
                       <span>100 (최대한 강함)</span>
@@ -228,19 +236,11 @@ export function FirstEmotionIntensityModal({
                   ? "강도를 선택해주세요"
                   : `${emotion} ${intensity}점으로 계속하기 →`}
               </Button>
-
-              {!prefetchFiredRef.current ? null : (
-                <div className="text-center text-sm text-slate-500">
-                  {isLoading
-                    ? "자동사고를 준비 중입니다…"
-                    : "자동사고를 미리 준비해두고 있어요."}
-                </div>
-              )}
             </div>
           )}
 
-          {/* Step 2 */}
-          {modalStep === 2 && (
+          {/* Step 1 */}
+          {modalStep === 1 && (
             <div className="space-y-6">
               <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-6">
                 <h3 className="text-slate-900 text-xl font-semibold mb-2">
