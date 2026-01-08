@@ -203,19 +203,19 @@ export function HistoryModal({
         aria-describedby="history-description"
       >
         <div className="sticky top-0 z-30 px-6 pt-6 pb-4 bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-slate-900/90 border-b border-slate-800">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <DialogHeader className="text-left">
-              <DialogTitle className="text-2xl text-white flex items-center gap-2">
-                <Calendar className="size-6 text-indigo-400" />
-                이전 기록 다시보기
-              </DialogTitle>
-              <DialogDescription
-                id="history-description"
-                className="text-slate-400"
-              >
-                저장된 인지치료 세션 기록을 확인하고 관리할 수 있습니다.
-              </DialogDescription>
-            </DialogHeader>
+          <DialogHeader className="text-left">
+            <DialogTitle className="text-2xl text-white flex items-center gap-2">
+              <Calendar className="size-6 text-indigo-400" />
+              이전 기록 다시보기
+            </DialogTitle>
+            <DialogDescription
+              id="history-description"
+              className="text-slate-400"
+            >
+              저장된 인지치료 세션 기록을 확인하고 관리할 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 flex justify-end">
             <Button
               type="button"
               onClick={deleteAllHistories}

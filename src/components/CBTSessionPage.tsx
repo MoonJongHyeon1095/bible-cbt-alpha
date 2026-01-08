@@ -169,6 +169,7 @@ export function CBTSessionPage({
       <HistoryModal
         open={showHistoryModal}
         onClose={() => setShowHistoryModal(false)}
+        onUpdated={() => {}}
         user={user}
       />
 
