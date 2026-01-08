@@ -1,5 +1,15 @@
 import type { User } from "@supabase/supabase-js";
-import { BookMarked, Edit2, Plus, Save, Trash2, X } from "lucide-react";
+import {
+  BookMarked,
+  ChevronDown,
+  ChevronRight,
+  Edit2,
+  NotebookPen,
+  Plus,
+  Save,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "../../../lib/supabase/client";
@@ -44,7 +54,16 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   );
   const [editingReflectionContent, setEditingReflectionContent] =
     useState("");
+  const [expandedReflections, setExpandedReflections] = useState<
+    Record<string, boolean>
+  >({});
   const referenceRef = useRef<HTMLInputElement | null>(null);
+
+  const formatReflectionTitle = (content: string) => {
+    const trimmed = content.trim();
+    if (trimmed.length <= 20) return trimmed;
+    return `${trimmed.slice(0, 20)}…`;
+  };
 
   useEffect(() => {
     loadNotes();
@@ -656,7 +675,10 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-lg mb-3">
-                  <p className="text-sm text-slate-600 mb-3">💭 묵상 기록</p>
+                  <p className="text-sm text-slate-600 mb-3 flex items-center gap-2">
+                    <NotebookPen className="size-4 text-slate-500" />
+                    묵상 기록
+                  </p>
                   {reflections.length === 0 ? (
                     <p className="text-sm text-slate-400">
                       아직 묵상이 없습니다.
@@ -667,6 +689,10 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                         const isEditing =
                           editingReflectionNoteId === note.id &&
                           editingReflectionId === reflection.id;
+                        const reflectionKey = `${note.id}-${reflection.id}`;
+                        const isExpanded = Boolean(
+                          expandedReflections[reflectionKey]
+                        );
 
                         return (
                           <div
@@ -708,11 +734,30 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                               </div>
                             ) : (
                               <div>
-                                <div className="flex items-start justify-between">
-                                  <p className="text-slate-700 whitespace-pre-wrap">
-                                    {reflection.content}
-                                  </p>
-                                  <div className="flex gap-1">
+                                <div className="flex items-start justify-between gap-3">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setExpandedReflections((prev) => ({
+                                        ...prev,
+                                        [reflectionKey]: !isExpanded,
+                                      }))
+                                    }
+                                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                                    title={isExpanded ? "묵상 접기" : "묵상 펼치기"}
+                                  >
+                                    {isExpanded ? (
+                                      <ChevronDown className="size-4 text-slate-400" />
+                                    ) : (
+                                      <ChevronRight className="size-4 text-slate-400" />
+                                    )}
+                                    <span className="min-w-0 flex-1 text-sm text-slate-500">
+                                      {formatReflectionTitle(
+                                        reflection.content
+                                      )}
+                                    </span>
+                                  </button>
+                                  <div className="flex shrink-0 items-center gap-1">
                                     <button
                                       onClick={() => {
                                         setEditingReflectionNoteId(note.id);
@@ -740,6 +785,11 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                                     </button>
                                   </div>
                                 </div>
+                                {isExpanded && (
+                                  <p className="mt-3 text-slate-700 whitespace-pre-wrap break-words">
+                                    {reflection.content}
+                                  </p>
+                                )}
                                 <p className="text-xs text-slate-400 mt-2">
                                   {formatDate(reflection.timestamp)}
                                 </p>
