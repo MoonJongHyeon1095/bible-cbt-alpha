@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { generateExtendedAutomaticThoughts } from "../../../lib/ai";
 import type { EmotionThoughtPair } from "../../../types";
-import type { CbtMode } from "../../header/ModePicker";
+import type { CbtMode } from "../../header/navigation/ModePicker";
 import type { EmotionData } from "../types";
 
 type PrefetchKey = string;

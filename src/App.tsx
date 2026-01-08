@@ -1,4 +1,5 @@
 // src/App.tsx
+import { Capacitor } from "@capacitor/core";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AuthModal } from "./components/AuthModal";
@@ -12,12 +13,12 @@ import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPag
 import { ScriptureNotesPage } from "./components/feature/scripture-note/ScriptureNotesPage";
 import { VoicePage } from "./components/feature/VoicePage";
 import { CommentSection } from "./components/footer/CommentSection";
-import { Navigation } from "./components/header/Navigation";
+import { Navigation } from "./components/header/navigation/Navigation";
 import { Toaster } from "./components/ui/sonner";
 import { authHelpers } from "./lib/supabase/auth";
 
 import type { User } from "@supabase/supabase-js";
-import type { CbtMode } from "./components/header/ModePicker";
+import type { CbtMode } from "./components/header/navigation/ModePicker";
 
 const CBT_MODE_STORAGE_KEY = "cbt-mode";
 const DEFAULT_MODE: CbtMode = { detailMode: "lite", toneMode: "christian" };
@@ -32,6 +33,7 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isDesktop, setIsDesktop] = useState<boolean>(getIsDesktop);
+  const isNativeMobile = !isDesktop && Capacitor.isNativePlatform();
 
   // ✅ 전역 모드 상태(단일 소스)
   const [mode, setMode] = useState<CbtMode>(DEFAULT_MODE);
@@ -153,7 +155,7 @@ export default function App() {
         onChangeMode={(next) => setMode(next)}
       />
 
-      <main className="pb-16">{renderPage()}</main>
+      <main className={isNativeMobile ? "pb-24" : "pb-16"}>{renderPage()}</main>
 
       {/* Footer: 모바일에서는 숨김 */}
       {isDesktop && (

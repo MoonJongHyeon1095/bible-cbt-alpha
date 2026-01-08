@@ -1,15 +1,15 @@
 // src/components/CBTSessionPage.tsx
+import type { User } from "@supabase/supabase-js";
 import { useEffect, useMemo, useState } from "react";
 import type { EmotionThoughtPair } from "../types";
 import type { SelectedCognitiveError } from "../types/sessionHistory";
 import { CenterPanel } from "./center/CenterPanel";
 import { EmailModal } from "./feature/EmailModal";
 import { HistoryModal } from "./feature/HistoryModal";
-import { CbtMode } from "./header/ModePicker";
+import { CbtMode } from "./header/navigation/ModePicker";
 import { LeftPanel } from "./left/LeftPanel";
 import { RightPanel } from "./right/RightPanel";
 import { ToolDock } from "./tool/ToolDock";
-import type { User } from "@supabase/supabase-js";
 
 export function CBTSessionPage({
   mode,
@@ -101,16 +101,16 @@ export function CBTSessionPage({
             key={`center-${step}`}
             step={step}
             userInput={userInput}
-          emotionThoughtPairs={emotionThoughtPairs}
-          onInputChange={setUserInput}
-          onSetEmotionThoughtPairs={setEmotionThoughtPairs}
-          onNext={handleNext}
-          mode={mode}
-          user={user}
-        />
-      </div>
-    );
-  }
+            emotionThoughtPairs={emotionThoughtPairs}
+            onInputChange={setUserInput}
+            onSetEmotionThoughtPairs={setEmotionThoughtPairs}
+            onNext={handleNext}
+            mode={mode}
+            user={user}
+          />
+        </div>
+      );
+    }
 
     if (step === 3) {
       return (

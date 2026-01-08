@@ -3,7 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import type { EmotionThoughtPair } from "../../types";
-import { CbtMode } from "../header/ModePicker";
+import { CbtMode } from "../header/navigation/ModePicker";
 import { Card } from "../ui/card";
 import { CenterHeader } from "./CenterHeader";
 import { ALL_EXAMPLES } from "./constants/examples";

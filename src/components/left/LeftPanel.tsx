@@ -9,7 +9,7 @@ import {
 } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
 import type { SelectedCognitiveError } from "../../types/sessionHistory";
-import type { CbtMode } from "../header/ModePicker";
+import type { CbtMode } from "../header/navigation/ModePicker";
 import { Card } from "../ui/card";
 import { CognitiveErrorPickerCard } from "./CognitiveErrorPickerCard";
 import { EmotionIntensityModal } from "./EmotionIntensityModal";

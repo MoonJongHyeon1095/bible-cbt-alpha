@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import type { EmotionThoughtPair } from "../../types";
-import type { CbtMode } from "../header/ModePicker";
+import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
 
 type BurnsEmpathyShape = {
