@@ -177,10 +177,12 @@ export function FirstEmotionIntensityModal({
               </div>
 
               <div className="bg-gradient-to-r from-rose-50 to-pink-50 border-2 border-rose-300 rounded-xl p-8">
-                <p className="text-slate-800 text-2xl mb-6 text-center">
-                  <strong>
-                    지금 이 순간, "{emotion}"의 강도는 얼마인가요?
-                  </strong>
+                <p className="text-slate-800 text-xl sm:text-2xl mb-6 text-center leading-snug max-w-2xl mx-auto">
+                  <strong>지금 이 순간,</strong>{" "}
+                  <span className="font-semibold text-slate-900">
+                    "{emotion}"
+                  </span>
+                  <strong>의 강도는 얼마인가요?</strong>
                 </p>
 
                 <div className="space-y-6">
@@ -192,7 +194,7 @@ export function FirstEmotionIntensityModal({
                       <div className="text-2xl text-slate-600 mt-2">/ 100</div>
                     </div>
 
-                    <div className="mt-4 text-slate-700 text-xl">
+                    <div className="mt-4 text-slate-700 text-base sm:text-lg leading-relaxed max-w-xl mx-auto">
                       {getIntensityDescription()}
                     </div>
                   </div>
@@ -209,7 +211,7 @@ export function FirstEmotionIntensityModal({
                       className="w-full"
                     />
 
-                    <div className="flex justify-between text-base text-slate-500 mt-3">
+                    <div className="flex justify-between text-xs sm:text-sm text-slate-500 mt-3">
                       <span>0 (전혀 안 느껴짐)</span>
                       <span>50 (중간)</span>
                       <span>100 (최대한 강함)</span>
