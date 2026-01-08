@@ -1,5 +1,6 @@
 // src/App.tsx
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
 import { AIChatPage } from "./components/feature/chat/AIChatPage";
@@ -12,9 +13,8 @@ import { ScriptureNotesPage } from "./components/feature/scripture-note/Scriptur
 import { VoicePage } from "./components/feature/VoicePage";
 import { CommentSection } from "./components/footer/CommentSection";
 import { Navigation } from "./components/header/Navigation";
-import { authHelpers } from "./lib/supabase/auth";
-import { toast } from "sonner";
 import { Toaster } from "./components/ui/sonner";
+import { authHelpers } from "./lib/supabase/auth";
 
 import type { User } from "@supabase/supabase-js";
 import type { CbtMode } from "./components/header/ModePicker";
@@ -157,13 +157,11 @@ export default function App() {
 
       {/* Footer: 모바일에서는 숨김 */}
       {isDesktop && (
-        <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-16">
+        <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-8">
           <div className="max-w-[1800px] mx-auto px-8">
             <div className="text-center mb-8">
               <div className="inline-block bg-white border border-slate-200 shadow-sm rounded-2xl px-10 py-5 mb-6">
-                <p className="text-slate-500 text-sm mb-1">
-                  Copyright © 2025
-                </p>
+                <p className="text-slate-500 text-sm mb-1">Copyright © 2025</p>
                 <p className="text-slate-800 text-lg tracking-wide">
                   617ALLIANCE
                 </p>

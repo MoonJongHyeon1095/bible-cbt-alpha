@@ -1,13 +1,13 @@
 import { Bookmark, Loader2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "../ui/dialog";
-import type { EmotionNoteDetailWithNote } from "./types";
+} from "../../ui/dialog";
+import type { EmotionNoteDetailWithNote } from "../types";
 
 interface SavedDetailsModalProps {
   open: boolean;
