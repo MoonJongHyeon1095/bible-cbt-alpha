@@ -1,6 +1,6 @@
 
 // src/lib/gpt/cognitiveAnalysis.ts
-import { COGNITIVE_ERRORS } from "../../constants/errors";
+import { COGNITIVE_ERRORS_BY_INDEX } from "../../constants/errors";
 import { callGptText } from "./client";
 import {
   type CognitiveErrorAnalysisResult,
@@ -171,7 +171,7 @@ export async function analyzeCognitiveErrors(
 
     return {
       errors: detail.errors.map((d) => {
-        const meta = COGNITIVE_ERRORS[d.index - 1];
+        const meta = COGNITIVE_ERRORS_BY_INDEX[d.index];
         return {
           title: meta.title,
           description: meta.description,
@@ -186,7 +186,7 @@ export async function analyzeCognitiveErrors(
     const detail = fallbackDetail(FALLBACK_INDICES, situation, thought);
     return {
       errors: detail.errors.map((d) => {
-        const meta = COGNITIVE_ERRORS[d.index - 1];
+        const meta = COGNITIVE_ERRORS_BY_INDEX[d.index];
         return {
           title: meta.title,
           description: meta.description,

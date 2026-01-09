@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   analyzeCognitiveErrorDetails,
-  COGNITIVE_ERRORS,
+  COGNITIVE_ERRORS_BY_INDEX,
   type ErrorIndex,
   generateBurnsEmpathy,
   rankCognitiveErrors,
@@ -343,10 +343,18 @@ export function useLeftPanelState({
   const handleConfirm2Errors = useCallback(() => {
     if (selected.length !== 2) return;
 
-    const payload: SelectedCognitiveError[] = selected.map((idx) => ({
-      title: COGNITIVE_ERRORS[idx - 1].title,
-      detail: detailByIndex[idx]?.analysis,
-    }));
+    const payload: SelectedCognitiveError[] = selected.flatMap((idx) => {
+      const meta = COGNITIVE_ERRORS_BY_INDEX[idx];
+      if (!meta) return [];
+      return [
+        {
+          id: meta.id,
+          index: meta.index,
+          title: meta.title,
+          detail: detailByIndex[idx]?.analysis,
+        },
+      ];
+    });
 
     onSelectCognitiveErrors(payload);
     onNext();

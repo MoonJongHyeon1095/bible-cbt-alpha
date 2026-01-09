@@ -1,4 +1,11 @@
+import type {
+  CognitiveErrorId,
+  CognitiveErrorIndex,
+} from "../constants/errors";
+
 export interface SelectedCognitiveError {
+  id?: CognitiveErrorId;
+  index?: CognitiveErrorIndex;
   title: string;
   detail?: string;
 }

@@ -3,10 +3,6 @@ import type { User } from "@supabase/supabase-js";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import {
-  generateBibleVerse,
-  generateContextualAlternativeThoughts,
-} from "../../lib/ai";
 import { supabase } from "../../lib/supabase/client";
 import type { EmotionThoughtPair } from "../../types";
 import type {
@@ -14,23 +10,22 @@ import type {
   SessionHistory,
 } from "../../types/sessionHistory";
 import type { CbtMode } from "../header/navigation/ModePicker";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../ui/accordion";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { AlternativeThoughtCard } from "./AlternativeThoughtCard";
 import { AlternativeThoughtIntroCard } from "./AlternativeThoughtIntroCard";
 import { AlternativeThoughtQuoteCard } from "./AlternativeThoughtQuoteCard";
+import { BehaviorReviewCard } from "./BehaviorReviewCard";
 import { BibleOfferCard } from "./BibleOfferCard";
 import { BibleVerseCard } from "./BibleVerseCard";
 import { FinalIntensityCard } from "./FinalIntensityCard";
+import { ProgressSummaryCard } from "./ProgressSummaryCard";
 import { SelectedThoughtCard } from "./SelectedThoughtCard";
-import type { AlternativeThought, BibleVerseResult } from "./types";
-import { createAlternativeAPI } from "./utils/api";
+import { ShalomCard } from "./ShalomCard";
+import { useAlternativeThoughts } from "./hooks/useAlternativeThoughts";
+import { useBibleVerse } from "./hooks/useBibleVerse";
+import { useFinalIntensity } from "./hooks/useFinalIntensity";
+import { useTriggerNotes } from "./hooks/useTriggerNotes";
 
 interface RightPanelProps {
   step: number;
@@ -73,132 +68,63 @@ export function RightPanel({
     [emotionThoughtPairs]
   );
 
-  const [alternativeThoughts, setAlternativeThoughts] = useState<
-    AlternativeThought[]
-  >([]);
-  const [thoughtsLoading, setThoughtsLoading] = useState(false);
-  const [thoughtsError, setThoughtsError] = useState<string | null>(null);
-
-  const [wantsBibleVerse, setWantsBibleVerse] = useState<boolean | null>(null);
-  const [bibleVerse, setBibleVerse] = useState<BibleVerseResult | null>(null);
-  const [bibleLoading, setBibleLoading] = useState(false);
-  const [bibleError, setBibleError] = useState<string | null>(null);
   const [savingScripture, setSavingScripture] = useState(false);
   const [savingPrayer, setSavingPrayer] = useState(false);
-  const [savingAlternative, setSavingAlternative] = useState(false);
-
-  const [finalIntensities, setFinalIntensities] = useState<
-    Record<string, number>
-  >({});
-  const [showFinalIntensity, setShowFinalIntensity] = useState(false);
-  const [activeNoteIdState, setActiveNoteIdState] = useState<string | null>(
-    null
-  );
 
   const autoAdvancedRef = useRef(false);
-  const bibleChoiceLockedRef = useRef(false);
 
   const goNextIfNeeded = () => {
     if (step < 5) onNext();
   };
 
-  const seedFinalIntensitiesFromPairs = () => {
-    const initial: Record<string, number> = {};
-    for (const pair of emotionThoughtPairs) {
-      if (pair.intensity != null) initial[pair.emotion] = pair.intensity;
-    }
-    setFinalIntensities(initial);
-  };
-
-  useEffect(() => {
-    if (
-      step === 4 &&
-      alternativeThoughts.length === 0 &&
-      !thoughtsLoading &&
-      emotionThoughtPairs.length > 0
-    ) {
-      void generateAlternatives();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, emotionThoughtPairs]);
+  const {
+    alternativeThoughts,
+    thoughtsLoading,
+    thoughtsError,
+    generateAlternatives,
+  } = useAlternativeThoughts({
+    step,
+    userInput,
+    emotionThoughtPairs,
+    selectedCognitiveErrors,
+  });
+  const {
+    finalIntensities,
+    setFinalIntensities,
+    showFinalIntensity,
+    setShowFinalIntensity,
+    seedFinalIntensitiesFromPairs,
+  } = useFinalIntensity(emotionThoughtPairs);
+  const {
+    wantsBibleVerse,
+    setWantsBibleVerse,
+    bibleVerse,
+    bibleLoading,
+    bibleError,
+    handleWantsBible,
+    lockBibleChoice,
+  } = useBibleVerse({
+    step,
+    userInput,
+    emotionThoughtPairs,
+    isDeep,
+    isChristian,
+    hasSelectedThought,
+    onAdvance: goNextIfNeeded,
+  });
+  const { savingAlternative, handleSaveAlternative } = useTriggerNotes({
+    user,
+    userInput,
+    selectedAlternativeThought,
+  });
 
   useEffect(() => {
     if (!hasSelectedThought || step < 4) {
       autoAdvancedRef.current = false;
-      bibleChoiceLockedRef.current = false;
-
-      setWantsBibleVerse(null);
-      setBibleVerse(null);
-      setBibleError(null);
-      setBibleLoading(false);
-
       setShowFinalIntensity(false);
       setFinalIntensities({});
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasSelectedThought, step]);
-
-  useEffect(() => {
-    const key = "cbt_active_note";
-    const read = () => {
-      try {
-        const raw = sessionStorage.getItem(key);
-        if (!raw) return;
-        const parsed = JSON.parse(raw);
-        console.log("읽은 활성 노트 ID:", parsed?.noteId);
-        if (parsed?.noteId) setActiveNoteIdState(String(parsed.noteId));
-      } catch {
-        /* ignore */
-        console.log("활성 노트 ID 읽기 실패");
-      }
-    };
-    read();
-    const handler = () => read();
-    window.addEventListener("cbt-active-note-update", handler as any);
-    return () => {
-      window.removeEventListener("cbt-active-note-update", handler as any);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (
-      isChristian &&
-      hasSelectedThought &&
-      wantsBibleVerse === false &&
-      !bibleChoiceLockedRef.current
-    ) {
-      setWantsBibleVerse(null);
-      setBibleVerse(null);
-      setBibleError(null);
-      setBibleLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isChristian]);
-
-  const generateAlternatives = async () => {
-    setThoughtsLoading(true);
-    setThoughtsError(null);
-
-    try {
-      const emotions = emotionThoughtPairs.map((p) => p.emotion).join(", ");
-      const firstPair = emotionThoughtPairs[0];
-      const thoughts = await generateContextualAlternativeThoughts(
-        userInput,
-        emotions,
-        firstPair?.thought ?? "",
-        selectedCognitiveErrors
-      );
-
-      setAlternativeThoughts(thoughts);
-    } catch (err) {
-      setThoughtsError(
-        err instanceof Error ? err.message : "오류가 발생했습니다."
-      );
-      console.error("대안사고 생성 오류:", err);
-    } finally {
-      setThoughtsLoading(false);
-    }
-  };
+  }, [hasSelectedThought, setFinalIntensities, setShowFinalIntensity, step]);
 
   const handleSelectThought = (thought: string) => {
     onSetSelectedAlternativeThought(thought);
@@ -213,64 +139,8 @@ export function RightPanel({
     }
   };
 
-  const handleWantsBible = async () => {
-    bibleChoiceLockedRef.current = true;
-
-    setWantsBibleVerse(true);
-    setBibleLoading(true);
-    setBibleError(null);
-
-    try {
-      const emotions = emotionThoughtPairs
-        .map((p) =>
-          isDeep && p.intensity != null
-            ? `${p.emotion}(${p.intensity}/100)`
-            : p.emotion
-        )
-        .join(", ");
-
-      const verse = await generateBibleVerse(userInput, emotions);
-      setBibleVerse(verse);
-
-      goNextIfNeeded();
-    } catch (err) {
-      setBibleError(
-        err instanceof Error ? err.message : "오류가 발생했습니다."
-      );
-    } finally {
-      setBibleLoading(false);
-    }
-  };
-
-  const handleSaveAlternative = async () => {
-    if (!user || !activeNoteIdState || !selectedAlternativeThought.trim()) {
-      toast.error("저장된 상황이 있을 때만 저장할 수 있습니다.");
-      return;
-    }
-
-    if (savingAlternative) return;
-    const altText = selectedAlternativeThought.trim();
-
-    try {
-      setSavingAlternative(true);
-      const numericId = Number(activeNoteIdState);
-      const noteId = Number.isNaN(numericId) ? activeNoteIdState : numericId;
-      const { ok, payload } = await createAlternativeAPI({
-        noteId,
-        alternative: altText,
-      });
-      if (!ok) throw new Error(payload?.error || "저장에 실패했습니다.");
-      toast.success("대안사고가 저장되었습니다.");
-    } catch (e) {
-      console.error("대안사고 저장 실패:", e);
-      toast.error("대안사고를 저장하지 못했습니다.");
-    } finally {
-      setSavingAlternative(false);
-    }
-  };
-
   const handleDoesNotWantBible = async () => {
-    bibleChoiceLockedRef.current = true;
+    lockBibleChoice();
 
     setWantsBibleVerse(false);
 
@@ -499,8 +369,8 @@ export function RightPanel({
 
     return {
       badge: "STEP 4 · 선택 완료",
-      title: "선택을 확인하고 다음으로 넘어갈까요?",
-      desc: "필요하면 말씀 보기 여부를 선택한 뒤 진행하세요.",
+      title: "세션을 마무리하며 구체적인 행동을 고려해볼까요?",
+      desc: "행동의 변화가 마음의 변화를 가져오기 마련입니다.",
     };
   }, [step, hasSelectedThought, wantsBibleVerse, showFinalArea]);
 
@@ -562,28 +432,28 @@ export function RightPanel({
 
         {showStep4AfterPickPanel && (
           <div className="space-y-4">
-            <ProgressSummaryAccordion
+            <ProgressSummaryCard
               userInput={userInput}
               emotionThoughtPairs={emotionThoughtPairs}
               selectedCognitiveErrors={selectedCognitiveErrors}
             />
             <SelectedThoughtCard
               thought={selectedAlternativeThought}
-              canSave={Boolean(activeNoteIdState)}
-              isLoggedIn={Boolean(user)}
+              canSave={Boolean(userInput.trim())}
               saving={savingAlternative}
-              onSave={handleSaveAlternative}
-            />
-            <Button
-              onClick={() => {
+              onReviewAlternatives={() => {
                 onSetSelectedAlternativeThought("");
                 void generateAlternatives();
               }}
-              variant="outline"
-              className="w-full gap-2 border-purple-300 text-purple-700 hover:bg-purple-50"
-            >
-              다른 답변 검토하기
-            </Button>
+              reviewDisabled={thoughtsLoading}
+              onSave={handleSaveAlternative}
+            />
+            <BehaviorReviewCard
+              userInput={userInput}
+              emotionThoughtPairs={emotionThoughtPairs}
+              selectedCognitiveErrors={selectedCognitiveErrors}
+              selectedAlternativeThought={selectedAlternativeThought}
+            />
 
             {isChristian ? (
               <BibleOfferCard
@@ -594,7 +464,7 @@ export function RightPanel({
               />
             ) : (
               <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
-                <PeaceMessage />
+                <ShalomCard />
                 {isDeep ? (
                   <div className="flex items-center gap-2 text-slate-600 text-sm">
                     <Loader2 className="size-4 animate-spin" />
@@ -635,17 +505,22 @@ export function RightPanel({
 
             {!bibleLoading && !bibleError && bibleVerse && (
               <>
-                <ProgressSummaryAccordion
+                <ProgressSummaryCard
                   userInput={userInput}
                   emotionThoughtPairs={emotionThoughtPairs}
                   selectedCognitiveErrors={selectedCognitiveErrors}
                 />
                 <SelectedThoughtCard
                   thought={selectedAlternativeThought}
-                  canSave={Boolean(activeNoteIdState)}
-                  isLoggedIn={Boolean(user)}
+                  canSave={Boolean(userInput.trim())}
                   saving={savingAlternative}
                   onSave={handleSaveAlternative}
+                />
+                <BehaviorReviewCard
+                  userInput={userInput}
+                  emotionThoughtPairs={emotionThoughtPairs}
+                  selectedCognitiveErrors={selectedCognitiveErrors}
+                  selectedAlternativeThought={selectedAlternativeThought}
                 />
                 <BibleVerseCard
                   bibleVerse={bibleVerse}
@@ -667,17 +542,22 @@ export function RightPanel({
 
         {showFinalArea && (
           <div className="space-y-4">
-            <ProgressSummaryAccordion
+            <ProgressSummaryCard
               userInput={userInput}
               emotionThoughtPairs={emotionThoughtPairs}
               selectedCognitiveErrors={selectedCognitiveErrors}
             />
             <SelectedThoughtCard
               thought={selectedAlternativeThought}
-              canSave={Boolean(activeNoteIdState)}
-              isLoggedIn={Boolean(user)}
+              canSave={Boolean(userInput.trim())}
               saving={savingAlternative}
               onSave={handleSaveAlternative}
+            />
+            <BehaviorReviewCard
+              userInput={userInput}
+              emotionThoughtPairs={emotionThoughtPairs}
+              selectedCognitiveErrors={selectedCognitiveErrors}
+              selectedAlternativeThought={selectedAlternativeThought}
             />
             {showBibleOfferInFinalArea && (
               <BibleOfferCard
@@ -702,7 +582,7 @@ export function RightPanel({
                 />
               )}
 
-              <PeaceMessage />
+              <ShalomCard />
 
               {isDeep && hasAnyIntensity && !shouldShowDial ? (
                 <Button
@@ -748,108 +628,5 @@ export function RightPanel({
         )}
       </div>
     </Card>
-  );
-}
-
-function ProgressSummaryAccordion({
-  userInput,
-  emotionThoughtPairs,
-  selectedCognitiveErrors,
-}: {
-  userInput: string;
-  emotionThoughtPairs: EmotionThoughtPair[];
-  selectedCognitiveErrors: SelectedCognitiveError[];
-}) {
-  const hasUserInput = userInput.trim().length > 0;
-  const hasPairs = emotionThoughtPairs.length > 0;
-  const hasErrors = selectedCognitiveErrors.length > 0;
-
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <p className="text-slate-700 text-sm font-semibold mb-2">
-        지금까지 진행한 내용
-      </p>
-      <Accordion type="multiple" className="w-full">
-        <AccordionItem value="trigger">
-          <AccordionTrigger className="text-slate-700">
-            트리거 텍스트
-          </AccordionTrigger>
-          <AccordionContent className="text-slate-700">
-            {hasUserInput ? (
-              <p className="whitespace-pre-wrap">{userInput}</p>
-            ) : (
-              <p className="text-slate-500">입력된 트리거가 없습니다.</p>
-            )}
-          </AccordionContent>
-        </AccordionItem>
-        <AccordionItem value="auto-thoughts">
-          <AccordionTrigger className="text-slate-700">
-            자동사고
-          </AccordionTrigger>
-          <AccordionContent>
-            {hasPairs ? (
-              <div className="space-y-2">
-                {emotionThoughtPairs.map((pair, index) => (
-                  <div
-                    key={`${pair.emotion}-${index}`}
-                    className="rounded-md border border-slate-200 bg-slate-50 p-3"
-                  >
-                    <p className="text-xs text-slate-500 mb-1">
-                      {pair.emotion}
-                    </p>
-                    <p className="text-slate-700 whitespace-pre-wrap">
-                      "{pair.thought}"
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-slate-500">자동사고가 없습니다.</p>
-            )}
-          </AccordionContent>
-        </AccordionItem>
-        <AccordionItem value="cognitive-errors">
-          <AccordionTrigger className="text-slate-700">
-            선택한 인지오류
-          </AccordionTrigger>
-          <AccordionContent>
-            {hasErrors ? (
-              <div className="space-y-2">
-                {selectedCognitiveErrors.map((error, index) => (
-                  <div
-                    key={`${error.title}-${index}`}
-                    className="rounded-md border border-amber-200 bg-amber-50/60 p-3"
-                  >
-                    <p className="text-slate-800 font-medium mb-1">
-                      {error.title}
-                    </p>
-                    <p className="text-slate-600 text-sm whitespace-pre-wrap">
-                      {error.detail?.trim().length
-                        ? error.detail
-                        : "설명 텍스트가 없습니다."}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-slate-500">선택된 인지오류가 없습니다.</p>
-            )}
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-    </div>
-  );
-}
-
-function PeaceMessage({
-  className = "text-blue-900 mb-3",
-}: {
-  className?: string;
-}) {
-  return (
-    <p className={className}>
-      세션이 만족스러우셨을지 모르겠습니다. 다만 우리는 진심으로, 당신의 평안을
-      바랍니다.
-    </p>
   );
 }

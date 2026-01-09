@@ -7,6 +7,7 @@ import type {
   EmotionNoteDetail,
   EmotionNoteDetailWithNote,
 } from "../types";
+import { formatAutoTitle } from "../../../utils/formatAutoTitle";
 import { validateUserText } from "../../../utils/validation";
 import {
   createDetailAPI,
@@ -22,16 +23,6 @@ import {
 } from "../utils/storage";
 
 const MIN_TRIGGER_LENGTH = 10;
-
-function formatAutoTitle(date: Date) {
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  const yy = date.getFullYear().toString().slice(2);
-  const mm = pad(date.getMonth() + 1);
-  const dd = pad(date.getDate());
-  const hh = pad(date.getHours());
-  const min = pad(date.getMinutes());
-  return `${yy}년 ${mm}월 ${dd}일 ${hh}시 ${min}분에 저장`;
-}
 
 type ActiveNote = {
   id: string;

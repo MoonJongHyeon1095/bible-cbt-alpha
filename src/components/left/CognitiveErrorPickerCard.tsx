@@ -15,6 +15,7 @@ type DetailItem = {
 };
 
 type CognitiveErrorMeta = {
+  index: ErrorIndex;
   title: string;
   description: string;
 };
@@ -99,7 +100,7 @@ export function CognitiveErrorPickerCard({
   const canNext = pageIndex < totalPages - 1;
 
   const renderCard = (idx: ErrorIndex) => {
-    const meta = COGNITIVE_ERRORS[idx - 1];
+    const meta = COGNITIVE_ERRORS.find((item) => item.index === idx);
     const selectedOn = selected.includes(idx);
 
     const rankItem = (ranked ?? []).find((x) => x.index === idx);
@@ -261,7 +262,7 @@ export function CognitiveErrorPickerCard({
             className="w-full gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
           >
             <RefreshCw className="size-4" />
-            다른 인지오류를 검토합니다.
+            다른 인지오류 검토
           </Button>
 
           <Button
@@ -269,9 +270,7 @@ export function CognitiveErrorPickerCard({
             disabled={!canConfirm}
             className="w-full bg-green-600 hover:bg-green-700"
           >
-            {canConfirm
-              ? "다음 단계로 이동"
-              : "상세 서술이 준비되면 다음 단계로 이동"}
+            {canConfirm ? "다음 단계로 이동" : "상세 서술 준비 중"}
           </Button>
         </>
       )}
