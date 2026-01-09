@@ -63,8 +63,8 @@ export type BurnsEmpathyResult = {
   thoughtEmpathy: string;
   emotionEmpathy: string;
   iStatement: string;
-  question: string;
   soothing: string;
+  observedSelf: string;
 };
 
 export type AlternativeThoughtItem = {
@@ -137,7 +137,7 @@ export async function generateBurnsEmpathy(
   situation: string,
   emotion: string,
   thought: string,
-  intensity: number
+  intensity: number | null
 ): Promise<BurnsEmpathyResult> {
   return gptGenerateBurnsEmpathy(situation, emotion, thought, intensity);
 }

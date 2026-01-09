@@ -21,6 +21,10 @@ export interface SessionHistory {
   }>;
   selectedCognitiveErrors: SelectedCognitiveError[];
   selectedAlternativeThought: string;
+  selectedBehavior?: {
+    behaviorLabel: string;
+    behaviorText: string;
+  } | null;
   positiveReframes: { [emotion: string]: string };
   bibleVerse?: {
     verse: string;

@@ -1,0 +1,80 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { handleCors, json, readJson, requireAppKey } from "./_utils";
+import { getAuthUser, supabaseServiceClient } from "./_supabaseAuth";
+
+const TABLE = "emotion_error_details";
+const NOTES_TABLE = "emotion_notes";
+
+function mapError(row: any) {
+  return {
+    id: String(row.id),
+    noteId: String(row.note_id),
+    errorLabel: row.error_label ?? "",
+    errorDescription: row.error_description ?? "",
+    createdAt: row.created_at ?? "",
+  };
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  try {
+    if (handleCors(req, res)) return;
+    if (!requireAppKey(req)) return json(res, 401, { error: "Unauthorized" });
+    const user = await getAuthUser(req);
+    if (!user) return json(res, 401, { error: "Unauthorized" });
+
+    const supabase = supabaseServiceClient();
+
+    if (req.method === "POST") {
+      const body = await readJson(req);
+      const noteIdRaw = body?.noteId;
+      const errors: Array<{ errorLabel?: string; errorDescription?: string }> =
+        Array.isArray(body?.errors) ? body.errors : [];
+
+      if (!noteIdRaw) return json(res, 400, { error: "noteId가 필요합니다." });
+      if (errors.length === 0)
+        return json(res, 400, { error: "errors가 필요합니다." });
+
+      const numericNoteId = Number(noteIdRaw);
+      const noteId = Number.isNaN(numericNoteId) ? noteIdRaw : numericNoteId;
+
+      const { data: noteRow, error: noteError } = await supabase
+        .from(NOTES_TABLE)
+        .select("id")
+        .eq("id", noteId)
+        .eq("user_id", user.id)
+        .single();
+
+      if (noteError || !noteRow)
+        return json(res, 404, { error: "노트를 찾을 수 없습니다." });
+
+      const rows = errors
+        .map((item) => ({
+          error_label: String(item?.errorLabel ?? "").trim(),
+          error_description: String(item?.errorDescription ?? "").trim(),
+        }))
+        .filter((item) => item.error_label || item.error_description)
+        .map((item) => ({
+          user_id: user.id,
+          note_id: noteId,
+          error_label: item.error_label,
+          error_description: item.error_description,
+        }));
+
+      if (rows.length === 0)
+        return json(res, 400, { error: "errors가 비어 있습니다." });
+
+      const { data, error } = await supabase
+        .from(TABLE)
+        .insert(rows)
+        .select("id, note_id, error_label, error_description, created_at");
+
+      if (error) throw new Error(error.message);
+      return json(res, 200, { errors: (data ?? []).map(mapError) });
+    }
+
+    return json(res, 405, { error: "Method Not Allowed" });
+  } catch (e: any) {
+    console.error("[/api/emotion-error-details] error:", e);
+    return json(res, 500, { error: e?.message || "Internal Server Error" });
+  }
+}

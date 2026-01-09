@@ -3,6 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import type { CognitiveBehaviorId } from "../../constants/behaviors";
 import { supabase } from "../../lib/supabase/client";
 import type { EmotionThoughtPair } from "../../types";
 import type {
@@ -70,6 +71,12 @@ export function RightPanel({
 
   const [savingScripture, setSavingScripture] = useState(false);
   const [savingPrayer, setSavingPrayer] = useState(false);
+  const [selectedBehavior, setSelectedBehavior] = useState<{
+    behaviorId: CognitiveBehaviorId;
+    behaviorLabel: string;
+    behaviorText: string;
+  } | null>(null);
+  const [isBehaviorGenerating, setIsBehaviorGenerating] = useState(false);
 
   const autoAdvancedRef = useRef(false);
 
@@ -112,10 +119,19 @@ export function RightPanel({
     hasSelectedThought,
     onAdvance: goNextIfNeeded,
   });
-  const { savingAlternative, handleSaveAlternative } = useTriggerNotes({
+  const {
+    savingAlternative,
+    handleSaveAlternative,
+    savingBehavior,
+    handleSaveBehavior,
+    isAlternativeSaved,
+    isBehaviorSaved,
+  } = useTriggerNotes({
     user,
     userInput,
     selectedAlternativeThought,
+    selectedCognitiveErrors,
+    selectedBehavior,
   });
 
   useEffect(() => {
@@ -125,6 +141,13 @@ export function RightPanel({
       setFinalIntensities({});
     }
   }, [hasSelectedThought, setFinalIntensities, setShowFinalIntensity, step]);
+
+  useEffect(() => {
+    if (!selectedAlternativeThought) {
+      setSelectedBehavior(null);
+      setIsBehaviorGenerating(false);
+    }
+  }, [selectedAlternativeThought]);
 
   const handleSelectThought = (thought: string) => {
     onSetSelectedAlternativeThought(thought);
@@ -169,6 +192,12 @@ export function RightPanel({
       emotionThoughtPairs: pairsToSave,
       selectedCognitiveErrors,
       selectedAlternativeThought,
+      selectedBehavior: selectedBehavior
+        ? {
+            behaviorLabel: selectedBehavior.behaviorLabel,
+            behaviorText: selectedBehavior.behaviorText,
+          }
+        : null,
       positiveReframes,
       bibleVerse: wantsBibleVerse ? bibleVerse : null,
       detailMode: mode.detailMode,
@@ -183,6 +212,7 @@ export function RightPanel({
           emotion_thought_pairs: pairsToSave,
           selected_cognitive_errors: historyItem.selectedCognitiveErrors,
           selected_alternative_thought: historyItem.selectedAlternativeThought,
+          selected_behavior: historyItem.selectedBehavior,
           positive_reframes: historyItem.positiveReframes,
           bible_verse: historyItem.bibleVerse,
         });
@@ -205,6 +235,15 @@ export function RightPanel({
     }
 
     toast.success("세션 기록이 저장되었습니다. 평안을 기원합니다.");
+    try {
+      sessionStorage.removeItem("cbt_saved_error_keys");
+      sessionStorage.removeItem("cbt_saved_alternative_keys");
+      sessionStorage.removeItem("cbt_saved_behavior_keys");
+      sessionStorage.removeItem("cbt_saved_detail_keys");
+      sessionStorage.removeItem("cbt_active_note");
+    } catch {
+      /* ignore */
+    }
     onComplete();
   };
 
@@ -359,20 +398,12 @@ export function RightPanel({
       };
     }
 
-    if (showFinalArea) {
-      return {
-        badge: "STEP 5 · 마무리",
-        title: "세션을 마무리하며 구체적인 행동을 고려해볼까요?",
-        desc: "행동의 변화가 마음의 변화를 가져오기 마련입니다.",
-      };
-    }
-
     return {
-      badge: "STEP 4 · 선택 완료",
+      badge: "STEP 5 · 마무리",
       title: "세션을 마무리하며 구체적인 행동을 고려해볼까요?",
       desc: "행동의 변화가 마음의 변화를 가져오기 마련입니다.",
     };
-  }, [step, hasSelectedThought, wantsBibleVerse, showFinalArea]);
+  }, [step, hasSelectedThought, wantsBibleVerse]);
 
   return (
     <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
@@ -441,6 +472,7 @@ export function RightPanel({
               thought={selectedAlternativeThought}
               canSave={Boolean(userInput.trim())}
               saving={savingAlternative}
+              saved={isAlternativeSaved(selectedAlternativeThought)}
               onReviewAlternatives={() => {
                 onSetSelectedAlternativeThought("");
                 void generateAlternatives();
@@ -453,6 +485,12 @@ export function RightPanel({
               emotionThoughtPairs={emotionThoughtPairs}
               selectedCognitiveErrors={selectedCognitiveErrors}
               selectedAlternativeThought={selectedAlternativeThought}
+              selectedBehaviorId={selectedBehavior?.behaviorId ?? null}
+              onSelectBehavior={setSelectedBehavior}
+              onLoadingChange={setIsBehaviorGenerating}
+              onSaveBehavior={handleSaveBehavior}
+              savingBehavior={savingBehavior}
+              isBehaviorSaved={isBehaviorSaved}
             />
 
             {isChristian ? (
@@ -474,8 +512,9 @@ export function RightPanel({
                   <Button
                     onClick={handleDoesNotWantBible}
                     className="w-full bg-purple-600 hover:bg-purple-700"
+                    disabled={isBehaviorGenerating}
                   >
-                    완료하기
+                    {isBehaviorGenerating ? "행동 제안 생성중" : "완료하기"}
                   </Button>
                 )}
               </div>
@@ -514,6 +553,7 @@ export function RightPanel({
                   thought={selectedAlternativeThought}
                   canSave={Boolean(userInput.trim())}
                   saving={savingAlternative}
+                  saved={isAlternativeSaved(selectedAlternativeThought)}
                   onSave={handleSaveAlternative}
                 />
                 <BehaviorReviewCard
@@ -521,6 +561,12 @@ export function RightPanel({
                   emotionThoughtPairs={emotionThoughtPairs}
                   selectedCognitiveErrors={selectedCognitiveErrors}
                   selectedAlternativeThought={selectedAlternativeThought}
+                  selectedBehaviorId={selectedBehavior?.behaviorId ?? null}
+                  onSelectBehavior={setSelectedBehavior}
+                  onLoadingChange={setIsBehaviorGenerating}
+                  onSaveBehavior={handleSaveBehavior}
+                  savingBehavior={savingBehavior}
+                  isBehaviorSaved={isBehaviorSaved}
                 />
                 <BibleVerseCard
                   bibleVerse={bibleVerse}
@@ -532,8 +578,9 @@ export function RightPanel({
                 <Button
                   onClick={handleFinalComplete}
                   className="w-full py-6 text-lg bg-purple-600 hover:bg-purple-700"
+                  disabled={isBehaviorGenerating}
                 >
-                  완료
+                  {isBehaviorGenerating ? "행동제안 생성 중" : "완료"}
                 </Button>
               </>
             )}
@@ -551,6 +598,7 @@ export function RightPanel({
               thought={selectedAlternativeThought}
               canSave={Boolean(userInput.trim())}
               saving={savingAlternative}
+              saved={isAlternativeSaved(selectedAlternativeThought)}
               onSave={handleSaveAlternative}
             />
             <BehaviorReviewCard
@@ -558,6 +606,12 @@ export function RightPanel({
               emotionThoughtPairs={emotionThoughtPairs}
               selectedCognitiveErrors={selectedCognitiveErrors}
               selectedAlternativeThought={selectedAlternativeThought}
+              selectedBehaviorId={selectedBehavior?.behaviorId ?? null}
+              onSelectBehavior={setSelectedBehavior}
+              onLoadingChange={setIsBehaviorGenerating}
+              onSaveBehavior={handleSaveBehavior}
+              savingBehavior={savingBehavior}
+              isBehaviorSaved={isBehaviorSaved}
             />
             {showBibleOfferInFinalArea && (
               <BibleOfferCard
@@ -600,8 +654,9 @@ export function RightPanel({
                   <Button
                     onClick={handleFinalComplete}
                     className="w-full bg-purple-600 hover:bg-purple-700 mb-4"
+                    disabled={isBehaviorGenerating}
                   >
-                    완료
+                    {isBehaviorGenerating ? "행동 제안 생성중" : "완료"}
                   </Button>
                   {onRestartWithSameInput && (
                     <Button

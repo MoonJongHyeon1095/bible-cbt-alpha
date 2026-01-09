@@ -249,6 +249,7 @@ export function CenterPanel({
             canSubmit={flow.selectedThoughtIndex !== null}
             savingDetail={notes.savingDetail}
             savingDetailId={notes.savingDetailId}
+            isDetailSaved={notes.isDetailSaved}
           />
         )}
 

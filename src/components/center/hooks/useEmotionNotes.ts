@@ -67,6 +67,9 @@ export function useEmotionNotes({
   const [savedTriggerNotes, setSavedTriggerNotes] = useState<EmotionNote[]>([]);
   const [savingTrigger, setSavingTrigger] = useState(false);
   const [activeNote, setActiveNoteState] = useState<ActiveNote | null>(null);
+  const [savedDetailKeys, setSavedDetailKeys] = useState<Set<string>>(
+    () => new Set()
+  );
 
   const savingDetail = savingDetailId !== null;
   const activeNoteIdRef = useRef<string | null>(null);
@@ -180,6 +183,36 @@ export function useEmotionNotes({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useServerNotes]);
+
+  useEffect(() => {
+    const key = "cbt_saved_detail_keys";
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setSavedDetailKeys(new Set(parsed.map((id) => String(id))));
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const persistSavedDetailKey = (key: string) => {
+    setSavedDetailKeys((prev) => {
+      const next = new Set(prev);
+      next.add(key);
+      try {
+        sessionStorage.setItem(
+          "cbt_saved_detail_keys",
+          JSON.stringify(Array.from(next))
+        );
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  };
 
   const handleSaveTriggerOnly = async () => {
     if (savingTrigger) return;
@@ -391,6 +424,12 @@ export function useEmotionNotes({
           noteTrigger = mappedNote.trigger;
         }
 
+        const detailKey = `${noteId}:${thought}`;
+        if (savedDetailKeys.has(detailKey)) {
+          toast.info("이미 저장된 자동사고입니다.");
+          return;
+        }
+
         const { ok, payload } = await createDetailAPI({
           noteId,
           automaticThought: thought,
@@ -406,6 +445,7 @@ export function useEmotionNotes({
         const savedDetail = mapServerDetail(payload.detail);
         setActiveNote(noteId, noteTitle, noteTrigger);
         setSavedDetails((prev) => [savedDetail, ...prev]);
+        persistSavedDetailKey(detailKey);
         toast.success("자동사고가 감정 노트에 저장되었습니다.");
         return;
       } catch (e) {
@@ -446,6 +486,12 @@ export function useEmotionNotes({
         createdAt: nowIso,
       };
 
+      const detailKey = `${noteToUse.id}:${thought}`;
+      if (savedDetailKeys.has(detailKey)) {
+        toast.info("이미 저장된 자동사고입니다.");
+        return;
+      }
+
       const updatedNotes = (() => {
         const without = notes.filter((n) => n.id !== noteToUse.id);
         const mergedDetails = [detail, ...(noteToUse.details ?? [])];
@@ -464,6 +510,7 @@ export function useEmotionNotes({
         },
         ...prev,
       ]);
+      persistSavedDetailKey(detailKey);
       toast.success("자동사고가 감정 노트에 저장되었습니다.");
     } finally {
       setSavingDetailId(null);
@@ -558,6 +605,12 @@ export function useEmotionNotes({
     openSavedDetailsModal,
     closeSavedDetailsModal,
     addThoughtToFavorites,
+    isDetailSaved: (thought: string) => {
+      if (!activeNote?.id) return false;
+      const text = thought.trim();
+      if (!text) return false;
+      return savedDetailKeys.has(`${activeNote.id}:${text}`);
+    },
     loadFromFavorites,
     removeFromFavorites,
   };

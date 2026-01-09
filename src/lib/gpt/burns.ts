@@ -6,7 +6,7 @@ export interface BurnsEmpathyResult {
   emotionEmpathy: string;
   iStatement: string;
   soothing: string;
-  question: string;
+  observedSelf: string;
 }
 
 type LlmResponseShape = {
@@ -15,14 +15,18 @@ type LlmResponseShape = {
 
 const SYSTEM_PROMPT = `
 너는 한국어로 답하는 공감 전문 심리 상담가다.
-David Burns의 공감적 반응(정서와 생각 공감/재진술/I-Statement/달래기/제대로 이해했는지에 대한 질문)을 참고하되,
-사용자의 감정과 자동사고를 반박하거나 논쟁하지 않는다.
+사용자의 [상황], [감정], [자동사고]가 주어진다.
+감정 강도 정보가 함께 주어질 수도 있고, 없을 수도 있다.
+
+작성 내용:
+David Burns의 공감적 반응 기법 중 thoughtEmpathy/emotionEmpathy/iStatement(재진술)/soothing(달래기)을 작성한다.
+observedSelf("제가 발견한 당신의 모습")도 작성한다.
 
 스타일:
 - 반드시 존댓말(~요)만 사용한다.
 - 짧고 부드럽게, 따뜻하게, 단정/판단 금지.
+- 사용자의 감정과 자동사고를 반박하거나 논쟁하지 않는다.
 - 조언/해결책/훈계/설교 금지.
-- "하지만"으로 이어지는 반박 구조 금지.
 - AI가 인간인 것처럼 말하기 금지(경험 공유 금지: "저도 그런 적 있어요" 금지).
 
 출력 형식(JSON only):
@@ -32,16 +36,18 @@ David Burns의 공감적 반응(정서와 생각 공감/재진술/I-Statement/�
     "emotionEmpathy": "…",
     "iStatement": "…",
     "soothing": "…",
-    "question": "…"
+    "observedSelf": "…"
   }
 }
 
 필드 정의(각 1~2문장):
 - thoughtEmpathy: 자동사고가 생길 만한 배경/맥락 공감
-- emotionEmpathy: 감정의 자연스러움/정당성 인정(강도 반영)
+- emotionEmpathy: 감정의 자연스러움/정당성 인정(강도 정보가 있으면 반영)
 - iStatement: 관찰자의 따뜻한 진술(경험 공유/비교 금지)
 - soothing: 차분한 지지/안정감 제공(칭찬/위로/힘 실어주기)
-- question: 자신이 제대로 이해했는지에 대한 부드러운 확인 질문 (심문/추궁 금지)
+- observedSelf(2문장): "제가 발견한 당신의 모습"에 쓰일 문구. 두 문장으로 구성.
+  - 상황, 자동사고로부터 따뜻한 특성/노력/가치/태도를 짚어주는 한문장
+  - 감정을 긍정적으로 재평가하는 한문장
 
 제약:
 - JSON만 출력(설명/주석/코드블록/번호/불릿 금지)
@@ -52,7 +58,7 @@ const FALLBACK = (emotion: string, thought: string): BurnsEmpathyResult => ({
   emotionEmpathy: `${emotion}이 크게 느껴지시는 것도 충분히 그럴 수 있어요.`,
   iStatement: `제가 보기에는 지금은 마음이 많이 지친 상태처럼 읽혀요.`,
   soothing: `지금 이 감정을 있는 그대로 잠깐 두셔도 괜찮아요. 급하게 결론 내리지 않아도 돼요.`,
-  question: `지금 이 ${emotion}이 특히 커지는 순간이 어떤 때인지 떠오르세요?`,
+  observedSelf: `그럼에도 불구하고 스스로를 돌보려는 마음이 느껴져요.`,
 });
 
 function extractJsonObject(raw: string): string | null {
@@ -71,14 +77,16 @@ export async function generateBurnsEmpathy(
   situation: string,
   emotion: string,
   thought: string,
-  intensity: number
+  intensity: number | null
 ): Promise<BurnsEmpathyResult> {
+  const intensityLine =
+    typeof intensity === "number" ? `${emotion} : (${intensity}/100)` : emotion;
   const prompt = `
 [상황]
 ${situation}
 
-[감정]
-${emotion} (${intensity}/100)
+[감정${typeof intensity === "number" ? " : 강도(0~100)" : ""}]
+${intensityLine}
 
 [자동사고]
 ${thought}
@@ -100,7 +108,7 @@ ${thought}
       emotionEmpathy: cleanText(r.emotionEmpathy),
       iStatement: cleanText(r.iStatement),
       soothing: cleanText(r.soothing),
-      question: cleanText(r.question),
+      observedSelf: cleanText(r.observedSelf),
     };
 
     const fb = FALLBACK(emotion, thought);
@@ -109,7 +117,7 @@ ${thought}
       emotionEmpathy: result.emotionEmpathy || fb.emotionEmpathy,
       iStatement: result.iStatement || fb.iStatement,
       soothing: result.soothing || fb.soothing,
-      question: result.question || fb.question,
+      observedSelf: result.observedSelf || fb.observedSelf,
     };
   } catch (e) {
     console.error("번즈 공감 생성 실패(JSON):", e);

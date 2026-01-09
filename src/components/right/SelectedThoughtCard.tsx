@@ -7,6 +7,7 @@ interface SelectedThoughtCardProps {
   onSave?: () => void;
   canSave?: boolean;
   saving?: boolean;
+  saved?: boolean;
   onReviewAlternatives?: () => void;
   reviewDisabled?: boolean;
 }
@@ -17,6 +18,7 @@ export function SelectedThoughtCard({
   onSave,
   canSave = false,
   saving = false,
+  saved = false,
   onReviewAlternatives,
   reviewDisabled = false,
 }: SelectedThoughtCardProps) {
@@ -48,14 +50,16 @@ export function SelectedThoughtCard({
               variant="outline"
               onClick={onSave}
               className="gap-1 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
-              disabled={saving}
+              disabled={saving || saved}
             >
               {saving ? (
                 <Loader2 className="size-4 animate-spin" />
+              ) : saved ? (
+                <Bookmark className="size-4 text-purple-600" />
               ) : (
                 <Bookmark className="size-4" />
               )}
-              {saving ? "저장 중..." : "감정노트에 저장"}
+              {saving ? "저장 중..." : saved ? "저장됨" : "감정노트에 저장"}
             </Button>
           ) : null}
         </div>
