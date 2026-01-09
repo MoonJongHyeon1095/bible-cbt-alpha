@@ -250,7 +250,70 @@ export function PatternCard({
           </div>
         )}
 
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
+        <div className="alternatives-card rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm md:col-span-2">
+          <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-green-900">
+            <Lightbulb className="size-4" />
+            대안적 접근
+          </p>
+          {pattern.alternatives.length ? (
+            <div className="space-y-2">
+              {pattern.alternatives.map((alt) => {
+                const altKey = `${pattern.id}-${alt.id}`;
+                const isExpanded = Boolean(expandedAlternatives[altKey]);
+                return (
+                  <div
+                    key={alt.id}
+                    className="rounded-lg border border-green-200 bg-white p-3 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedAlternatives((prev) => ({
+                            ...prev,
+                            [altKey]: !isExpanded,
+                          }))
+                        }
+                        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                        title={
+                          isExpanded ? "대안적 접근 접기" : "대안적 접근 펼치기"
+                        }
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="size-4 text-slate-400" />
+                        ) : (
+                          <ChevronRight className="size-4 text-slate-400" />
+                        )}
+                        <span className="min-w-0 flex-1 text-sm text-slate-600">
+                          {formatAlternativeTitle(alt.alternative || "-")}
+                        </span>
+                      </button>
+                      <span
+                        className="text-slate-400"
+                        style={{ fontSize: "14px", lineHeight: "1" }}
+                      >
+                        {alt.createdAt
+                          ? new Date(alt.createdAt).toLocaleDateString("ko-KR")
+                          : ""}
+                      </span>
+                    </div>
+                    {isExpanded && (
+                      <p className="mt-3 text-slate-800 text-sm whitespace-pre-wrap break-words">
+                        {alt.alternative || "-"}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-green-800 whitespace-pre-wrap">
+              아직 대안이 작성되지 않았습니다.
+            </p>
+          )}
+        </div>
+
+        <div className="error-card rounded-xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
           <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-rose-900">
             <AlertCircle className="size-4 text-rose-700" />
             인지오류
@@ -314,7 +377,7 @@ export function PatternCard({
           )}
         </div>
 
-        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
+        <div className="behavior-card rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
           <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-blue-900">
             <Footprints className="size-4 text-blue-700" />
             행동 반응
@@ -401,69 +464,6 @@ export function PatternCard({
           ) : (
             <p className="text-sm text-blue-800 whitespace-pre-wrap">
               아직 행동 반응이 저장되지 않았습니다.
-            </p>
-          )}
-        </div>
-
-        <div className="alternatives-card rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm md:col-span-2">
-          <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-green-900">
-            <Lightbulb className="size-4" />
-            대안적 접근
-          </p>
-          {pattern.alternatives.length ? (
-            <div className="space-y-2">
-              {pattern.alternatives.map((alt) => {
-                const altKey = `${pattern.id}-${alt.id}`;
-                const isExpanded = Boolean(expandedAlternatives[altKey]);
-                return (
-                  <div
-                    key={alt.id}
-                    className="rounded-lg border border-green-200 bg-white p-3 shadow-sm"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setExpandedAlternatives((prev) => ({
-                            ...prev,
-                            [altKey]: !isExpanded,
-                          }))
-                        }
-                        className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                        title={
-                          isExpanded ? "대안적 접근 접기" : "대안적 접근 펼치기"
-                        }
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="size-4 text-slate-400" />
-                        ) : (
-                          <ChevronRight className="size-4 text-slate-400" />
-                        )}
-                        <span className="min-w-0 flex-1 text-sm text-slate-600">
-                          {formatAlternativeTitle(alt.alternative || "-")}
-                        </span>
-                      </button>
-                      <span
-                        className="text-slate-400"
-                        style={{ fontSize: "14px", lineHeight: "1" }}
-                      >
-                        {alt.createdAt
-                          ? new Date(alt.createdAt).toLocaleDateString("ko-KR")
-                          : ""}
-                      </span>
-                    </div>
-                    {isExpanded && (
-                      <p className="mt-3 text-slate-800 text-sm whitespace-pre-wrap break-words">
-                        {alt.alternative || "-"}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-sm text-green-800 whitespace-pre-wrap">
-              아직 대안이 작성되지 않았습니다.
             </p>
           )}
         </div>
