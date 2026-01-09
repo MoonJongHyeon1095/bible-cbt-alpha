@@ -4,6 +4,8 @@ import type { EmotionThoughtPair } from "../../../types";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
 import type { CognitiveBehaviorId } from "../../../constants/behaviors";
 
+const suggestionsCache = new Map<string, Record<CognitiveBehaviorId, string>>();
+
 type BehaviorMeta = {
   id: CognitiveBehaviorId;
   replacement_title: string;
@@ -84,6 +86,7 @@ export function useBehaviorSuggestions({
         next[item.behaviorId] = item.suggestion;
       });
 
+      suggestionsCache.set(requestKey, next);
       setSuggestionsById(next);
     } catch (err) {
       console.error("행동 제안 생성 오류:", err);
@@ -96,6 +99,7 @@ export function useBehaviorSuggestions({
     emotionThoughtPairs,
     selectedAlternativeThought,
     selectedCognitiveErrors,
+    requestKey,
     userInput,
   ]);
 
@@ -118,10 +122,11 @@ export function useBehaviorSuggestions({
 
         const next = suggestions[0]?.suggestion;
         if (next) {
-          setSuggestionsById((prev) => ({
-            ...prev,
-            [behaviorId]: next,
-          }));
+          setSuggestionsById((prev) => {
+            const updated = { ...prev, [behaviorId]: next };
+            suggestionsCache.set(requestKey, updated);
+            return updated;
+          });
         }
       } catch (err) {
         console.error("행동 제안 재생성 오류:", err);
@@ -139,6 +144,7 @@ export function useBehaviorSuggestions({
       emotionThoughtPairs,
       selectedAlternativeThought,
       selectedCognitiveErrors,
+      requestKey,
       userInput,
     ]
   );
@@ -146,6 +152,15 @@ export function useBehaviorSuggestions({
   useEffect(() => {
     if (!enabled || behaviors.length === 0) return;
     if (lastKeyRef.current === requestKey) return;
+
+    const cached = suggestionsCache.get(requestKey);
+    if (cached) {
+      lastKeyRef.current = requestKey;
+      setSuggestionsById(cached);
+      setErrorAll(null);
+      setErrorById({} as Record<CognitiveBehaviorId, string | null>);
+      return;
+    }
 
     lastKeyRef.current = requestKey;
     setSuggestionsById({} as Record<CognitiveBehaviorId, string>);

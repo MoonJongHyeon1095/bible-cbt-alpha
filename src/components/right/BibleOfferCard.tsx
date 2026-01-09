@@ -34,7 +34,7 @@ export function BibleOfferCard({
           말씀을 찾습니다
         </Button>
 
-        <Button onClick={onDecline} variant="outline">
+        <Button onClick={onDecline} variant="outline" disabled={bibleLoading}>
           아니오
         </Button>
       </div>
