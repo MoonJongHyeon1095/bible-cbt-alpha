@@ -14,6 +14,12 @@ import type {
   SessionHistory,
 } from "../../types/sessionHistory";
 import type { CbtMode } from "../header/navigation/ModePicker";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { AlternativeThoughtCard } from "./AlternativeThoughtCard";
@@ -486,8 +492,8 @@ export function RightPanel({
     if (showFinalArea) {
       return {
         badge: "STEP 5 · 마무리",
-        title: "세션을 마무리하며 감정 변화를 기록해볼까요?",
-        desc: "감정 강도를 남기고 세션을 저장할 수 있어요.",
+        title: "세션을 마무리하며 구체적인 행동을 고려해볼까요?",
+        desc: "행동의 변화가 마음의 변화를 가져오기 마련입니다.",
       };
     }
 
@@ -556,6 +562,11 @@ export function RightPanel({
 
         {showStep4AfterPickPanel && (
           <div className="space-y-4">
+            <ProgressSummaryAccordion
+              userInput={userInput}
+              emotionThoughtPairs={emotionThoughtPairs}
+              selectedCognitiveErrors={selectedCognitiveErrors}
+            />
             <SelectedThoughtCard
               thought={selectedAlternativeThought}
               canSave={Boolean(activeNoteIdState)}
@@ -624,6 +635,11 @@ export function RightPanel({
 
             {!bibleLoading && !bibleError && bibleVerse && (
               <>
+                <ProgressSummaryAccordion
+                  userInput={userInput}
+                  emotionThoughtPairs={emotionThoughtPairs}
+                  selectedCognitiveErrors={selectedCognitiveErrors}
+                />
                 <SelectedThoughtCard
                   thought={selectedAlternativeThought}
                   canSave={Boolean(activeNoteIdState)}
@@ -651,6 +667,11 @@ export function RightPanel({
 
         {showFinalArea && (
           <div className="space-y-4">
+            <ProgressSummaryAccordion
+              userInput={userInput}
+              emotionThoughtPairs={emotionThoughtPairs}
+              selectedCognitiveErrors={selectedCognitiveErrors}
+            />
             <SelectedThoughtCard
               thought={selectedAlternativeThought}
               canSave={Boolean(activeNoteIdState)}
@@ -727,6 +748,96 @@ export function RightPanel({
         )}
       </div>
     </Card>
+  );
+}
+
+function ProgressSummaryAccordion({
+  userInput,
+  emotionThoughtPairs,
+  selectedCognitiveErrors,
+}: {
+  userInput: string;
+  emotionThoughtPairs: EmotionThoughtPair[];
+  selectedCognitiveErrors: SelectedCognitiveError[];
+}) {
+  const hasUserInput = userInput.trim().length > 0;
+  const hasPairs = emotionThoughtPairs.length > 0;
+  const hasErrors = selectedCognitiveErrors.length > 0;
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <p className="text-slate-700 text-sm font-semibold mb-2">
+        지금까지 진행한 내용
+      </p>
+      <Accordion type="multiple" className="w-full">
+        <AccordionItem value="trigger">
+          <AccordionTrigger className="text-slate-700">
+            트리거 텍스트
+          </AccordionTrigger>
+          <AccordionContent className="text-slate-700">
+            {hasUserInput ? (
+              <p className="whitespace-pre-wrap">{userInput}</p>
+            ) : (
+              <p className="text-slate-500">입력된 트리거가 없습니다.</p>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="auto-thoughts">
+          <AccordionTrigger className="text-slate-700">
+            자동사고
+          </AccordionTrigger>
+          <AccordionContent>
+            {hasPairs ? (
+              <div className="space-y-2">
+                {emotionThoughtPairs.map((pair, index) => (
+                  <div
+                    key={`${pair.emotion}-${index}`}
+                    className="rounded-md border border-slate-200 bg-slate-50 p-3"
+                  >
+                    <p className="text-xs text-slate-500 mb-1">
+                      {pair.emotion}
+                    </p>
+                    <p className="text-slate-700 whitespace-pre-wrap">
+                      "{pair.thought}"
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-slate-500">자동사고가 없습니다.</p>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="cognitive-errors">
+          <AccordionTrigger className="text-slate-700">
+            선택한 인지오류
+          </AccordionTrigger>
+          <AccordionContent>
+            {hasErrors ? (
+              <div className="space-y-2">
+                {selectedCognitiveErrors.map((error, index) => (
+                  <div
+                    key={`${error.title}-${index}`}
+                    className="rounded-md border border-amber-200 bg-amber-50/60 p-3"
+                  >
+                    <p className="text-slate-800 font-medium mb-1">
+                      {error.title}
+                    </p>
+                    <p className="text-slate-600 text-sm whitespace-pre-wrap">
+                      {error.detail?.trim().length
+                        ? error.detail
+                        : "설명 텍스트가 없습니다."}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-slate-500">선택된 인지오류가 없습니다.</p>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
   );
 }
 
