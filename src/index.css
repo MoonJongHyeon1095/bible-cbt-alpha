@@ -561,6 +561,10 @@
   }
 
   .behavior-card {
+    order: 4;
+  }
+
+  .error-card {
     order: 3;
   }
   .\@container\/card-header {
