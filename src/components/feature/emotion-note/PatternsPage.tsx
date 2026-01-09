@@ -64,6 +64,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const [expandedAlternatives, setExpandedAlternatives] = useState<
     Record<string, boolean>
   >({});
+  const lastUserIdRef = useRef<string | null>(null);
   const patternsRef = useRef<Pattern[]>([]);
   const pendingFrequencyRef = useRef<Record<string, number>>({});
   const frequencySyncingRef = useRef<Record<string, boolean>>({});
@@ -90,10 +91,24 @@ export function PatternsPage({ user }: PatternsPageProps) {
     }
   }, [showAlternativeEditor, editingId]);
 
+  const clearPendingFrequency = (userId?: string) => {
+    pendingFrequencyRef.current = {};
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(pendingFrequencyStorageKey(userId));
+  };
+
   useEffect(() => {
-    const pending = loadPendingFrequency();
+    if (!user) {
+      if (lastUserIdRef.current) {
+        clearPendingFrequency(lastUserIdRef.current);
+      }
+      lastUserIdRef.current = null;
+      return;
+    }
+    lastUserIdRef.current = user.id;
+    const pending = loadPendingFrequency(user.id);
     pendingFrequencyRef.current = pending;
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     loadPatterns();
@@ -156,12 +171,13 @@ export function PatternsPage({ user }: PatternsPageProps) {
     return { backgroundColor: "#e0e7ff", color: "#4338ca" };
   };
 
-  const pendingFrequencyStorageKey = "emotion-note-frequency-pending";
+  const pendingFrequencyStorageKey = (userId?: string) =>
+    `emotion-note-frequency-pending:${userId ?? "guest"}`;
 
-  const loadPendingFrequency = () => {
+  const loadPendingFrequency = (userId?: string) => {
     if (typeof window === "undefined") return {};
     try {
-      const raw = localStorage.getItem(pendingFrequencyStorageKey);
+      const raw = localStorage.getItem(pendingFrequencyStorageKey(userId));
       if (!raw) return {};
       const parsed = JSON.parse(raw);
       return typeof parsed === "object" && parsed ? parsed : {};
@@ -171,14 +187,20 @@ export function PatternsPage({ user }: PatternsPageProps) {
     }
   };
 
-  const savePendingFrequency = (next: Record<string, number>) => {
+  const savePendingFrequency = (
+    next: Record<string, number>,
+    userId?: string
+  ) => {
     pendingFrequencyRef.current = next;
     if (typeof window === "undefined") return;
     if (Object.keys(next).length === 0) {
-      localStorage.removeItem(pendingFrequencyStorageKey);
+      localStorage.removeItem(pendingFrequencyStorageKey(userId));
       return;
     }
-    localStorage.setItem(pendingFrequencyStorageKey, JSON.stringify(next));
+    localStorage.setItem(
+      pendingFrequencyStorageKey(userId),
+      JSON.stringify(next)
+    );
   };
 
   const addPendingFrequency = (id: string, delta: number) => {
@@ -187,7 +209,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
     if (current[id] === 0) {
       delete current[id];
     }
-    savePendingFrequency(current);
+    savePendingFrequency(current, user?.id);
   };
 
   const applyPendingFrequency = (list: Pattern[]) => {
@@ -223,12 +245,15 @@ export function PatternsPage({ user }: PatternsPageProps) {
       if (remaining <= 0) {
         const next = { ...pendingFrequencyRef.current };
         delete next[id];
-        savePendingFrequency(next);
+        savePendingFrequency(next, user?.id);
       } else {
-        savePendingFrequency({
-          ...pendingFrequencyRef.current,
-          [id]: remaining,
-        });
+        savePendingFrequency(
+          {
+            ...pendingFrequencyRef.current,
+            [id]: remaining,
+          },
+          user?.id
+        );
       }
     } catch (e) {
       console.error("발생 횟수 동기화 실패:", e);
@@ -290,7 +315,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
     }
 
     entry.count += 1;
-    if (entry.count >= 3) {
+    if (entry.count >= 6) {
       entry.blockedUntil = now + blockMs;
       entry.lastToastAt = now;
       frequencyClickTracker.current[id] = entry;
@@ -360,6 +385,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
     // 로그인 상태: Supabase에서 로드
     if (user) {
+      pendingFrequencyRef.current = loadPendingFrequency(user.id);
       try {
         const { ok, payload } = await fetchNotesAPI(true);
         if (!ok)
