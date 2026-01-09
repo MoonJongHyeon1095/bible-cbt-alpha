@@ -1,7 +1,7 @@
 // src/lib/ai.ts
 // gpt
+import { COGNITIVE_ERRORS } from "../constants/errors";
 import {
-  COGNITIVE_ERRORS,
   type ErrorIndex, // (호환) 기존 단일 호출
   analyzeCognitiveErrorDetails as gptAnalyzeCognitiveErrorDetails,
   generateBibleVerse as gptGenerateBibleVerse,

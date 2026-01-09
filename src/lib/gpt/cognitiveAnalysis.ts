@@ -1,8 +1,8 @@
 
 // src/lib/gpt/cognitiveAnalysis.ts
+import { COGNITIVE_ERRORS } from "../../constants/errors";
 import { callGptText } from "./client";
 import {
-  COGNITIVE_ERRORS,
   type CognitiveErrorAnalysisResult,
   type CognitiveErrorRankResult,
   type ErrorIndex,
