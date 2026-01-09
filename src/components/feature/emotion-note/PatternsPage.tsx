@@ -64,6 +64,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const [expandedAlternatives, setExpandedAlternatives] = useState<
     Record<string, boolean>
   >({});
+  const patternsRef = useRef<Pattern[]>([]);
+  const pendingFrequencyRef = useRef<Record<string, number>>({});
+  const frequencySyncingRef = useRef<Record<string, boolean>>({});
+  const frequencyDebounceTimersRef = useRef<
+    Record<string, ReturnType<typeof setTimeout> | null>
+  >({});
+  const frequencyClickTracker = useRef<
+    Record<
+      string,
+      { count: number; firstAt: number; blockedUntil: number; lastToastAt: number }
+    >
+  >({});
 
   useEffect(() => {
     if (showDetailEditor) {
@@ -79,6 +91,11 @@ export function PatternsPage({ user }: PatternsPageProps) {
   }, [showAlternativeEditor, editingId]);
 
   useEffect(() => {
+    const pending = loadPendingFrequency();
+    pendingFrequencyRef.current = pending;
+  }, []);
+
+  useEffect(() => {
     loadPatterns();
   }, [user]);
 
@@ -87,6 +104,29 @@ export function PatternsPage({ user }: PatternsPageProps) {
       titleRef.current.focus();
     }
   }, [isCreating, editingId]);
+
+  useEffect(() => {
+    patternsRef.current = patterns;
+  }, [patterns]);
+
+  useEffect(() => {
+    if (!user) return;
+    const handlePageHide = () => flushAllPendingFrequencies();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        flushAllPendingFrequencies();
+      }
+    };
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("beforeunload", handlePageHide);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      flushAllPendingFrequencies();
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("beforeunload", handlePageHide);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [user]);
 
   const formatThoughtTitle = (content: string) => {
     const trimmed = content.trim();
@@ -98,6 +138,168 @@ export function PatternsPage({ user }: PatternsPageProps) {
     const trimmed = content.trim();
     if (trimmed.length <= 20) return trimmed;
     return `${trimmed.slice(0, 20)}…`;
+  };
+
+  const getFrequencyBadgeStyle = (frequency: number) => {
+    if (frequency >= 5) {
+      return { backgroundColor: "#4338ca", color: "#ffffff" };
+    }
+    if (frequency >= 4) {
+      return { backgroundColor: "#a5b4fc", color: "#1e1b4b" };
+    }
+    if (frequency >= 3) {
+      return { backgroundColor: "#c7d2fe", color: "#1e1b4b" };
+    }
+    if (frequency >= 2) {
+      return { backgroundColor: "#e0e7ff", color: "#3730a3" };
+    }
+    return { backgroundColor: "#e0e7ff", color: "#4338ca" };
+  };
+
+  const pendingFrequencyStorageKey = "emotion-note-frequency-pending";
+
+  const loadPendingFrequency = () => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = localStorage.getItem(pendingFrequencyStorageKey);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return typeof parsed === "object" && parsed ? parsed : {};
+    } catch (e) {
+      console.warn("로컬 누적 카운트 로드 실패:", e);
+      return {};
+    }
+  };
+
+  const savePendingFrequency = (next: Record<string, number>) => {
+    pendingFrequencyRef.current = next;
+    if (typeof window === "undefined") return;
+    if (Object.keys(next).length === 0) {
+      localStorage.removeItem(pendingFrequencyStorageKey);
+      return;
+    }
+    localStorage.setItem(pendingFrequencyStorageKey, JSON.stringify(next));
+  };
+
+  const addPendingFrequency = (id: string, delta: number) => {
+    const current = { ...pendingFrequencyRef.current };
+    current[id] = (current[id] || 0) + delta;
+    if (current[id] === 0) {
+      delete current[id];
+    }
+    savePendingFrequency(current);
+  };
+
+  const applyPendingFrequency = (list: Pattern[]) => {
+    if (!user) return list;
+    const pending = pendingFrequencyRef.current;
+    if (!pending || Object.keys(pending).length === 0) return list;
+    return list.map((pattern) => {
+      const delta = pending[pattern.id];
+      if (!delta) return pattern;
+      return {
+        ...pattern,
+        frequency: Math.max(1, (pattern.frequency || 1) + delta),
+      };
+    });
+  };
+
+  const flushFrequencyUpdate = async (id: string, frequency: number) => {
+    if (!user) return;
+    const pending = pendingFrequencyRef.current;
+    const pendingAtStart = pending[id] ?? 0;
+    if (pendingAtStart === 0) return;
+    if (frequencySyncingRef.current[id]) return;
+    frequencySyncingRef.current[id] = true;
+    try {
+      const { ok, payload } = await updateNoteAPI({ id, frequency });
+      if (!ok || !payload?.note) {
+        throw new Error(
+          payload?.error || "발생 횟수를 업데이트하지 못했습니다."
+        );
+      }
+      const latestPending = pendingFrequencyRef.current[id] ?? 0;
+      const remaining = latestPending - pendingAtStart;
+      if (remaining <= 0) {
+        const next = { ...pendingFrequencyRef.current };
+        delete next[id];
+        savePendingFrequency(next);
+      } else {
+        savePendingFrequency({
+          ...pendingFrequencyRef.current,
+          [id]: remaining,
+        });
+      }
+    } catch (e) {
+      console.error("발생 횟수 동기화 실패:", e);
+    } finally {
+      frequencySyncingRef.current[id] = false;
+    }
+  };
+
+  const scheduleFrequencySync = (id: string) => {
+    if (!user) return;
+    const timers = frequencyDebounceTimersRef.current;
+    if (timers[id]) {
+      clearTimeout(timers[id] as ReturnType<typeof setTimeout>);
+    }
+    timers[id] = setTimeout(() => {
+      const target = patternsRef.current.find((p) => p.id === id);
+      if (!target) return;
+      flushFrequencyUpdate(id, target.frequency);
+    }, 5000);
+  };
+
+  const flushAllPendingFrequencies = () => {
+    if (!user) return;
+    const pending = pendingFrequencyRef.current;
+    if (!pending || Object.keys(pending).length === 0) return;
+    Object.keys(pending).forEach((id) => {
+      const target = patternsRef.current.find((p) => p.id === id);
+      if (!target) return;
+      flushFrequencyUpdate(id, target.frequency);
+    });
+  };
+
+  const shouldBlockFrequencyClick = (id: string) => {
+    const now = Date.now();
+    const windowMs = 2000;
+    const blockMs = 2000;
+    const entry =
+      frequencyClickTracker.current[id] ?? {
+        count: 0,
+        firstAt: now,
+        blockedUntil: 0,
+        lastToastAt: 0,
+      };
+
+    if (entry.blockedUntil > now) {
+      if (now - entry.lastToastAt > 800) {
+        entry.lastToastAt = now;
+        toast.error("너무 빠릅니다. 잠시 후 다시 시도해주세요.");
+      }
+      frequencyClickTracker.current[id] = entry;
+      return true;
+    }
+
+    if (now - entry.firstAt > windowMs) {
+      entry.count = 1;
+      entry.firstAt = now;
+      frequencyClickTracker.current[id] = entry;
+      return false;
+    }
+
+    entry.count += 1;
+    if (entry.count >= 3) {
+      entry.blockedUntil = now + blockMs;
+      entry.lastToastAt = now;
+      frequencyClickTracker.current[id] = entry;
+      toast.error("너무 빠릅니다. 잠시 후 다시 시도해주세요.");
+      return true;
+    }
+
+    frequencyClickTracker.current[id] = entry;
+    return false;
   };
 
   const mapDetailRow = (row: any): PatternDetail => ({
@@ -167,7 +369,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
           ? payload.notes.map(mapPatternRow)
           : [];
 
-        setPatterns(mapped);
+        const merged = applyPendingFrequency(mapped);
+        setPatterns(merged);
+        const pending = pendingFrequencyRef.current;
+        if (pending && Object.keys(pending).length > 0) {
+          Object.keys(pending).forEach((id) => {
+            const target = merged.find((pattern) => pattern.id === id);
+            if (!target) return;
+            setTimeout(() => {
+              flushFrequencyUpdate(id, target.frequency);
+            }, 0);
+          });
+        }
         return;
       } catch (e) {
         console.error("패턴 로드 실패:", e);
@@ -632,59 +845,57 @@ export function PatternsPage({ user }: PatternsPageProps) {
   };
 
   const incrementFrequency = async (id: string) => {
+    if (shouldBlockFrequencyClick(id)) return;
     const target = patterns.find((p) => p.id === id);
     if (!target) return;
 
-    if (user) {
-      try {
-        setLoading(true);
-        const nextFrequency = (Number(target.frequency) || 1) + 1;
-        const { ok, payload } = await updateNoteAPI({
-          id,
-          frequency: nextFrequency,
-        });
-        if (!ok || !payload?.note) {
-          throw new Error(
-            payload?.error || "발생 횟수를 업데이트하지 못했습니다."
-          );
-        }
-
-        const data = payload.note;
-        setPatterns((prev) =>
-          prev.map((pattern) =>
-            pattern.id === id
-              ? {
-                  id: String(data.id),
-                  title: data.title ?? "",
-                  trigger: data.trigger ?? "",
-                  behavior: data.behavior ?? "",
-                  frequency: Number(data.frequency) || nextFrequency,
-                  timestamp: data.createdAt ?? pattern.timestamp,
-                  details: pattern.details,
-                  alternatives: pattern.alternatives,
-                }
-              : pattern
-          )
-        );
-      } catch (e) {
-        console.error("발생 횟수 증가 실패:", e);
-        toast.error("발생 횟수를 업데이트하지 못했습니다.");
-      } finally {
-        setLoading(false);
+    const nextFrequency = (Number(target.frequency) || 1) + 1;
+    setPatterns((prev) => {
+      const updated = prev.map((pattern) =>
+        pattern.id === id
+          ? {
+              ...pattern,
+              frequency: nextFrequency,
+            }
+          : pattern
+      );
+      if (!user) {
+        saveLocalPatterns(updated);
       }
-      return;
+      return updated;
+    });
+    if (user) {
+      addPendingFrequency(id, 1);
+      scheduleFrequencySync(id);
     }
+  };
 
-    const updated = patterns.map((pattern) =>
-      pattern.id === id
-        ? {
-            ...pattern,
-            frequency: (pattern.frequency || 0) + 1,
-          }
-        : pattern
-    );
-    setPatterns(updated);
-    saveLocalPatterns(updated);
+  const decrementFrequency = async (id: string) => {
+    if (shouldBlockFrequencyClick(id)) return;
+    const target = patterns.find((p) => p.id === id);
+    if (!target) return;
+
+    const nextFrequency = Math.max(1, (Number(target.frequency) || 1) - 1);
+    if (nextFrequency === target.frequency) return;
+
+    setPatterns((prev) => {
+      const updated = prev.map((pattern) =>
+        pattern.id === id
+          ? {
+              ...pattern,
+              frequency: nextFrequency,
+            }
+          : pattern
+      );
+      if (!user) {
+        saveLocalPatterns(updated);
+      }
+      return updated;
+    });
+    if (user) {
+      addPendingFrequency(id, -1);
+      scheduleFrequencySync(id);
+    }
   };
 
   const handleEdit = (pattern: Pattern) => {
@@ -1034,17 +1245,30 @@ export function PatternsPage({ user }: PatternsPageProps) {
             >
               <div className="mb-6 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
+                  <span
+                    className="text-sm px-3 py-1 rounded-full font-semibold"
+                    style={getFrequencyBadgeStyle(pattern.frequency)}
+                  >
                     {pattern.frequency}회 발생
                   </span>
-                  <button
-                    onClick={() => incrementFrequency(pattern.id)}
-                    className="text-green-600 hover:text-green-700 px-3 py-1 bg-green-50 rounded text-sm"
-                    disabled={loading}
-                    title="발생 횟수 +1"
-                  >
-                    +1회
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => incrementFrequency(pattern.id)}
+                      className="text-green-600 hover:text-green-700 px-3 py-1 bg-green-50 rounded text-sm"
+                      disabled={loading}
+                      title="발생 횟수 +1"
+                    >
+                      +1회
+                    </button>
+                    <button
+                      onClick={() => decrementFrequency(pattern.id)}
+                      className="text-red-600 hover:text-red-700 px-3 py-1 bg-red-50 rounded text-sm"
+                      disabled={loading || pattern.frequency <= 1}
+                      title="발생 횟수 -1"
+                    >
+                      -1회
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
