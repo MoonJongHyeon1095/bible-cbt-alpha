@@ -1,5 +1,5 @@
-import { Bookmark, Check, Loader2, RefreshCw } from "lucide-react";
-import { useEffect } from "react";
+import { Bookmark, Check, ChevronDown, Loader2, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { getRecommendedBehaviors } from "../../constants/errorBehaviorMap";
 import {
   COGNITIVE_ERRORS,
@@ -47,6 +47,7 @@ export function BehaviorReviewCard({
   savingBehavior?: boolean;
   isBehaviorSaved?: () => boolean;
 }) {
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const mappedErrors = selectedCognitiveErrors
     .map((error) => {
       const byId = error.id ? COGNITIVE_ERRORS_BY_ID[error.id] : undefined;
@@ -125,11 +126,27 @@ export function BehaviorReviewCard({
 
   return (
     <div className="rounded-lg border-2 border-indigo-200 bg-indigo-50 p-4">
-      <p className="text-indigo-900 mb-2">다음의 행동을 추천합니다.</p>
-      <p className="text-indigo-700 text-sm mb-4">
-        현재의 생각과 감정에 맞는 작은 행동을 하나만 골라보세요.
-      </p>
-      {behaviorList.length > 0 ? (
+      <button
+        type="button"
+        onClick={() => setIsCollapsed((prev) => !prev)}
+        className="w-full text-left"
+        aria-expanded={!isCollapsed}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-indigo-900">다음의 행동을 추천합니다.</p>
+            <p className="text-indigo-700 text-sm mt-1">
+              현재의 생각과 감정에 맞는 작은 행동을 하나만 골라보세요.
+            </p>
+          </div>
+          <ChevronDown
+            className={`mt-1 size-5 text-indigo-500 transition-transform ${
+              isCollapsed ? "" : "rotate-180"
+            }`}
+          />
+        </div>
+      </button>
+      {!isCollapsed && behaviorList.length > 0 ? (
         <Accordion type="multiple" className="w-full space-y-3">
           {behaviorList.map((item) => (
             <AccordionItem
@@ -154,9 +171,9 @@ export function BehaviorReviewCard({
                   </div>
                   {selectedBehaviorId === item.behavior.id ||
                   (onSaveBehavior && suggestionsById[item.behavior.id]) ? (
-                    <div className="flex flex-wrap justify-start gap-2">
+                    <div className="flex w-full flex-wrap items-center justify-between gap-2">
                       {selectedBehaviorId === item.behavior.id && (
-                        <span className="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide text-white">
+                        <span className="inline-flex items-center rounded-full bg-indigo-600 px-2 py-1 text-[9px] font-semibold uppercase leading-[1] tracking-wide text-white">
                           선택됨
                         </span>
                       )}
@@ -170,7 +187,7 @@ export function BehaviorReviewCard({
                                 asChild
                                 size="sm"
                                 variant="outline"
-                                className="gap-1 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+                                className="ml-auto gap-1 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
                                 disabled={savingBehavior || behaviorSaved}
                               >
                                 <span
@@ -325,9 +342,11 @@ export function BehaviorReviewCard({
           ))}
         </Accordion>
       ) : (
-        <p className="mt-3 text-indigo-700 text-sm">
-          추천 행동을 표시하려면 인지오류를 선택해주세요.
-        </p>
+        !isCollapsed && (
+          <p className="mt-3 text-indigo-700 text-sm">
+            추천 행동을 표시하려면 인지오류를 선택해주세요.
+          </p>
+        )
       )}
     </div>
   );
