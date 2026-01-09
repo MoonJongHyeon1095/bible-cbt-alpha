@@ -10,9 +10,16 @@ export function usePatternForm() {
   const [emotion, setEmotion] = useState("");
   const [behavior, setBehavior] = useState("");
   const [alternativeText, setAlternativeText] = useState("");
+  const [errorLabel, setErrorLabel] = useState("");
+  const [errorDescription, setErrorDescription] = useState("");
+  const [behaviorLabel, setBehaviorLabel] = useState("");
+  const [behaviorDescription, setBehaviorDescription] = useState("");
+  const [behaviorErrorTags, setBehaviorErrorTags] = useState<string[]>([]);
   const titleRef = useRef<HTMLInputElement | null>(null);
   const [showDetailEditor, setShowDetailEditor] = useState(false);
   const [showAlternativeEditor, setShowAlternativeEditor] = useState(false);
+  const [showErrorEditor, setShowErrorEditor] = useState(false);
+  const [showBehaviorEditor, setShowBehaviorEditor] = useState(false);
 
   useEffect(() => {
     if (showDetailEditor) {
@@ -26,6 +33,21 @@ export function usePatternForm() {
       setAlternativeText("");
     }
   }, [showAlternativeEditor, editingId]);
+
+  useEffect(() => {
+    if (showErrorEditor) {
+      setErrorLabel("");
+      setErrorDescription("");
+    }
+  }, [showErrorEditor, editingId]);
+
+  useEffect(() => {
+    if (showBehaviorEditor) {
+      setBehaviorLabel("");
+      setBehaviorDescription("");
+      setBehaviorErrorTags([]);
+    }
+  }, [showBehaviorEditor, editingId]);
 
   useEffect(() => {
     if (isCreating && editingId && titleRef.current) {
@@ -42,8 +64,15 @@ export function usePatternForm() {
     setEmotion("");
     setBehavior("");
     setAlternativeText("");
+    setErrorLabel("");
+    setErrorDescription("");
+    setBehaviorLabel("");
+    setBehaviorDescription("");
+    setBehaviorErrorTags([]);
     setShowDetailEditor(false);
     setShowAlternativeEditor(false);
+    setShowErrorEditor(false);
+    setShowBehaviorEditor(false);
   };
 
   const startEdit = (pattern: Pattern) => {
@@ -55,8 +84,15 @@ export function usePatternForm() {
     setBehavior(pattern.behavior);
     setIsCreating(true);
     setAlternativeText("");
+    setErrorLabel("");
+    setErrorDescription("");
+    setBehaviorLabel("");
+    setBehaviorDescription("");
+    setBehaviorErrorTags([]);
     setShowDetailEditor(false);
     setShowAlternativeEditor(false);
+    setShowErrorEditor(false);
+    setShowBehaviorEditor(false);
   };
 
   const resetForm = () => {
@@ -68,8 +104,15 @@ export function usePatternForm() {
     setEmotion("");
     setBehavior("");
     setAlternativeText("");
+    setErrorLabel("");
+    setErrorDescription("");
+    setBehaviorLabel("");
+    setBehaviorDescription("");
+    setBehaviorErrorTags([]);
     setShowDetailEditor(false);
     setShowAlternativeEditor(false);
+    setShowErrorEditor(false);
+    setShowBehaviorEditor(false);
   };
 
   return {
@@ -88,11 +131,25 @@ export function usePatternForm() {
     setBehavior,
     alternativeText,
     setAlternativeText,
+    errorLabel,
+    setErrorLabel,
+    errorDescription,
+    setErrorDescription,
+    behaviorLabel,
+    setBehaviorLabel,
+    behaviorDescription,
+    setBehaviorDescription,
+    behaviorErrorTags,
+    setBehaviorErrorTags,
     titleRef,
     showDetailEditor,
     setShowDetailEditor,
     showAlternativeEditor,
     setShowAlternativeEditor,
+    showErrorEditor,
+    setShowErrorEditor,
+    showBehaviorEditor,
+    setShowBehaviorEditor,
     startCreate,
     startEdit,
     resetForm,

@@ -72,6 +72,81 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return json(res, 200, { errors: (data ?? []).map(mapError) });
     }
 
+    if (req.method === "PATCH") {
+      const body = await readJson(req);
+      const id = body?.id;
+      if (!id) return json(res, 400, { error: "id가 필요합니다." });
+
+      const update = {
+        error_label:
+          body?.errorLabel != null ? String(body.errorLabel) : undefined,
+        error_description:
+          body?.errorDescription != null
+            ? String(body.errorDescription)
+            : undefined,
+      };
+      if (
+        update.error_label === undefined &&
+        update.error_description === undefined
+      ) {
+        return json(res, 400, { error: "업데이트할 값이 없습니다." });
+      }
+
+      const numericId = Number(id);
+      const { data: existing, error: fetchError } = await supabase
+        .from(TABLE)
+        .select("id, emotion_notes!inner(user_id)")
+        .eq("id", Number.isNaN(numericId) ? id : numericId)
+        .single();
+
+      if (fetchError || !existing)
+        return json(res, 404, { error: "인지오류를 찾을 수 없습니다." });
+      const owner =
+        Array.isArray(existing.emotion_notes) && existing.emotion_notes.length
+          ? existing.emotion_notes[0]?.user_id
+          : existing.emotion_notes?.user_id;
+      if (owner !== user.id) return json(res, 403, { error: "권한이 없습니다." });
+
+      const { data, error } = await supabase
+        .from(TABLE)
+        .update(update)
+        .eq("id", Number.isNaN(numericId) ? id : numericId)
+        .select("id, note_id, error_label, error_description, created_at")
+        .single();
+
+      if (error) throw new Error(error.message);
+      return json(res, 200, { errorDetail: mapError(data) });
+    }
+
+    if (req.method === "DELETE") {
+      const id = req.query.id as string | undefined;
+      if (!id) return json(res, 400, { error: "id가 필요합니다." });
+
+      const numericId = Number(id);
+      const { data: existing, error: fetchError } = await supabase
+        .from(TABLE)
+        .select("id, emotion_notes!inner(user_id)")
+        .eq("id", Number.isNaN(numericId) ? id : numericId)
+        .single();
+
+      if (fetchError || !existing)
+        return json(res, 404, { error: "인지오류를 찾을 수 없습니다." });
+
+      const owner =
+        Array.isArray(existing.emotion_notes) && existing.emotion_notes.length
+          ? existing.emotion_notes[0]?.user_id
+          : existing.emotion_notes?.user_id;
+      if (owner !== user.id) return json(res, 403, { error: "권한이 없습니다." });
+
+      const { error } = await supabase
+        .from(TABLE)
+        .delete()
+        .eq("id", Number.isNaN(numericId) ? id : numericId);
+
+      if (error) throw new Error(error.message);
+      return json(res, 200, { success: true });
+    }
+
     return json(res, 405, { error: "Method Not Allowed" });
   } catch (e: any) {
     console.error("[/api/emotion-error-details] error:", e);

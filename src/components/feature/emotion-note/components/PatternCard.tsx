@@ -19,6 +19,8 @@ interface PatternCardProps {
   formatDate: (timestamp: string) => string;
   formatThoughtTitle: (content: string) => string;
   formatAlternativeTitle: (content: string) => string;
+  formatErrorTitle: (content: string) => string;
+  formatBehaviorTitle: (content: string) => string;
   expandedDetails: Record<string, boolean>;
   setExpandedDetails: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
@@ -27,6 +29,10 @@ interface PatternCardProps {
   setExpandedAlternatives: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>
   >;
+  expandedErrors: Record<string, boolean>;
+  setExpandedErrors: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  expandedBehaviors: Record<string, boolean>;
+  setExpandedBehaviors: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   getFrequencyBadgeStyle: (frequency: number) => React.CSSProperties;
   onIncrementFrequency: (id: string) => void;
   onDecrementFrequency: (id: string) => void;
@@ -43,10 +49,16 @@ export function PatternCard({
   formatDate,
   formatThoughtTitle,
   formatAlternativeTitle,
+  formatErrorTitle,
+  formatBehaviorTitle,
   expandedDetails,
   setExpandedDetails,
   expandedAlternatives,
   setExpandedAlternatives,
+  expandedErrors,
+  setExpandedErrors,
+  expandedBehaviors,
+  setExpandedBehaviors,
   getFrequencyBadgeStyle,
   onIncrementFrequency,
   onDecrementFrequency,
@@ -238,21 +250,162 @@ export function PatternCard({
           </div>
         )}
 
-        <div className="behavior-card space-y-3">
-          <div>
-            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
-              <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-blue-900">
-                <Footprints className="size-4 text-blue-700" />
-                인지오류 및 행동
-              </p>
-              <p className="text-sm text-slate-800 whitespace-pre-wrap">
-                {pattern.behavior || "-"}
-              </p>
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
+          <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-rose-900">
+            <AlertCircle className="size-4 text-rose-700" />
+            인지오류
+          </p>
+          {(pattern.errorDetails ?? []).length ? (
+            <div className="space-y-2">
+              {(pattern.errorDetails ?? []).map((detail) => {
+                const errorKey = `${pattern.id}-${detail.id}`;
+                const isExpanded = Boolean(expandedErrors[errorKey]);
+                const label = detail.errorLabel || detail.errorDescription || "-";
+                return (
+                  <div
+                    key={detail.id}
+                    className="rounded-lg border border-rose-200 bg-white p-3 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedErrors((prev) => ({
+                            ...prev,
+                            [errorKey]: !isExpanded,
+                          }))
+                        }
+                        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                        title={isExpanded ? "인지오류 접기" : "인지오류 펼치기"}
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="size-4 text-slate-400" />
+                        ) : (
+                          <ChevronRight className="size-4 text-slate-400" />
+                        )}
+                        <span className="min-w-0 flex-1 text-sm text-slate-600">
+                          {formatErrorTitle(label)}
+                        </span>
+                      </button>
+                      <span
+                        className="text-slate-400"
+                        style={{ fontSize: "14px", lineHeight: "1" }}
+                      >
+                        {detail.createdAt
+                          ? new Date(detail.createdAt).toLocaleDateString(
+                              "ko-KR"
+                            )
+                          : ""}
+                      </span>
+                    </div>
+                    {isExpanded && (
+                      <p className="mt-3 text-slate-800 text-sm whitespace-pre-wrap break-words">
+                        {detail.errorDescription || detail.errorLabel || "-"}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          ) : (
+            <p className="text-sm text-rose-800 whitespace-pre-wrap">
+              아직 인지오류가 저장되지 않았습니다.
+            </p>
+          )}
         </div>
 
-        <div className="alternatives-card rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm">
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
+          <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-blue-900">
+            <Footprints className="size-4 text-blue-700" />
+            행동 반응
+          </p>
+          {(pattern.behaviorDetails ?? []).length ? (
+            <div className="space-y-2">
+              {(pattern.behaviorDetails ?? []).map((detail) => {
+                const behaviorKey = `${pattern.id}-${detail.id}`;
+                const isExpanded = Boolean(expandedBehaviors[behaviorKey]);
+                const label =
+                  detail.behaviorLabel || detail.behaviorDescription || "-";
+                return (
+                  <div
+                    key={detail.id}
+                    className="rounded-lg border border-blue-200 bg-white p-3 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedBehaviors((prev) => ({
+                            ...prev,
+                            [behaviorKey]: !isExpanded,
+                          }))
+                        }
+                        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                        title={
+                          isExpanded ? "행동 반응 접기" : "행동 반응 펼치기"
+                        }
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="size-4 text-slate-400" />
+                        ) : (
+                          <ChevronRight className="size-4 text-slate-400" />
+                        )}
+                        <span className="min-w-0 flex-1 text-sm text-slate-600">
+                          {formatBehaviorTitle(label)}
+                        </span>
+                      </button>
+                      <span
+                        className="text-slate-400"
+                        style={{ fontSize: "14px", lineHeight: "1" }}
+                      >
+                        {detail.createdAt
+                          ? new Date(detail.createdAt).toLocaleDateString(
+                              "ko-KR"
+                            )
+                          : ""}
+                      </span>
+                    </div>
+                    {detail.errorTags?.length ? (
+                      <div className="mt-2 flex flex-wrap gap-4">
+                        {detail.errorTags.map((tag) => (
+                          <span
+                            key={`${detail.id}-${tag}`}
+                            className="inline-flex font-normal text-blue-700"
+                            style={{
+                              fontSize: "10px",
+                              lineHeight: "1",
+                              transform: "scale(1.2)",
+                              transformOrigin: "left center",
+                            }}
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    {isExpanded && (
+                      <p className="mt-3 text-slate-800 text-sm whitespace-pre-wrap break-words">
+                        {detail.behaviorDescription ||
+                          detail.behaviorLabel ||
+                          "-"}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : pattern.behavior ? (
+            <p className="text-sm text-slate-800 whitespace-pre-wrap">
+              {pattern.behavior}
+            </p>
+          ) : (
+            <p className="text-sm text-blue-800 whitespace-pre-wrap">
+              아직 행동 반응이 저장되지 않았습니다.
+            </p>
+          )}
+        </div>
+
+        <div className="alternatives-card rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm md:col-span-2">
           <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-green-900">
             <Lightbulb className="size-4" />
             대안적 접근

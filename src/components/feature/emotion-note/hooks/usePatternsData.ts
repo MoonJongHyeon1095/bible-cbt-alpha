@@ -1,17 +1,29 @@
 import type { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { Pattern, PatternAlternative, PatternDetail } from "../types";
+import type {
+  Pattern,
+  PatternAlternative,
+  PatternBehaviorDetail,
+  PatternDetail,
+  PatternErrorDetail,
+} from "../types";
 import {
   createAlternativeAPI,
+  createBehaviorDetailAPI,
   createDetailAPI,
+  createErrorDetailsAPI,
   createNoteAPI,
   deleteAlternativeAPI,
+  deleteBehaviorDetailAPI,
   deleteDetailAPI,
+  deleteErrorDetailAPI,
   deleteNoteAPI,
   fetchNotesAPI,
+  updateBehaviorDetailAPI,
   updateAlternativeAPI,
   updateDetailAPI,
+  updateErrorDetailAPI,
   updateNoteAPI,
 } from "../utils/api";
 import { loadLocalPatterns, saveLocalPatterns } from "../utils/storage";
@@ -42,6 +54,25 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
     createdAt: row.created_at ?? row.createdAt ?? "",
   });
 
+  const mapErrorRow = (row: any): PatternErrorDetail => ({
+    id: String(row.id),
+    noteId: String(row.note_id ?? row.noteId ?? ""),
+    errorLabel: row.error_label ?? row.errorLabel ?? "",
+    errorDescription: row.error_description ?? row.errorDescription ?? "",
+    createdAt: row.created_at ?? row.createdAt ?? "",
+  });
+
+  const mapBehaviorRow = (row: any): PatternBehaviorDetail => ({
+    id: String(row.id),
+    noteId: String(row.note_id ?? row.noteId ?? ""),
+    behaviorLabel: row.behavior_label ?? row.behaviorLabel ?? "",
+    behaviorDescription: row.behavior_description ?? row.behaviorDescription ?? "",
+    errorTags: Array.isArray(row.error_tags ?? row.errorTags)
+      ? (row.error_tags ?? row.errorTags)
+      : [],
+    createdAt: row.created_at ?? row.createdAt ?? "",
+  });
+
   const mapPatternRow = (row: any): Pattern => {
     const rawDetails = row.details ?? row.emotion_note_details ?? [];
     const details = Array.isArray(rawDetails)
@@ -58,6 +89,19 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
           .map(mapAlternativeRow)
           .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
       : [];
+    const rawErrors = row.errorDetails ?? row.emotion_error_details ?? [];
+    const errorDetails = Array.isArray(rawErrors)
+      ? rawErrors
+          .map(mapErrorRow)
+          .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
+      : [];
+    const rawBehaviors =
+      row.behaviorDetails ?? row.emotion_behavior_details ?? [];
+    const behaviorDetails = Array.isArray(rawBehaviors)
+      ? rawBehaviors
+          .map(mapBehaviorRow)
+          .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""))
+      : [];
 
     return {
       id: String(row.id),
@@ -68,6 +112,8 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
       timestamp: row.timestamp ?? row.createdAt ?? row.created_at ?? "",
       details,
       alternatives,
+      errorDetails,
+      behaviorDetails,
     };
   };
 
@@ -77,6 +123,16 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
     );
 
   const sortAlternativesDesc = (list: PatternAlternative[]) =>
+    [...list].sort((a, b) =>
+      (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
+    );
+
+  const sortErrorsDesc = (list: PatternErrorDetail[]) =>
+    [...list].sort((a, b) =>
+      (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
+    );
+
+  const sortBehaviorsDesc = (list: PatternBehaviorDetail[]) =>
     [...list].sort((a, b) =>
       (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
     );
@@ -156,6 +212,12 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
           timestamp: response.note.createdAt ?? new Date().toISOString(),
           details,
           alternatives,
+          errorDetails: Array.isArray(response.note.errorDetails)
+            ? response.note.errorDetails.map(mapErrorRow)
+            : [],
+          behaviorDetails: Array.isArray(response.note.behaviorDetails)
+            ? response.note.behaviorDetails.map(mapBehaviorRow)
+            : [],
         };
 
         setPatterns((prev) => [newPattern, ...prev]);
@@ -178,6 +240,8 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
       frequency: 1,
       details: [],
       alternatives: [],
+      errorDetails: [],
+      behaviorDetails: [],
     };
 
     const updated = [newPattern, ...patterns];
@@ -325,6 +389,46 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
     );
   };
 
+  const updateErrorForPattern = (
+    patternId: string,
+    nextError: PatternErrorDetail
+  ) => {
+    setPatterns((prev) =>
+      prev.map((p) =>
+        p.id === patternId
+          ? {
+              ...p,
+              errorDetails: sortErrorsDesc([
+                nextError,
+                ...(p.errorDetails ?? []).filter((e) => e.id !== nextError.id),
+              ]),
+            }
+          : p
+      )
+    );
+  };
+
+  const updateBehaviorForPattern = (
+    patternId: string,
+    nextBehavior: PatternBehaviorDetail
+  ) => {
+    setPatterns((prev) =>
+      prev.map((p) =>
+        p.id === patternId
+          ? {
+              ...p,
+              behaviorDetails: sortBehaviorsDesc([
+                nextBehavior,
+                ...(p.behaviorDetails ?? []).filter(
+                  (b) => b.id !== nextBehavior.id
+                ),
+              ]),
+            }
+          : p
+      )
+    );
+  };
+
   const removeDetailForPattern = (patternId: string, detailId: string) => {
     setPatterns((prev) =>
       prev.map((p) =>
@@ -346,6 +450,34 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
               ...p,
               alternatives: p.alternatives.filter(
                 (a) => a.id !== alternativeId
+              ),
+            }
+          : p
+      )
+    );
+  };
+
+  const removeErrorForPattern = (patternId: string, errorId: string) => {
+    setPatterns((prev) =>
+      prev.map((p) =>
+        p.id === patternId
+          ? {
+              ...p,
+              errorDetails: (p.errorDetails ?? []).filter((e) => e.id !== errorId),
+            }
+          : p
+      )
+    );
+  };
+
+  const removeBehaviorForPattern = (patternId: string, behaviorId: string) => {
+    setPatterns((prev) =>
+      prev.map((p) =>
+        p.id === patternId
+          ? {
+              ...p,
+              behaviorDetails: (p.behaviorDetails ?? []).filter(
+                (b) => b.id !== behaviorId
               ),
             }
           : p
@@ -459,6 +591,119 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
     );
   };
 
+  const updateErrorDetail = async (
+    patternId: string,
+    errorDetail: PatternErrorDetail
+  ) => {
+    if (user) {
+      const { ok, payload } = await updateErrorDetailAPI({
+        id: errorDetail.id,
+        errorLabel: errorDetail.errorLabel,
+        errorDescription: errorDetail.errorDescription,
+      });
+      if (!ok || !payload?.errorDetail) {
+        throw new Error(payload?.error || "인지오류를 수정하지 못했습니다.");
+      }
+      updateErrorForPattern(patternId, mapErrorRow(payload.errorDetail));
+      return;
+    }
+
+    updateErrorForPattern(patternId, errorDetail);
+    saveLocalPatterns(
+      patterns.map((p) =>
+        p.id === patternId
+          ? {
+              ...p,
+              errorDetails: (p.errorDetails ?? []).map((e) =>
+                e.id === errorDetail.id ? errorDetail : e
+              ),
+            }
+          : p
+      )
+    );
+  };
+
+  const deleteErrorDetail = async (patternId: string, errorId: string) => {
+    if (user) {
+      const { ok, payload } = await deleteErrorDetailAPI(errorId);
+      if (!ok) {
+        throw new Error(payload?.error || "인지오류를 삭제하지 못했습니다.");
+      }
+      removeErrorForPattern(patternId, errorId);
+      return;
+    }
+
+    removeErrorForPattern(patternId, errorId);
+    saveLocalPatterns(
+      patterns.map((p) =>
+        p.id === patternId
+          ? {
+              ...p,
+              errorDetails: (p.errorDetails ?? []).filter((e) => e.id !== errorId),
+            }
+          : p
+      )
+    );
+  };
+
+  const updateBehaviorDetail = async (
+    patternId: string,
+    behaviorDetail: PatternBehaviorDetail
+  ) => {
+    if (user) {
+      const { ok, payload } = await updateBehaviorDetailAPI({
+        id: behaviorDetail.id,
+        behaviorLabel: behaviorDetail.behaviorLabel,
+        behaviorDescription: behaviorDetail.behaviorDescription,
+        errorTags: behaviorDetail.errorTags ?? [],
+      });
+      if (!ok || !payload?.behavior) {
+        throw new Error(payload?.error || "행동을 수정하지 못했습니다.");
+      }
+      updateBehaviorForPattern(patternId, mapBehaviorRow(payload.behavior));
+      return;
+    }
+
+    updateBehaviorForPattern(patternId, behaviorDetail);
+    saveLocalPatterns(
+      patterns.map((p) =>
+        p.id === patternId
+          ? {
+              ...p,
+              behaviorDetails: (p.behaviorDetails ?? []).map((b) =>
+                b.id === behaviorDetail.id ? behaviorDetail : b
+              ),
+            }
+          : p
+      )
+    );
+  };
+
+  const deleteBehaviorDetail = async (patternId: string, behaviorId: string) => {
+    if (user) {
+      const { ok, payload } = await deleteBehaviorDetailAPI(behaviorId);
+      if (!ok) {
+        throw new Error(payload?.error || "행동을 삭제하지 못했습니다.");
+      }
+      removeBehaviorForPattern(patternId, behaviorId);
+      return;
+    }
+
+    removeBehaviorForPattern(patternId, behaviorId);
+    saveLocalPatterns(
+      patterns.map((p) =>
+        p.id === patternId
+          ? {
+              ...p,
+              behaviorDetails: (p.behaviorDetails ?? []).filter(
+                (b) => b.id !== behaviorId
+              ),
+            }
+          : p
+      )
+    );
+  };
+
   const addAlternative = async (payload: {
     patternId: string;
     alternativeText: string;
@@ -502,6 +747,119 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "대안 사고를 추가하지 못했습니다.");
+      return false;
+    }
+  };
+
+  const addErrorDetail = async (payload: {
+    patternId: string;
+    errorLabel: string;
+    errorDescription: string;
+  }) => {
+    if (!payload.errorLabel.trim() && !payload.errorDescription.trim()) {
+      toast.error("인지오류 내용을 입력해주세요.");
+      return false;
+    }
+
+    const newError: PatternErrorDetail = {
+      id: Date.now().toString(),
+      noteId: payload.patternId,
+      errorLabel: payload.errorLabel.trim(),
+      errorDescription: payload.errorDescription.trim(),
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      if (user) {
+        const { ok, payload: response } = await createErrorDetailsAPI({
+          noteId: payload.patternId,
+          errors: [
+            {
+              errorLabel: payload.errorLabel.trim(),
+              errorDescription: payload.errorDescription.trim(),
+            },
+          ],
+        });
+        if (!ok || !response?.errors?.length) {
+          throw new Error(response?.error || "인지오류를 추가하지 못했습니다.");
+        }
+        updateErrorForPattern(payload.patternId, mapErrorRow(response.errors[0]));
+      } else {
+        updateErrorForPattern(payload.patternId, newError);
+        saveLocalPatterns(
+          patterns.map((p) =>
+            p.id === payload.patternId
+              ? {
+                  ...p,
+                  errorDetails: [newError, ...(p.errorDetails ?? [])],
+                }
+              : p
+          )
+        );
+      }
+      return true;
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "인지오류를 추가하지 못했습니다.");
+      return false;
+    }
+  };
+
+  const addBehaviorDetail = async (payload: {
+    patternId: string;
+    behaviorLabel: string;
+    behaviorDescription: string;
+    errorTags: string[];
+  }) => {
+    if (!payload.behaviorLabel.trim() && !payload.behaviorDescription.trim()) {
+      toast.error("행동 반응을 입력해주세요.");
+      return false;
+    }
+
+    const newBehavior: PatternBehaviorDetail = {
+      id: Date.now().toString(),
+      noteId: payload.patternId,
+      behaviorLabel: payload.behaviorLabel.trim(),
+      behaviorDescription: payload.behaviorDescription.trim(),
+      errorTags: payload.errorTags,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      if (user) {
+        const { ok, payload: response } = await createBehaviorDetailAPI({
+          noteId: payload.patternId,
+          behaviorLabel: payload.behaviorLabel.trim(),
+          behaviorDescription: payload.behaviorDescription.trim(),
+          errorTags: payload.errorTags,
+        });
+        if (!ok || !response?.behavior) {
+          throw new Error(response?.error || "행동을 추가하지 못했습니다.");
+        }
+        updateBehaviorForPattern(
+          payload.patternId,
+          mapBehaviorRow(response.behavior)
+        );
+      } else {
+        updateBehaviorForPattern(payload.patternId, newBehavior);
+        saveLocalPatterns(
+          patterns.map((p) =>
+            p.id === payload.patternId
+              ? {
+                  ...p,
+                  behaviorDetails: [
+                    newBehavior,
+                    ...(p.behaviorDetails ?? []),
+                  ],
+                }
+              : p
+          )
+        );
+      }
+      return true;
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "행동을 추가하지 못했습니다.");
       return false;
     }
   };
@@ -578,8 +936,14 @@ export function usePatternsData({ user }: UsePatternsDataParams) {
     deleteDetail,
     updateAlternative,
     deleteAlternative,
+    updateErrorDetail,
+    deleteErrorDetail,
+    updateBehaviorDetail,
+    deleteBehaviorDetail,
     addAlternative,
     addDetail,
+    addErrorDetail,
+    addBehaviorDetail,
     getFrequencyBadgeStyle: frequencySync.getFrequencyBadgeStyle,
     incrementFrequency: frequencySync.incrementFrequency,
     decrementFrequency: frequencySync.decrementFrequency,

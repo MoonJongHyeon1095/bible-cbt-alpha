@@ -8,7 +8,13 @@ import { PatternCard } from "./components/PatternCard";
 import { PatternForm } from "./components/PatternForm";
 import { usePatternForm } from "./hooks/usePatternForm";
 import { usePatternsData } from "./hooks/usePatternsData";
-import type { Pattern, PatternAlternative, PatternDetail } from "./types";
+import type {
+  Pattern,
+  PatternAlternative,
+  PatternBehaviorDetail,
+  PatternDetail,
+  PatternErrorDetail,
+} from "./types";
 
 interface PatternsPageProps {
   user: User | null;
@@ -28,8 +34,14 @@ export function PatternsPage({ user }: PatternsPageProps) {
     deleteDetail,
     updateAlternative,
     deleteAlternative,
+    updateErrorDetail,
+    deleteErrorDetail,
+    updateBehaviorDetail,
+    deleteBehaviorDetail,
     addAlternative,
     addDetail,
+    addErrorDetail,
+    addBehaviorDetail,
     getFrequencyBadgeStyle,
     incrementFrequency,
     decrementFrequency,
@@ -49,11 +61,25 @@ export function PatternsPage({ user }: PatternsPageProps) {
     setBehavior,
     alternativeText,
     setAlternativeText,
+    errorLabel,
+    setErrorLabel,
+    errorDescription,
+    setErrorDescription,
+    behaviorLabel,
+    setBehaviorLabel,
+    behaviorDescription,
+    setBehaviorDescription,
+    behaviorErrorTags,
+    setBehaviorErrorTags,
     titleRef,
     showDetailEditor,
     setShowDetailEditor,
     showAlternativeEditor,
     setShowAlternativeEditor,
+    showErrorEditor,
+    setShowErrorEditor,
+    showBehaviorEditor,
+    setShowBehaviorEditor,
     startCreate,
     startEdit,
     resetForm,
@@ -64,6 +90,12 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const [expandedAlternatives, setExpandedAlternatives] = useState<
     Record<string, boolean>
   >({});
+  const [expandedErrors, setExpandedErrors] = useState<
+    Record<string, boolean>
+  >({});
+  const [expandedBehaviors, setExpandedBehaviors] = useState<
+    Record<string, boolean>
+  >({});
 
   const formatThoughtTitle = (content: string) => {
     const trimmed = content.trim();
@@ -72,6 +104,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
   };
 
   const formatAlternativeTitle = (content: string) => {
+    const trimmed = content.trim();
+    if (trimmed.length <= 20) return trimmed;
+    return `${trimmed.slice(0, 20)}…`;
+  };
+
+  const formatErrorTitle = (content: string) => {
+    const trimmed = content.trim();
+    if (trimmed.length <= 20) return trimmed;
+    return `${trimmed.slice(0, 20)}…`;
+  };
+
+  const formatBehaviorTitle = (content: string) => {
     const trimmed = content.trim();
     if (trimmed.length <= 20) return trimmed;
     return `${trimmed.slice(0, 20)}…`;
@@ -159,8 +203,62 @@ export function PatternsPage({ user }: PatternsPageProps) {
     await deleteAlternative(editingId, alternativeId);
   };
 
+  const handleAddError = async () => {
+    if (!editingId) {
+      toast.error("먼저 노트를 선택하거나 저장해주세요.");
+      return;
+    }
+    const ok = await addErrorDetail({
+      patternId: editingId,
+      errorLabel,
+      errorDescription,
+    });
+    if (ok) {
+      setErrorLabel("");
+      setErrorDescription("");
+    }
+  };
+
+  const handleErrorUpdate = async (detail: PatternErrorDetail) => {
+    if (!editingId) return;
+    await updateErrorDetail(editingId, detail);
+  };
+
+  const handleErrorDelete = async (detailId: string) => {
+    if (!editingId) return;
+    await deleteErrorDetail(editingId, detailId);
+  };
+
+  const handleAddBehavior = async () => {
+    if (!editingId) {
+      toast.error("먼저 노트를 선택하거나 저장해주세요.");
+      return;
+    }
+    const ok = await addBehaviorDetail({
+      patternId: editingId,
+      behaviorLabel,
+      behaviorDescription,
+      errorTags: behaviorErrorTags,
+    });
+    if (ok) {
+      setBehaviorLabel("");
+      setBehaviorDescription("");
+      setBehaviorErrorTags([]);
+    }
+  };
+
+  const handleBehaviorUpdate = async (detail: PatternBehaviorDetail) => {
+    if (!editingId) return;
+    await updateBehaviorDetail(editingId, detail);
+  };
+
+  const handleBehaviorDelete = async (detailId: string) => {
+    if (!editingId) return;
+    await deleteBehaviorDetail(editingId, detailId);
+  };
+
   return (
-    <div className="max-w-[1400px] mx-auto px-8 py-8">
+    <div className="emotion-note-page max-w-[1400px] mx-auto px-8 py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
@@ -189,9 +287,16 @@ export function PatternsPage({ user }: PatternsPageProps) {
         automaticThought={automaticThought}
         emotion={emotion}
         alternativeText={alternativeText}
+        errorLabel={errorLabel}
+        errorDescription={errorDescription}
+        behaviorLabel={behaviorLabel}
+        behaviorDescription={behaviorDescription}
+        behaviorErrorTags={behaviorErrorTags}
         loading={loading}
         showDetailEditor={showDetailEditor}
         showAlternativeEditor={showAlternativeEditor}
+        showErrorEditor={showErrorEditor}
+        showBehaviorEditor={showBehaviorEditor}
         titleRef={titleRef}
         onChangeTitle={setTitle}
         onChangeTrigger={setTrigger}
@@ -199,17 +304,30 @@ export function PatternsPage({ user }: PatternsPageProps) {
         onChangeAutomaticThought={setAutomaticThought}
         onSelectEmotion={setEmotion}
         onChangeAlternativeText={setAlternativeText}
+        onChangeErrorLabel={setErrorLabel}
+        onChangeErrorDescription={setErrorDescription}
+        onChangeBehaviorLabel={setBehaviorLabel}
+        onChangeBehaviorDescription={setBehaviorDescription}
+        onChangeBehaviorErrorTags={setBehaviorErrorTags}
         onToggleDetailEditor={() => setShowDetailEditor((v) => !v)}
         onToggleAlternativeEditor={() => setShowAlternativeEditor((v) => !v)}
+        onToggleErrorEditor={() => setShowErrorEditor((v) => !v)}
+        onToggleBehaviorEditor={() => setShowBehaviorEditor((v) => !v)}
         onSave={handleSave}
         onCancel={resetForm}
         onAddDetail={handleAddDetail}
         onAddAlternative={handleAddAlternative}
+        onAddErrorDetail={handleAddError}
+        onAddBehaviorDetail={handleAddBehavior}
         patterns={patterns}
         onDetailUpdate={handleDetailUpdate}
         onDetailDelete={handleDetailDelete}
         onAlternativeUpdate={handleAlternativeUpdate}
         onAlternativeDelete={handleAlternativeDelete}
+        onErrorUpdate={handleErrorUpdate}
+        onErrorDelete={handleErrorDelete}
+        onBehaviorUpdate={handleBehaviorUpdate}
+        onBehaviorDelete={handleBehaviorDelete}
       />
 
       {patterns.length > 0 && (
@@ -278,10 +396,16 @@ export function PatternsPage({ user }: PatternsPageProps) {
               formatDate={formatDate}
               formatThoughtTitle={formatThoughtTitle}
               formatAlternativeTitle={formatAlternativeTitle}
+              formatErrorTitle={formatErrorTitle}
+              formatBehaviorTitle={formatBehaviorTitle}
               expandedDetails={expandedDetails}
               setExpandedDetails={setExpandedDetails}
               expandedAlternatives={expandedAlternatives}
               setExpandedAlternatives={setExpandedAlternatives}
+              expandedErrors={expandedErrors}
+              setExpandedErrors={setExpandedErrors}
+              expandedBehaviors={expandedBehaviors}
+              setExpandedBehaviors={setExpandedBehaviors}
               getFrequencyBadgeStyle={getFrequencyBadgeStyle}
               onIncrementFrequency={incrementFrequency}
               onDecrementFrequency={decrementFrequency}

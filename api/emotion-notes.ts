@@ -7,6 +7,8 @@ const TABLE = "emotion_notes";
 function mapNote(row: any) {
   const detailsRaw = row.emotion_note_details ?? [];
   const alternativesRaw = row.emotion_alternative_details ?? [];
+  const errorDetailsRaw = row.emotion_error_details ?? [];
+  const behaviorDetailsRaw = row.emotion_behavior_details ?? [];
   const details = Array.isArray(detailsRaw)
     ? detailsRaw.map((d: any) => ({
         id: String(d.id),
@@ -24,6 +26,25 @@ function mapNote(row: any) {
         createdAt: a.created_at ?? "",
       }))
     : [];
+  const errorDetails = Array.isArray(errorDetailsRaw)
+    ? errorDetailsRaw.map((e: any) => ({
+        id: String(e.id),
+        noteId: String(e.note_id ?? row.id),
+        errorLabel: e.error_label ?? "",
+        errorDescription: e.error_description ?? "",
+        createdAt: e.created_at ?? "",
+      }))
+    : [];
+  const behaviorDetails = Array.isArray(behaviorDetailsRaw)
+    ? behaviorDetailsRaw.map((b: any) => ({
+        id: String(b.id),
+        noteId: String(b.note_id ?? row.id),
+        behaviorLabel: b.behavior_label ?? "",
+        behaviorDescription: b.behavior_description ?? "",
+        errorTags: b.error_tags ?? [],
+        createdAt: b.created_at ?? "",
+      }))
+    : [];
 
   return {
     id: String(row.id),
@@ -34,6 +55,8 @@ function mapNote(row: any) {
     createdAt: row.created_at ?? "",
     details,
     alternatives,
+    errorDetails,
+    behaviorDetails,
   };
 }
 
@@ -51,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const includeDetails = (req.query.includeDetails as string | undefined) === "true";
 
       const selectColumns = includeDetails
-        ? "id, title, trigger_text, behavior, frequency, created_at, emotion_note_details (id, note_id, automatic_thought, emotion, created_at), emotion_alternative_details (id, note_id, alternative, created_at)"
+        ? "id, title, trigger_text, behavior, frequency, created_at, emotion_note_details (id, note_id, automatic_thought, emotion, created_at), emotion_alternative_details (id, note_id, alternative, created_at), emotion_error_details (id, note_id, error_label, error_description, created_at), emotion_behavior_details (id, note_id, behavior_label, behavior_description, error_tags, created_at)"
         : "id, title, trigger_text, behavior, frequency, created_at";
 
       const selectQuery = supabase
@@ -90,7 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           behavior,
         })
         .select(
-          "id, title, trigger_text, behavior, frequency, created_at, emotion_note_details (id, note_id, automatic_thought, emotion, created_at), emotion_alternative_details (id, note_id, alternative, created_at)"
+          "id, title, trigger_text, behavior, frequency, created_at, emotion_note_details (id, note_id, automatic_thought, emotion, created_at), emotion_alternative_details (id, note_id, alternative, created_at), emotion_error_details (id, note_id, error_label, error_description, created_at), emotion_behavior_details (id, note_id, behavior_label, behavior_description, error_tags, created_at)"
         )
         .single();
 
@@ -129,7 +152,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .eq("user_id", user.id)
         .eq("id", Number.isNaN(numericId) ? id : numericId)
         .select(
-          "id, title, trigger_text, behavior, frequency, created_at, emotion_note_details (id, note_id, automatic_thought, emotion, created_at), emotion_alternative_details (id, note_id, alternative, created_at)"
+          "id, title, trigger_text, behavior, frequency, created_at, emotion_note_details (id, note_id, automatic_thought, emotion, created_at), emotion_alternative_details (id, note_id, alternative, created_at), emotion_error_details (id, note_id, error_label, error_description, created_at), emotion_behavior_details (id, note_id, behavior_label, behavior_description, error_tags, created_at)"
         )
         .single();
 
