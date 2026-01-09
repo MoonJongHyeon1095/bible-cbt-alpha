@@ -1,4 +1,4 @@
-import { Brain, LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut } from "lucide-react";
 import { Button } from "../../ui/button";
 import { ModePicker } from "./ModePicker";
 import type { NavSharedProps } from "./types";
@@ -34,8 +34,12 @@ export function DesktopNav({
           onClick={() => onNavigate("cbt")}
           className="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-xl"
         >
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-2 rounded-xl">
-            <Brain className="size-6" />
+          <div className="shrink-0">
+            <img
+              src="/logo.png"
+              alt="마음생각 다시 쓰기 로고"
+              className="size-12 object-contain"
+            />
           </div>
           <div>
             <h1 className="text-lg text-slate-900">마음생각 다시 쓰기</h1>

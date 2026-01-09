@@ -63,6 +63,7 @@ export function RightPanel({
 
   const hasSelectedThought = Boolean(selectedAlternativeThought);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const bibleSectionRef = useRef<HTMLDivElement | null>(null);
 
   const hasAnyIntensity = useMemo(
     () => emotionThoughtPairs.some((p) => p.intensity != null),
@@ -373,6 +374,15 @@ export function RightPanel({
     scrollToTop();
   }, [step, showBibleResult, showFinalArea, hasSelectedThought]);
 
+  useEffect(() => {
+    if (!wantsBibleVerse) return;
+    if (!bibleSectionRef.current) return;
+    bibleSectionRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [bibleError, bibleLoading, bibleVerse, wantsBibleVerse]);
+
   const header = useMemo(() => {
     if (step < 4) {
       return {
@@ -525,7 +535,10 @@ export function RightPanel({
         {showBibleResult && (
           <div className="space-y-4">
             {bibleLoading && (
-              <div className="flex flex-col items-center justify-center py-10">
+              <div
+                ref={bibleSectionRef}
+                className="flex flex-col items-center justify-center py-10"
+              >
                 <Loader2 className="size-10 animate-spin text-blue-600 mb-4" />
                 <p className="text-slate-600 text-lg">
                   말씀과 기도문을 생성하고 있습니다...
@@ -534,7 +547,10 @@ export function RightPanel({
             )}
 
             {!bibleLoading && bibleError && (
-              <div className="bg-red-50 border border-red-200 text-red-800 p-5 rounded-lg">
+              <div
+                ref={bibleSectionRef}
+                className="bg-red-50 border border-red-200 text-red-800 p-5 rounded-lg"
+              >
                 <p className="mb-3 text-base">{bibleError}</p>
                 <Button onClick={handleWantsBible} variant="outline" size="sm">
                   다시 시도
@@ -568,20 +584,22 @@ export function RightPanel({
                   savingBehavior={savingBehavior}
                   isBehaviorSaved={isBehaviorSaved}
                 />
-                <BibleVerseCard
-                  bibleVerse={bibleVerse}
-                  onSaveScripture={handleSaveScripture}
-                  onSavePrayer={handleSavePrayer}
-                  savingScripture={savingScripture}
-                  savingPrayer={savingPrayer}
-                />
-                <Button
-                  onClick={handleFinalComplete}
-                  className="w-full py-6 text-lg bg-purple-600 hover:bg-purple-700"
-                  disabled={isBehaviorGenerating}
-                >
-                  {isBehaviorGenerating ? "행동제안 생성 중" : "완료"}
-                </Button>
+                <div ref={bibleSectionRef} className="space-y-4">
+                  <BibleVerseCard
+                    bibleVerse={bibleVerse}
+                    onSaveScripture={handleSaveScripture}
+                    onSavePrayer={handleSavePrayer}
+                    savingScripture={savingScripture}
+                    savingPrayer={savingPrayer}
+                  />
+                  <Button
+                    onClick={handleFinalComplete}
+                    className="w-full py-6 text-lg bg-purple-600 hover:bg-purple-700"
+                    disabled={isBehaviorGenerating}
+                  >
+                    {isBehaviorGenerating ? "행동제안 생성 중" : "완료"}
+                  </Button>
+                </div>
               </>
             )}
           </div>

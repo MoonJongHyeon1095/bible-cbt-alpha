@@ -29,15 +29,15 @@ export function SelectedThoughtCard({
     <div
       className={`bg-purple-50 p-4 rounded-lg border-2 border-purple-300 ${className}`}
     >
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <p className="text-purple-900">✓ 선택한 대안사고</p>
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2 mb-2 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-purple-900 whitespace-nowrap">✓ 선택한 대안사고</p>
+        <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
           {canShowReview ? (
             <Button
               size="sm"
               variant="outline"
               onClick={onReviewAlternatives}
-              className="gap-1 border-purple-300 text-purple-700 hover:bg-purple-50"
+              className="gap-1 border-purple-300 text-purple-700 hover:bg-purple-50 whitespace-normal leading-tight"
               disabled={reviewDisabled}
             >
               <RefreshCw className="size-4" />
@@ -49,7 +49,7 @@ export function SelectedThoughtCard({
               size="sm"
               variant="outline"
               onClick={onSave}
-              className="gap-1 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+              className="gap-1 border-yellow-400 text-yellow-700 hover:bg-yellow-50 whitespace-normal leading-tight"
               disabled={saving || saved}
             >
               {saving ? (
