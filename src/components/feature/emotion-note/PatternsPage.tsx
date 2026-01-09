@@ -1208,7 +1208,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
                       <Brain className="size-4" />
                       배후의 자동 사고
                     </div>
-                    <p className="mt-2 text-sm text-amber-800">
+                    <p className="mt-2 text-sm text-amber-900">
                       아직 배후의 자동 사고가 저장되지 않았습니다.
                     </p>
                   </div>
