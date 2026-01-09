@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronRight,
   Edit2,
+  Footprints,
   HeartPulse,
   Lightbulb,
   Plus,
@@ -1201,10 +1202,15 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">🏃 행동</p>
-                    <p className="text-slate-700 bg-slate-50 p-2 rounded whitespace-pre-wrap">
-                      {pattern.behavior || "-"}
-                    </p>
+                    <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
+                      <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-blue-900">
+                        <Footprints className="size-4 text-blue-700" />
+                        인지오류 및 행동
+                      </p>
+                      <p className="text-sm text-slate-800 whitespace-pre-wrap">
+                        {pattern.behavior || "-"}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
