@@ -26,16 +26,21 @@ export function PatternDetailsCard({
     setEditing(Object.fromEntries(details.map((d) => [d.id, { ...d }])));
   }, [details]);
 
-  const handleChange = (id: string, field: keyof DetailEditor, value: string) => {
+  const handleChange = (
+    id: string,
+    field: keyof DetailEditor,
+    value: string
+  ) => {
     setEditing((prev) => ({
       ...prev,
       [id]: {
-        ...(prev[id] ?? details.find((d) => d.id === id) ?? {
-          id,
-          automaticThought: "",
-          emotion: "",
-          createdAt: "",
-        }),
+        ...(prev[id] ??
+          details.find((d) => d.id === id) ?? {
+            id,
+            automaticThought: "",
+            emotion: "",
+            createdAt: "",
+          }),
         [field]: value,
       },
     }));
@@ -64,7 +69,9 @@ export function PatternDetailsCard({
     const original = details.find((d) => d.id === id);
     const current = editing[id];
     if (!original || !current) return false;
-    return (current.automaticThought ?? "") !== (original.automaticThought ?? "");
+    return (
+      (current.automaticThought ?? "") !== (original.automaticThought ?? "")
+    );
   };
 
   const handleDelete = async (id: string) => {
@@ -143,13 +150,12 @@ export function PatternDetailsCard({
             </div>
 
             <div className="space-y-2">
-            <div>
-              <span className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
-                {current.emotion || "-"}
-              </span>
-            </div>
+              <div>
+                <span className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+                  {current.emotion || "-"}
+                </span>
+              </div>
 
-              <label className="text-xs text-slate-700">배후의 자동 사고</label>
               <Textarea
                 value={current.automaticThought}
                 onChange={(e) =>

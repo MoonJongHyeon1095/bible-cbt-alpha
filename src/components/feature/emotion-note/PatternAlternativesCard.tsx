@@ -1,4 +1,4 @@
-import { Loader2, Save, Trash2 } from "lucide-react";
+import { Lightbulb, Loader2, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../../ui/button";
@@ -85,8 +85,14 @@ export function PatternAlternativesCard({
 
   if (alternatives.length === 0) {
     return (
-      <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-600">
-        아직 저장된 대안 사고가 없습니다.
+      <div className="rounded-xl border border-green-200 bg-white p-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-green-900">
+          <Lightbulb className="size-4" />
+          저장된 대안 사고
+        </div>
+        <p className="mt-2 text-sm text-green-800">
+          아직 저장된 대안 사고가 없습니다.
+        </p>
       </div>
     );
   }
@@ -98,10 +104,11 @@ export function PatternAlternativesCard({
         return (
         <div
           key={alt.id}
-          className="border border-green-200 rounded-lg p-3 bg-green-50"
+          className="rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm"
         >
           <div className="flex items-center justify-between mb-2">
-            <div className="text-xs text-slate-500">
+            <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-900">
+              <Lightbulb className="size-3" />
               저장된 대안사고 #{idx + 1}
             </div>
             <div className="flex gap-2">

@@ -544,6 +544,13 @@
 }
 
 @layer utilities {
+  .alternatives-card {
+    order: 2;
+  }
+
+  .behavior-card {
+    order: 3;
+  }
   .\@container\/card-header {
     container: card-header / inline-size;
   }

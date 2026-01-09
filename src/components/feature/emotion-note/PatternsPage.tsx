@@ -809,7 +809,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
             <div>
               <label className="text-sm text-slate-700 mb-2 block flex items-center gap-2">
                 <AlertCircle className="size-4" />
-                감정패턴 제목 (간단하게)
+                감정패턴 제목
               </label>
               <Input
                 ref={titleRef}
@@ -821,8 +821,9 @@ export function PatternsPage({ user }: PatternsPageProps) {
             </div>
 
             <div>
-              <label className="text-sm text-slate-700 mb-2 block">
-                🎯 트리거 (촉발 상황)
+              <label className="text-sm text-slate-700 mb-2 flex items-center gap-2">
+                <AlertCircle className="size-4" />
+                트리거 (촉발 상황)
               </label>
               <Input
                 value={trigger}
@@ -833,8 +834,9 @@ export function PatternsPage({ user }: PatternsPageProps) {
             </div>
 
             <div>
-              <label className="text-sm text-slate-700 mb-2 block">
-                🏃 행동 반응
+              <label className="text-sm text-slate-700 mb-2 flex items-center gap-2">
+                <Footprints className="size-4" />
+                행동 반응
               </label>
               <Textarea
                 value={behavior}
@@ -852,7 +854,10 @@ export function PatternsPage({ user }: PatternsPageProps) {
                     onClick={() => setShowDetailEditor((v) => !v)}
                     className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-slate-800"
                   >
-                    <span>배후의 자동 사고 편집</span>
+                    <span className="flex items-center gap-2">
+                      <Brain className="size-4" />
+                      배후의 자동 사고 편집
+                    </span>
                     <span className="text-xs text-slate-500">
                       {showDetailEditor ? "접기" : "펼치기"}
                     </span>
@@ -862,7 +867,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
                       <div className="border border-slate-200 rounded-lg p-4 space-y-3 bg-slate-50">
                         <div className="flex items-center justify-between gap-2 text-sm text-slate-700">
                           <div className="flex items-center gap-2">
-                            💭 자동사고 추가 (선택)
+                            💭 새로운 자동사고 추가
                           </div>
                           <Button
                             size="sm"
@@ -911,17 +916,20 @@ export function PatternsPage({ user }: PatternsPageProps) {
                     onClick={() => setShowAlternativeEditor((v) => !v)}
                     className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-slate-800"
                   >
-                    <span>저장된 대안사고 편집</span>
+                    <span className="flex items-center gap-2">
+                      <Lightbulb className="size-4" />
+                      저장된 대안사고 편집
+                    </span>
                     <span className="text-xs text-slate-500">
                       {showAlternativeEditor ? "접기" : "펼치기"}
                     </span>
                   </button>
                   {showAlternativeEditor && (
                     <div className="border-t border-green-200 p-4 space-y-3 bg-green-50">
-                      <div className="border border-green-200 rounded-lg p-4 space-y-3 bg-white">
+                      <div className="border border-slate-200 rounded-lg p-4 space-y-3 bg-slate-50">
                         <div className="flex items-center justify-between gap-2 text-sm text-slate-700">
                           <div className="flex items-center gap-2">
-                            💡 대안 사고 추가 (선택)
+                            💡 새로운 대안 사고 추가
                           </div>
                           <Button
                             size="sm"
@@ -1134,13 +1142,19 @@ export function PatternsPage({ user }: PatternsPageProps) {
                                   <div className="flex items-center justify-between">
                                     <span
                                       className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 font-semibold text-blue-700"
-                                      style={{ fontSize: "14px", lineHeight: "1" }}
+                                      style={{
+                                        fontSize: "14px",
+                                        lineHeight: "1",
+                                      }}
                                     >
                                       {detail.emotion || "-"}
                                     </span>
                                     <span
                                       className="text-slate-400"
-                                      style={{ fontSize: "14px", lineHeight: "1" }}
+                                      style={{
+                                        fontSize: "14px",
+                                        lineHeight: "1",
+                                      }}
                                     >
                                       {detail.createdAt
                                         ? new Date(
@@ -1200,7 +1214,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
                   </div>
                 )}
 
-                <div className="space-y-3">
+                <div className="behavior-card space-y-3">
                   <div>
                     <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
                       <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-blue-900">
@@ -1214,7 +1228,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm">
+                <div className="alternatives-card rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm">
                   <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-green-900">
                     <Lightbulb className="size-4" />
                     대안적 접근
@@ -1262,7 +1276,10 @@ export function PatternsPage({ user }: PatternsPageProps) {
                                   </button>
                                   <span
                                     className="text-slate-400"
-                                    style={{ fontSize: "14px", lineHeight: "1" }}
+                                    style={{
+                                      fontSize: "14px",
+                                      lineHeight: "1",
+                                    }}
                                   >
                                     {alt.createdAt
                                       ? new Date(
