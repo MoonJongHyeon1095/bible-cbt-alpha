@@ -114,6 +114,7 @@ ${sessionData.selectedAlternativeThought || "(없음)"}
           emotion_thought_pairs: historyItem.emotionThoughtPairs,
           selected_cognitive_errors: historyItem.selectedCognitiveErrors,
           selected_alternative_thought: historyItem.selectedAlternativeThought,
+          selected_behavior: historyItem.selectedBehavior,
           positive_reframes: historyItem.positiveReframes,
           bible_verse: historyItem.bibleVerse,
         });

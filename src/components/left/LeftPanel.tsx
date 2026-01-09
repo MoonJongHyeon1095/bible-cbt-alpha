@@ -1,4 +1,5 @@
 // src/components/left/LeftPanel.tsx
+import type { User } from "@supabase/supabase-js";
 import { COGNITIVE_ERRORS } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
 import type { SelectedCognitiveError } from "../../types/sessionHistory";
@@ -13,6 +14,7 @@ interface LeftPanelProps {
   step: number;
   emotionThoughtPairs: EmotionThoughtPair[];
   userInput: string;
+  user: User | null;
   positiveReframes: { [emotion: string]: string };
   onSetPositiveReframes: (reframes: { [emotion: string]: string }) => void;
   onSelectCognitiveErrors: (errors: SelectedCognitiveError[]) => void;
@@ -24,6 +26,7 @@ export function LeftPanel({
   step,
   emotionThoughtPairs,
   userInput,
+  user,
   positiveReframes,
   onSetPositiveReframes,
   onSelectCognitiveErrors,
@@ -45,6 +48,7 @@ export function LeftPanel({
     empathyLoading,
     generateEmpathy,
     handleConfirm2Errors,
+    handleSaveError,
     handleIntensitySet,
     header,
     isLite,
@@ -55,6 +59,8 @@ export function LeftPanel({
     rerollCandidates,
     runRankThenKickoffTop3Details,
     selected,
+    savingErrorId,
+    isErrorSaved,
     goPrevPage,
     goNextPage,
     setShowIntensityModal,
@@ -66,6 +72,7 @@ export function LeftPanel({
     step,
     emotionThoughtPairs,
     userInput,
+    user,
     onSelectCognitiveErrors,
     onNext,
     mode,
@@ -122,6 +129,9 @@ export function LeftPanel({
             onRetryRank={() => void runRankThenKickoffTop3Details()}
             onReroll={() => void rerollCandidates()}
             onToggleSelect={toggleSelect}
+            onSaveError={handleSaveError}
+            savingErrorId={savingErrorId}
+            isErrorSaved={isErrorSaved}
             onPrevPage={goPrevPage}
             onNextPage={goNextPage}
             onConfirm={handleConfirm2Errors}

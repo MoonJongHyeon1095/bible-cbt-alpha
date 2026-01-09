@@ -139,3 +139,74 @@ export async function deleteAlternativeAPI(id: string) {
   const payload = await res.json().catch(() => ({}));
   return { ok: res.ok, payload };
 }
+
+export async function createBehaviorDetailAPI(body: {
+  noteId: string | number;
+  behaviorLabel: string;
+  behaviorDescription: string;
+  errorTags?: string[];
+}) {
+  const res = await authFetch("/api/emotion-behavior-details", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  const payload = await res.json().catch(() => ({}));
+  return { ok: res.ok, payload };
+}
+
+export async function createErrorDetailsAPI(body: {
+  noteId: string | number;
+  errors: Array<{ errorLabel: string; errorDescription: string }>;
+}) {
+  const res = await authFetch("/api/emotion-error-details", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  const payload = await res.json().catch(() => ({}));
+  return { ok: res.ok, payload };
+}
+
+export async function updateBehaviorDetailAPI(body: {
+  id: string | number;
+  behaviorLabel?: string;
+  behaviorDescription?: string;
+  errorTags?: string[];
+}) {
+  const res = await authFetch("/api/emotion-behavior-details", {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+  const payload = await res.json().catch(() => ({}));
+  return { ok: res.ok, payload };
+}
+
+export async function deleteBehaviorDetailAPI(id: string) {
+  const res = await authFetch(
+    `/api/emotion-behavior-details?id=${encodeURIComponent(id)}`,
+    { method: "DELETE" }
+  );
+  const payload = await res.json().catch(() => ({}));
+  return { ok: res.ok, payload };
+}
+
+export async function updateErrorDetailAPI(body: {
+  id: string | number;
+  errorLabel?: string;
+  errorDescription?: string;
+}) {
+  const res = await authFetch("/api/emotion-error-details", {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+  const payload = await res.json().catch(() => ({}));
+  return { ok: res.ok, payload };
+}
+
+export async function deleteErrorDetailAPI(id: string) {
+  const res = await authFetch(
+    `/api/emotion-error-details?id=${encodeURIComponent(id)}`,
+    { method: "DELETE" }
+  );
+  const payload = await res.json().catch(() => ({}));
+  return { ok: res.ok, payload };
+}

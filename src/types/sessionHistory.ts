@@ -1,4 +1,11 @@
+import type {
+  CognitiveErrorId,
+  CognitiveErrorIndex,
+} from "../constants/errors";
+
 export interface SelectedCognitiveError {
+  id?: CognitiveErrorId;
+  index?: CognitiveErrorIndex;
   title: string;
   detail?: string;
 }
@@ -14,6 +21,10 @@ export interface SessionHistory {
   }>;
   selectedCognitiveErrors: SelectedCognitiveError[];
   selectedAlternativeThought: string;
+  selectedBehavior?: {
+    behaviorLabel: string;
+    behaviorText: string;
+  } | null;
   positiveReframes: { [emotion: string]: string };
   bibleVerse?: {
     verse: string;

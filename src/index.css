@@ -64,6 +64,18 @@
   }
 }
 
+.emotion-note-page {
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR",
+    "Nanum Gothic", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.emotion-note-page h1,
+.emotion-note-page h2,
+.emotion-note-page h3 {
+  letter-spacing: -0.02em;
+}
+
 @layer theme {
   :root, :host {
     --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -544,6 +556,13 @@
 }
 
 @layer utilities {
+  .alternatives-card {
+    order: 2;
+  }
+
+  .behavior-card {
+    order: 3;
+  }
   .\@container\/card-header {
     container: card-header / inline-size;
   }

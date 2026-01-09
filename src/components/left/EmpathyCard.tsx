@@ -9,8 +9,8 @@ type BurnsEmpathyShape = {
   thoughtEmpathy: string;
   emotionEmpathy: string;
   iStatement: string;
-  question: string;
   soothing: string;
+  observedSelf: string;
 };
 
 type Props = {
@@ -76,13 +76,16 @@ export function EmpathyCard({
             <p className="text-slate-800 leading-relaxed text-sm">
               {burnsEmpathy.iStatement}
             </p>
+            <p className="text-slate-800 leading-relaxed text-sm">
+              {burnsEmpathy.soothing ?? ""}
+            </p>
 
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-3">
               <p className="text-blue-900 text-sm mb-1">
                 💝 제가 발견한 당신의 모습
               </p>
               <p className="text-blue-800 text-sm leading-relaxed">
-                {burnsEmpathy.soothing ?? ""}
+                {burnsEmpathy.observedSelf ?? ""}
               </p>
             </div>
           </div>
@@ -99,7 +102,7 @@ export function EmpathyCard({
           {isLite && (
             <Button
               onClick={onLiteNext}
-              className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white py-5 text-base shadow-lg"
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-5 text-base shadow-lg"
             >
               다음 단계로 이동
             </Button>

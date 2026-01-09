@@ -28,6 +28,7 @@ interface ThoughtSelectionCardProps {
   canSubmit: boolean;
   savingDetail: boolean;
   savingDetailId: string | null;
+  isDetailSaved?: (thought: string) => boolean;
 }
 
 export function ThoughtSelectionCard({
@@ -52,6 +53,7 @@ export function ThoughtSelectionCard({
   canSubmit,
   savingDetail,
   savingDetailId,
+  isDetailSaved,
 }: ThoughtSelectionCardProps) {
   const customThoughtTrimmed = customThought.trim();
   const isCustomTooShort =
@@ -147,6 +149,7 @@ export function ThoughtSelectionCard({
       <div className="space-y-3">
         {generatedThoughts.map((thought, index) => {
           const isSavingThis = savingDetail && savingDetailId === thought;
+          const isSaved = isDetailSaved?.(thought) ?? false;
           return (
             <div key={index} className="flex items-start gap-2">
               <button
@@ -176,14 +179,17 @@ export function ThoughtSelectionCard({
 
               <button
                 onClick={() => onAddFavorite(thought)}
-                disabled={savingDetail}
+                disabled={savingDetail || isSaved}
                 className="p-3 rounded-lg border-2 border-yellow-300 hover:border-yellow-500 hover:bg-yellow-50 transition-all text-yellow-600 hover:text-yellow-700 flex-shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
                 title="즐겨찾기에 추가"
               >
                 {isSavingThis ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <Bookmark className="size-4" />
+                  <Bookmark
+                    className={`size-4 ${isSaved ? "text-yellow-600" : ""}`}
+                    fill={isSaved ? "currentColor" : "none"}
+                  />
                 )}
               </button>
             </div>
@@ -215,7 +221,10 @@ export function ThoughtSelectionCard({
               onClick={handleSaveCustomThought}
               variant="outline"
               size="sm"
-              disabled={savingDetail}
+              disabled={
+                savingDetail ||
+                (isDetailSaved?.(customThoughtTrimmed) ?? false)
+              }
               className="gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {savingDetail && savingDetailId === customThoughtTrimmed ? (
@@ -225,7 +234,18 @@ export function ThoughtSelectionCard({
                 </>
               ) : (
                 <>
-                  <Bookmark className="size-4" />
+                  <Bookmark
+                    className={`size-4 ${
+                      isDetailSaved?.(customThoughtTrimmed)
+                        ? "text-yellow-600"
+                        : ""
+                    }`}
+                    fill={
+                      isDetailSaved?.(customThoughtTrimmed)
+                        ? "currentColor"
+                        : "none"
+                    }
+                  />
                   감정 노트에 저장
                 </>
               )}

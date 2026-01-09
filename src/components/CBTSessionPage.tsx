@@ -79,6 +79,15 @@ export function CBTSessionPage({
     setSelectedCognitiveErrors([]);
     setSelectedAlternativeThought("");
     setPositiveReframes({});
+    try {
+      sessionStorage.removeItem("cbt_saved_error_keys");
+      sessionStorage.removeItem("cbt_saved_alternative_keys");
+      sessionStorage.removeItem("cbt_saved_behavior_keys");
+      sessionStorage.removeItem("cbt_saved_detail_keys");
+      sessionStorage.removeItem("cbt_active_note");
+    } catch {
+      /* ignore */
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -88,6 +97,15 @@ export function CBTSessionPage({
     setSelectedCognitiveErrors([]);
     setSelectedAlternativeThought("");
     setPositiveReframes({});
+    try {
+      sessionStorage.removeItem("cbt_saved_error_keys");
+      sessionStorage.removeItem("cbt_saved_alternative_keys");
+      sessionStorage.removeItem("cbt_saved_behavior_keys");
+      sessionStorage.removeItem("cbt_saved_detail_keys");
+      sessionStorage.removeItem("cbt_active_note");
+    } catch {
+      /* ignore */
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -118,6 +136,7 @@ export function CBTSessionPage({
             step={step}
             emotionThoughtPairs={emotionThoughtPairs}
             userInput={userInput}
+            user={user}
             positiveReframes={positiveReframes}
             onSetPositiveReframes={setPositiveReframes}
             onSelectCognitiveErrors={setSelectedCognitiveErrors}

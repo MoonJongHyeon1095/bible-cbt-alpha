@@ -33,6 +33,9 @@ export function HistoryModal({
   const [expandedErrors, setExpandedErrors] = useState<
     Record<string, Set<number>>
   >({});
+  const [expandedBehaviors, setExpandedBehaviors] = useState<
+    Record<string, boolean>
+  >({});
   const [expandedHistories, setExpandedHistories] = useState<
     Record<string, boolean>
   >({});
@@ -56,7 +59,7 @@ export function HistoryModal({
         const { data, error } = await supabase
           .from("session_history")
           .select(
-            "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors, selected_alternative_thought, positive_reframes, bible_verse"
+            "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors, selected_alternative_thought, selected_behavior, positive_reframes, bible_verse"
           )
           .eq("user_id", user.id)
           .is("soft_deleted_at", null)
@@ -77,6 +80,7 @@ export function HistoryModal({
               row.selected_cognitive_errors
             ),
             selectedAlternativeThought: row.selected_alternative_thought ?? "",
+            selectedBehavior: row.selected_behavior ?? null,
             positiveReframes:
               (row.positive_reframes as Record<string, string>) ?? {},
             bibleVerse: row.bible_verse as SessionHistory["bibleVerse"],
@@ -101,6 +105,7 @@ export function HistoryModal({
           selectedCognitiveErrors: normalizeSelectedCognitiveErrors(
             item.selectedCognitiveErrors
           ),
+          selectedBehavior: item.selectedBehavior ?? null,
         }));
         setHistories(parsed);
       } catch (e) {
@@ -206,6 +211,13 @@ export function HistoryModal({
 
   const toggleHistory = (historyId: string) => {
     setExpandedHistories((prev) => ({
+      ...prev,
+      [historyId]: !prev[historyId],
+    }));
+  };
+
+  const toggleBehavior = (historyId: string) => {
+    setExpandedBehaviors((prev) => ({
       ...prev,
       [historyId]: !prev[historyId],
     }));
@@ -425,6 +437,40 @@ export function HistoryModal({
                             {history.selectedAlternativeThought}
                           </p>
                         </div>
+                      </div>
+                    )}
+
+                    {/* 행동 반응 */}
+                    {history.selectedBehavior && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-blue-400">🧭 행동 반응</p>
+                        <button
+                          type="button"
+                          onClick={() => toggleBehavior(history.id)}
+                          className={`w-full rounded-lg border px-4 py-3 text-left transition-colors focus:outline-none focus:ring-2 ${
+                            expandedBehaviors[history.id]
+                              ? "border-blue-400/60 bg-blue-500/15 text-blue-100 focus:ring-blue-300/60"
+                              : "border-blue-500/30 bg-blue-500/5 text-blue-200 hover:bg-blue-500/10 focus:ring-blue-400/50"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-semibold">
+                              {history.selectedBehavior.behaviorLabel}
+                            </span>
+                            <ChevronDown
+                              className={`size-4 transition-transform ${
+                                expandedBehaviors[history.id]
+                                  ? "rotate-180 text-blue-200"
+                                  : "text-blue-300"
+                              }`}
+                            />
+                          </div>
+                          {expandedBehaviors[history.id] && (
+                            <p className="mt-2 text-sm text-slate-200 leading-relaxed">
+                              {history.selectedBehavior.behaviorText}
+                            </p>
+                          )}
+                        </button>
                       </div>
                     )}
 

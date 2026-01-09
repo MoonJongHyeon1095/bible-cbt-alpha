@@ -12,6 +12,23 @@ export interface PatternAlternative {
   createdAt: string;
 }
 
+export interface PatternBehaviorDetail {
+  id: string;
+  noteId: string;
+  behaviorLabel: string;
+  behaviorDescription: string;
+  errorTags?: string[];
+  createdAt: string;
+}
+
+export interface PatternErrorDetail {
+  id: string;
+  noteId: string;
+  errorLabel: string;
+  errorDescription: string;
+  createdAt: string;
+}
+
 export interface Pattern {
   id: string;
   title: string;
@@ -21,4 +38,6 @@ export interface Pattern {
   frequency: number;
   details: PatternDetail[];
   alternatives: PatternAlternative[];
+  behaviorDetails?: PatternBehaviorDetail[];
+  errorDetails?: PatternErrorDetail[];
 }

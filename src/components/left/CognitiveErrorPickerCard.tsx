@@ -1,5 +1,6 @@
 // src/components/left/CognitiveErrorPickerCard.tsx
-import { Check, Loader2, RefreshCw } from "lucide-react";
+import { Bookmark, Check, Loader2, RefreshCw } from "lucide-react";
+import type { MouseEvent } from "react";
 import type { ErrorIndex } from "../../lib/ai";
 import { Button } from "../ui/button";
 
@@ -15,6 +16,7 @@ type DetailItem = {
 };
 
 type CognitiveErrorMeta = {
+  index: ErrorIndex;
   title: string;
   description: string;
 };
@@ -62,10 +64,13 @@ type Props = {
   totalPages: number;
   selected: ErrorIndex[];
   canConfirm: boolean;
+  savingErrorId?: ErrorIndex | null;
+  isErrorSaved?: (idx: ErrorIndex) => boolean;
 
   onRetryRank: () => void;
   onReroll: () => void;
   onToggleSelect: (idx: ErrorIndex) => void;
+  onSaveError?: (idx: ErrorIndex) => void;
   onPrevPage: () => void;
   onNextPage: () => void;
   onConfirm: () => void;
@@ -87,9 +92,12 @@ export function CognitiveErrorPickerCard({
   totalPages,
   selected,
   canConfirm,
+  savingErrorId,
+  isErrorSaved,
   onRetryRank,
   onReroll,
   onToggleSelect,
+  onSaveError,
   onPrevPage,
   onNextPage,
   onConfirm,
@@ -99,22 +107,61 @@ export function CognitiveErrorPickerCard({
   const canNext = pageIndex < totalPages - 1;
 
   const renderCard = (idx: ErrorIndex) => {
-    const meta = COGNITIVE_ERRORS[idx - 1];
+    const meta = COGNITIVE_ERRORS.find((item) => item.index === idx);
     const selectedOn = selected.includes(idx);
 
     const rankItem = (ranked ?? []).find((x) => x.index === idx);
     const detail = detailByIndex[idx];
 
+    const isSaving = savingErrorId === idx;
+    const alreadySaved = isErrorSaved?.(idx) ?? false;
+    const canShowSave = Boolean(selectedOn && onSaveError && detail);
+
     return (
-      <button
+      <div
         key={idx}
+        role="button"
+        tabIndex={0}
         onClick={() => onToggleSelect(idx)}
-        className={`w-full text-left p-4 rounded-lg border-2 transition-all relative ${
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onToggleSelect(idx);
+          }
+        }}
+        className={`w-full text-left p-4 rounded-lg border-2 transition-all relative cursor-pointer ${
           selectedOn
             ? "border-green-600 bg-green-50"
             : "border-slate-200 hover:border-green-300 bg-white"
         }`}
       >
+        <div className="flex items-center justify-start min-h-[36px] mb-2">
+          {canShowSave && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(event: MouseEvent<HTMLButtonElement>) => {
+                event.stopPropagation();
+                onSaveError?.(idx);
+              }}
+              className="gap-1 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+              disabled={isSaving || alreadySaved}
+            >
+              {isSaving ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : alreadySaved ? (
+                <Bookmark className="size-4 text-green-600" />
+              ) : (
+                <Bookmark className="size-4" />
+              )}
+              {isSaving
+                ? "저장 중..."
+                : alreadySaved
+                  ? "저장됨"
+                  : "감정노트에 저장"}
+            </Button>
+          )}
+        </div>
         <div className="flex items-start gap-3">
           <div className="flex-1">
             <div className="space-y-4">
@@ -182,7 +229,7 @@ export function CognitiveErrorPickerCard({
             <Check className="size-5 text-green-600 flex-shrink-0" />
           )}
         </div>
-      </button>
+      </div>
     );
   };
 
@@ -261,7 +308,7 @@ export function CognitiveErrorPickerCard({
             className="w-full gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
           >
             <RefreshCw className="size-4" />
-            다른 인지오류를 검토합니다. (선택한 것은 고정)
+            다른 인지오류 검토
           </Button>
 
           <Button
@@ -269,9 +316,7 @@ export function CognitiveErrorPickerCard({
             disabled={!canConfirm}
             className="w-full bg-green-600 hover:bg-green-700"
           >
-            {canConfirm
-              ? "다음 단계로 이동"
-              : "상세 서술이 준비되면 다음 단계로 이동"}
+            {canConfirm ? "다음 단계로 이동" : "상세 서술 준비 중"}
           </Button>
         </>
       )}

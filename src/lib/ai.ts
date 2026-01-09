@@ -2,6 +2,11 @@
 // gpt
 import {
   COGNITIVE_ERRORS,
+  COGNITIVE_ERRORS_BY_ID,
+  COGNITIVE_ERRORS_BY_INDEX,
+} from "../constants/errors";
+import {
+  generateBehaviorSuggestions as gptGenerateBehaviorSuggestions,
   type ErrorIndex, // (호환) 기존 단일 호출
   analyzeCognitiveErrorDetails as gptAnalyzeCognitiveErrorDetails,
   generateBibleVerse as gptGenerateBibleVerse,
@@ -10,6 +15,7 @@ import {
   generateExtendedAutomaticThoughts as gptGenerateExtendedAutomaticThoughts,
   rankCognitiveErrors as gptRankCognitiveErrors
 } from "./gpt";
+import type { CognitiveBehaviorId } from "../constants/behaviors";
 
 export type ExtendedAutomaticThought = {
   thought: string;
@@ -50,15 +56,15 @@ export type CognitiveErrorDetailResult = {
 };
 
 // 메타 export (UI에서 사용)
-export { COGNITIVE_ERRORS };
+export { COGNITIVE_ERRORS, COGNITIVE_ERRORS_BY_ID, COGNITIVE_ERRORS_BY_INDEX };
 export type { ErrorIndex };
 
 export type BurnsEmpathyResult = {
   thoughtEmpathy: string;
   emotionEmpathy: string;
   iStatement: string;
-  question: string;
   soothing: string;
+  observedSelf: string;
 };
 
 export type AlternativeThoughtItem = {
@@ -71,6 +77,11 @@ export type BibleVerseResult = {
   verse: string;
   reference: string;
   prayer: string;
+};
+
+export type BehaviorSuggestionItem = {
+  behaviorId: CognitiveBehaviorId;
+  suggestion: string;
 };
 
 // 1) 확장 자동사고
@@ -126,7 +137,34 @@ export async function generateBurnsEmpathy(
   situation: string,
   emotion: string,
   thought: string,
-  intensity: number
+  intensity: number | null
 ): Promise<BurnsEmpathyResult> {
   return gptGenerateBurnsEmpathy(situation, emotion, thought, intensity);
+}
+
+// 6) 행동 제안
+export async function generateBehaviorSuggestions(
+  situation: string,
+  emotionThoughtPairs: Array<{
+    emotion: string;
+    intensity: number | null;
+    thought: string;
+  }>,
+  selectedAlternativeThought: string,
+  cognitiveErrors: Array<{ title: string; detail?: string }>,
+  behaviors: Array<{
+    id: CognitiveBehaviorId;
+    replacement_title: string;
+    category: string;
+    description: string;
+    usage_description: string;
+  }>
+): Promise<BehaviorSuggestionItem[]> {
+  return gptGenerateBehaviorSuggestions(
+    situation,
+    emotionThoughtPairs,
+    selectedAlternativeThought,
+    cognitiveErrors,
+    behaviors
+  );
 }
