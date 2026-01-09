@@ -1,6 +1,9 @@
 import type { User } from "@supabase/supabase-js";
 import {
   AlertCircle,
+  Brain,
+  ChevronDown,
+  ChevronRight,
   Edit2,
   HeartPulse,
   Lightbulb,
@@ -54,6 +57,12 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const titleRef = useRef<HTMLInputElement | null>(null);
   const [showDetailEditor, setShowDetailEditor] = useState(false);
   const [showAlternativeEditor, setShowAlternativeEditor] = useState(false);
+  const [expandedDetails, setExpandedDetails] = useState<
+    Record<string, boolean>
+  >({});
+  const [expandedAlternatives, setExpandedAlternatives] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     if (showDetailEditor) {
@@ -77,6 +86,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
       titleRef.current.focus();
     }
   }, [isCreating, editingId]);
+
+  const formatThoughtTitle = (content: string) => {
+    const trimmed = content.trim();
+    if (trimmed.length <= 20) return trimmed;
+    return `${trimmed.slice(0, 20)}…`;
+  };
+
+  const formatAlternativeTitle = (content: string) => {
+    const trimmed = content.trim();
+    if (trimmed.length <= 20) return trimmed;
+    return `${trimmed.slice(0, 20)}…`;
+  };
 
   const mapDetailRow = (row: any): PatternDetail => ({
     id: String(row.id),
@@ -830,7 +851,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
                     onClick={() => setShowDetailEditor((v) => !v)}
                     className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-slate-800"
                   >
-                    <span>저장된 자동사고 편집</span>
+                    <span>배후의 자동 사고 편집</span>
                     <span className="text-xs text-slate-500">
                       {showDetailEditor ? "접기" : "펼치기"}
                     </span>
@@ -1002,7 +1023,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
               key={pattern.id}
               className="p-6 hover:shadow-lg transition-shadow bg-white border-indigo-100"
             >
-              <div className="mb-4 space-y-2">
+              <div className="mb-6 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
                     {pattern.frequency}회 발생
@@ -1024,6 +1045,15 @@ export function PatternsPage({ user }: PatternsPageProps) {
                     <p className="text-xs text-slate-400">
                       최초 기록: {formatDate(pattern.timestamp)}
                     </p>
+                    <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                      <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
+                        <AlertCircle className="size-4" />
+                        트리거 텍스트
+                      </p>
+                      <p className="text-sm text-slate-800 whitespace-pre-wrap">
+                        {pattern.trigger}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex gap-1">
                     <button
@@ -1076,48 +1106,100 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {pattern.details.length > 0 ? (
-                  <div className="md:col-span-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3 space-y-2">
-                    <p className="text-xs text-yellow-800 font-semibold">
-                      저장된 자동사고 ({pattern.details.length}개)
-                    </p>
+                  <div className="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
+                        <Brain className="size-4" />
+                        배후의 자동 사고
+                      </div>
+                      <span className="text-xs text-amber-800">
+                        {pattern.details.length}개
+                      </span>
+                    </div>
                     <div className="space-y-2">
                       {pattern.details.map((detail) => (
                         <div
                           key={detail.id}
-                          className="bg-white border border-yellow-200 rounded p-2"
+                          className="rounded-lg border border-amber-200/80 bg-white p-3 shadow-sm"
                         >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-blue-700 font-semibold">
-                              감정: {detail.emotion || "-"}
-                            </span>
-                            <span className="text-[11px] text-slate-400">
-                              {detail.createdAt
-                                ? new Date(detail.createdAt).toLocaleDateString(
-                                    "ko-KR"
-                                  )
-                                : ""}
-                            </span>
-                          </div>
-                          <p className="text-slate-800 text-sm mt-1 whitespace-pre-wrap">
-                            {detail.automaticThought || "-"}
-                          </p>
+                          {(() => {
+                            const detailKey = `${pattern.id}-${detail.id}`;
+                            const isExpanded = Boolean(
+                              expandedDetails[detailKey]
+                            );
+                            return (
+                              <>
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span
+                                      className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 font-semibold text-blue-700"
+                                      style={{ fontSize: "14px", lineHeight: "1" }}
+                                    >
+                                      {detail.emotion || "-"}
+                                    </span>
+                                    <span
+                                      className="text-slate-400"
+                                      style={{ fontSize: "14px", lineHeight: "1" }}
+                                    >
+                                      {detail.createdAt
+                                        ? new Date(
+                                            detail.createdAt
+                                          ).toLocaleDateString("ko-KR")
+                                        : ""}
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setExpandedDetails((prev) => ({
+                                        ...prev,
+                                        [detailKey]: !isExpanded,
+                                      }))
+                                    }
+                                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                                    title={
+                                      isExpanded
+                                        ? "배후의 자동 사고 접기"
+                                        : "배후의 자동 사고 펼치기"
+                                    }
+                                  >
+                                    {isExpanded ? (
+                                      <ChevronDown className="size-4 text-slate-400" />
+                                    ) : (
+                                      <ChevronRight className="size-4 text-slate-400" />
+                                    )}
+                                    <span className="min-w-0 flex-1 text-sm text-slate-600">
+                                      {formatThoughtTitle(
+                                        detail.automaticThought || "-"
+                                      )}
+                                    </span>
+                                  </button>
+                                </div>
+                                {isExpanded && (
+                                  <p className="mt-3 text-slate-800 text-sm whitespace-pre-wrap break-words">
+                                    {detail.automaticThought || "-"}
+                                  </p>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <div className="md:col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-600">
-                    아직 자동사고가 저장되지 않았습니다.
+                  <div className="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+                      <Brain className="size-4" />
+                      배후의 자동 사고
+                    </div>
+                    <p className="mt-2 text-sm text-amber-800">
+                      아직 배후의 자동 사고가 저장되지 않았습니다.
+                    </p>
                   </div>
                 )}
 
                 <div className="space-y-3">
-                  <div>
-                    <p className="text-xs text-slate-500 mb-1">🎯 트리거</p>
-                    <p className="text-slate-700 bg-slate-50 p-2 rounded">
-                      {pattern.trigger}
-                    </p>
-                  </div>
                   <div>
                     <p className="text-xs text-slate-500 mb-1">🏃 행동</p>
                     <p className="text-slate-700 bg-slate-50 p-2 rounded whitespace-pre-wrap">
@@ -1126,34 +1208,76 @@ export function PatternsPage({ user }: PatternsPageProps) {
                   </div>
                 </div>
 
-                <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-                  <p className="text-xs text-green-700 mb-2 flex items-center gap-1">
-                    <Lightbulb className="size-4" /> 대안적 접근
+                <div className="rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm">
+                  <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-green-900">
+                    <Lightbulb className="size-4" />
+                    대안적 접근
                   </p>
                   {pattern.alternatives.length ? (
                     <div className="space-y-2">
                       {pattern.alternatives.map((alt) => (
                         <div
                           key={alt.id}
-                          className="bg-white border border-green-200 rounded p-2"
+                          className="rounded-lg border border-green-200 bg-white p-3 shadow-sm"
                         >
-                          <div className="flex items-center justify-end">
-                            <span className="text-[11px] text-slate-400">
-                              {alt.createdAt
-                                ? new Date(alt.createdAt).toLocaleDateString(
-                                    "ko-KR"
-                                  )
-                                : ""}
-                            </span>
-                          </div>
-                          <p className="text-slate-800 text-sm mt-1 whitespace-pre-wrap">
-                            {alt.alternative || "-"}
-                          </p>
+                          {(() => {
+                            const altKey = `${pattern.id}-${alt.id}`;
+                            const isExpanded = Boolean(
+                              expandedAlternatives[altKey]
+                            );
+                            return (
+                              <>
+                                <div className="flex items-start justify-between gap-3">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setExpandedAlternatives((prev) => ({
+                                        ...prev,
+                                        [altKey]: !isExpanded,
+                                      }))
+                                    }
+                                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                                    title={
+                                      isExpanded
+                                        ? "대안적 접근 접기"
+                                        : "대안적 접근 펼치기"
+                                    }
+                                  >
+                                    {isExpanded ? (
+                                      <ChevronDown className="size-4 text-slate-400" />
+                                    ) : (
+                                      <ChevronRight className="size-4 text-slate-400" />
+                                    )}
+                                    <span className="min-w-0 flex-1 text-sm text-slate-600">
+                                      {formatAlternativeTitle(
+                                        alt.alternative || "-"
+                                      )}
+                                    </span>
+                                  </button>
+                                  <span
+                                    className="text-slate-400"
+                                    style={{ fontSize: "14px", lineHeight: "1" }}
+                                  >
+                                    {alt.createdAt
+                                      ? new Date(
+                                          alt.createdAt
+                                        ).toLocaleDateString("ko-KR")
+                                      : ""}
+                                  </span>
+                                </div>
+                                {isExpanded && (
+                                  <p className="mt-3 text-slate-800 text-sm whitespace-pre-wrap break-words">
+                                    {alt.alternative || "-"}
+                                  </p>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-slate-700 whitespace-pre-wrap">
+                    <p className="text-sm text-green-800 whitespace-pre-wrap">
                       아직 대안이 작성되지 않았습니다.
                     </p>
                   )}

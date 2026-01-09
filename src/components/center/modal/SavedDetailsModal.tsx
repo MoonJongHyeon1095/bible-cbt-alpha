@@ -55,10 +55,10 @@ export function SavedDetailsModal({
         <div className="p-6">
           <DialogTitle className="flex items-center gap-2 text-lg pr-14">
             <Bookmark className="size-5 text-yellow-600" />
-            감정 노트에서 자동사고 불러오기
+            감정 노트에서 배후의 자동 사고 불러오기
           </DialogTitle>
           <DialogDescription className="sr-only">
-            저장된 자동사고 목록에서 선택합니다.
+            저장된 배후의 자동 사고 목록에서 선택합니다.
           </DialogDescription>
 
           <div className="border border-slate-200 rounded-lg p-3 bg-slate-50 mt-3">
@@ -69,7 +69,7 @@ export function SavedDetailsModal({
               </div>
             ) : details.length === 0 ? (
               <p className="text-sm text-slate-500">
-                저장된 자동사고가 없습니다.
+                저장된 배후의 자동 사고가 없습니다.
               </p>
             ) : (
               <div className="space-y-2">
