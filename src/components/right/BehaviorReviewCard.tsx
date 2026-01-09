@@ -137,80 +137,90 @@ export function BehaviorReviewCard({
               value={item.behavior.id}
               className="rounded-md border border-indigo-200 bg-white/70 px-3 pt-2 pb-6 mb-4 last:mb-0"
             >
-              <AccordionTrigger className="py-2 text-indigo-900 text-sm items-center gap-2">
-                <div className="flex flex-wrap items-center gap-2 flex-1">
-                  <span className="font-medium">
-                    {item.behavior.replacement_title}
-                  </span>
-                  {selectedBehaviorId === item.behavior.id && (
-                    <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
-                      선택됨
+              <AccordionTrigger className="pt-2 pb-1 text-indigo-900 text-sm items-start gap-2">
+                <div className="flex flex-1 flex-col gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium">
+                      {item.behavior.replacement_title}
                     </span>
-                  )}
-                  {item.tags.map((tag) => (
-                    <span
-                      key={`${item.behavior.id}-${tag}`}
-                      className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-slate-500"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-                {selectedBehaviorId === item.behavior.id &&
-                onSaveBehavior &&
-                suggestionsById[item.behavior.id] ? (
-                  (() => {
-                    const behaviorSaved = isBehaviorSaved?.() ?? false;
-                    return (
-                  <Button
-                    asChild
-                    size="sm"
-                    variant="outline"
-                    className="gap-1 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
-                    disabled={savingBehavior || behaviorSaved}
-                  >
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        if (behaviorSaved || savingBehavior) return;
-                        onSaveBehavior();
-                      }}
-                      onPointerDown={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          if (behaviorSaved || savingBehavior) return;
-                          onSaveBehavior();
-                        }
-                      }}
-                    >
-                      {savingBehavior ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : behaviorSaved ? (
-                        <Bookmark className="size-4 text-indigo-600" />
-                      ) : (
-                        <Bookmark className="size-4" />
+                    {item.tags.map((tag) => (
+                      <span
+                        key={`${item.behavior.id}-${tag}`}
+                        className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-slate-500"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                  {selectedBehaviorId === item.behavior.id ||
+                  (onSaveBehavior && suggestionsById[item.behavior.id]) ? (
+                    <div className="flex flex-wrap justify-start gap-2">
+                      {selectedBehaviorId === item.behavior.id && (
+                        <span className="inline-flex items-center rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-semibold uppercase leading-none tracking-wide text-white">
+                          선택됨
+                        </span>
                       )}
-                      {savingBehavior
-                        ? "저장 중..."
-                        : behaviorSaved
-                          ? "저장됨"
-                          : "감정노트에 저장"}
-                    </span>
-                  </Button>
-                    );
-                  })()
-                ) : null}
+                      {selectedBehaviorId === item.behavior.id &&
+                      onSaveBehavior &&
+                      suggestionsById[item.behavior.id]
+                        ? (() => {
+                            const behaviorSaved = isBehaviorSaved?.() ?? false;
+                            return (
+                              <Button
+                                asChild
+                                size="sm"
+                                variant="outline"
+                                className="gap-1 border-yellow-400 text-yellow-700 hover:bg-yellow-50"
+                                disabled={savingBehavior || behaviorSaved}
+                              >
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    if (behaviorSaved || savingBehavior) return;
+                                    onSaveBehavior();
+                                  }}
+                                  onPointerDown={(event) => {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                  }}
+                                  onKeyDown={(event) => {
+                                    if (
+                                      event.key === "Enter" ||
+                                      event.key === " "
+                                    ) {
+                                      event.preventDefault();
+                                      event.stopPropagation();
+                                      if (behaviorSaved || savingBehavior) return;
+                                      onSaveBehavior();
+                                    }
+                                  }}
+                                >
+                                  {savingBehavior ? (
+                                    <Loader2 className="size-4 animate-spin" />
+                                  ) : behaviorSaved ? (
+                                    <Bookmark className="size-4 text-indigo-600" />
+                                  ) : (
+                                    <Bookmark className="size-4" />
+                                  )}
+                                  {savingBehavior
+                                    ? "저장 중..."
+                                    : behaviorSaved
+                                      ? "저장됨"
+                                      : "감정노트에 저장"}
+                                </span>
+                              </Button>
+                            );
+                          })()
+                        : null}
+                    </div>
+                  ) : null}
+                </div>
               </AccordionTrigger>
               <AccordionContent className="text-indigo-800">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-1">
                   <span className="rounded-full border border-indigo-200 bg-white px-2 py-0.5 text-[10px] font-medium text-indigo-700">
                     {item.behavior.category}
                   </span>

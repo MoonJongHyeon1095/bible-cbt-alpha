@@ -22,6 +22,8 @@ rsync -a --delete ~/bible-cbt-alpha/android/ /mnt/d/tmp/bible-cbt-android/
 
 mkdir -p /mnt/d/tmp/node_modules/@capacitor
 rsync -a --delete ~/bible-cbt-alpha/node_modules/@capacitor/ /mnt/d/tmp/node_modules/@capacitor/
+
+npx @capacitor/assets generate --ios --android --assetPath resources
  
 npm run dev -- --host 0.0.0.0 --port 5173
 */

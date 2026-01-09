@@ -1,4 +1,4 @@
-import { Brain, LogIn, LogOut, Menu } from "lucide-react";
+import { LogIn, LogOut, Menu } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../../ui/button";
 import { Drawer } from "./Drawer";
@@ -43,8 +43,12 @@ export function WebCompactNav({
             onClick={() => go("cbt")}
             className="flex items-center gap-2 min-w-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-xl"
           >
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-2 rounded-xl shrink-0">
-              <Brain className="size-5" />
+            <div className="shrink-0">
+              <img
+                src="/logo.png"
+                alt="마음생각 다시 쓰기 로고"
+                className="size-10 object-contain"
+              />
             </div>
             <div className="min-w-0">
               <div className="text-sm text-slate-900 truncate">
