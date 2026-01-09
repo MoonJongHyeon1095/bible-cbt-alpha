@@ -101,10 +101,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (fetchError || !existing)
         return json(res, 404, { error: "인지오류를 찾을 수 없습니다." });
-      const owner =
-        Array.isArray(existing.emotion_notes) && existing.emotion_notes.length
-          ? existing.emotion_notes[0]?.user_id
-          : existing.emotion_notes?.user_id;
+      const owner = Array.isArray(existing.emotion_notes)
+        ? existing.emotion_notes[0]?.user_id
+        : (existing.emotion_notes as { user_id?: string } | undefined)?.user_id;
       if (owner !== user.id) return json(res, 403, { error: "권한이 없습니다." });
 
       const { data, error } = await supabase
@@ -132,10 +131,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (fetchError || !existing)
         return json(res, 404, { error: "인지오류를 찾을 수 없습니다." });
 
-      const owner =
-        Array.isArray(existing.emotion_notes) && existing.emotion_notes.length
-          ? existing.emotion_notes[0]?.user_id
-          : existing.emotion_notes?.user_id;
+      const owner = Array.isArray(existing.emotion_notes)
+        ? existing.emotion_notes[0]?.user_id
+        : (existing.emotion_notes as { user_id?: string } | undefined)?.user_id;
       if (owner !== user.id) return json(res, 403, { error: "권한이 없습니다." });
 
       const { error } = await supabase
