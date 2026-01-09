@@ -22,22 +22,20 @@ export function BibleOfferCard({
         그분은 말씀으로 기도하면 응답하십니다.
       </p>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <Button
-          onClick={onAccept}
-          disabled={bibleLoading}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          {bibleLoading ? (
-            <Loader2 className="size-4 animate-spin mr-2" />
-          ) : null}
-          말씀을 찾습니다
-        </Button>
+      {!bibleLoading && (
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <Button
+            onClick={onAccept}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            말씀을 찾습니다
+          </Button>
 
-        <Button onClick={onDecline} variant="outline" disabled={bibleLoading}>
-          아니오
-        </Button>
-      </div>
+          <Button onClick={onDecline} variant="outline">
+            아니오
+          </Button>
+        </div>
+      )}
 
       {bibleError && <p className="text-red-600 text-sm mt-3">{bibleError}</p>}
     </div>
