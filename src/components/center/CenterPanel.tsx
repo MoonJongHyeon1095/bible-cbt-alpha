@@ -310,7 +310,10 @@ export function CenterPanel({
             onSelectThought={flow.handleThoughtSelect}
             onRegenerate={() => {
               flow.clearPrefetch();
-              void flow.finalizeEmotionAndShowThoughts(flow.selectedEmotion);
+              void flow.finalizeEmotionAndShowThoughts(
+                flow.selectedEmotion,
+                true
+              );
             }}
             onRetry={() => {
               flow.clearPrefetch();

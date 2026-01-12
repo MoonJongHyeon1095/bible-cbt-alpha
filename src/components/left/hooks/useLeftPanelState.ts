@@ -42,6 +42,16 @@ type DetailItem = {
   analysis: string;
 };
 
+const burnsCache = new Map<string, BurnsEmpathyShape>();
+const rankCache = new Map<string, RankItem[]>();
+const detailCache = new Map<
+  string,
+  {
+    detailByIndex: Partial<Record<ErrorIndex, DetailItem>>;
+    detailOrder: ErrorIndex[];
+  }
+>();
+
 type UseLeftPanelStateParams = {
   step: number;
   emotionThoughtPairs: EmotionThoughtPair[];
@@ -177,6 +187,35 @@ export function useLeftPanelState({
     }
 
     lastPairKeyRef.current = pairKey;
+
+    const cachedEmpathy = burnsCache.get(pairKey);
+    if (cachedEmpathy) {
+      setBurnsEmpathy(cachedEmpathy);
+      const pairIntensity = currentPair?.intensity ?? null;
+      if (pairIntensity != null) {
+        setTargetIntensity(Math.round(pairIntensity * 0.6));
+      } else {
+        setTargetIntensity(30);
+      }
+    }
+
+    const cachedRank = rankCache.get(pairKey);
+    if (cachedRank) {
+      setRanked(cachedRank);
+      setRankError(null);
+      setRankLoading(false);
+    }
+
+    const cachedDetail = detailCache.get(pairKey);
+    if (cachedDetail) {
+      setDetailByIndex(cachedDetail.detailByIndex);
+      setDetailOrder(cachedDetail.detailOrder);
+      setDetailError(null);
+      setDetailLoading(false);
+      setPageIndex(0);
+      setSelected([]);
+      setPinnedSelected([]);
+    }
   }, [pairKey]);
 
   const mapServerNote = useCallback(
@@ -385,6 +424,20 @@ export function useLeftPanelState({
     if (!currentPair) return;
     const keyAtStart = pairKey;
 
+    const cached = burnsCache.get(pairKey);
+    if (cached) {
+      setBurnsEmpathy(cached);
+      const pairIntensity = currentPair.intensity ?? null;
+      if (pairIntensity != null) {
+        setTargetIntensity(Math.round(pairIntensity * 0.6));
+      } else {
+        setTargetIntensity(30);
+      }
+      setEmpathyError(null);
+      setEmpathyLoading(false);
+      return;
+    }
+
     setEmpathyLoading(true);
     setEmpathyError(null);
 
@@ -399,6 +452,7 @@ export function useLeftPanelState({
       if (isStale(keyAtStart)) return;
 
       setBurnsEmpathy(result);
+      burnsCache.set(pairKey, result);
       if (pairIntensity != null) {
         setTargetIntensity(Math.round(pairIntensity * 0.6));
       } else {
@@ -429,6 +483,19 @@ export function useLeftPanelState({
       if (candidates.length === 0) return;
 
       const keyAtStart = pairKey;
+      const cachedDetail = detailCache.get(pairKey);
+      if (cachedDetail) {
+        const hasAll = candidates.every(
+          (idx) => cachedDetail.detailByIndex[idx]
+        );
+        if (hasAll) {
+          setDetailByIndex(cachedDetail.detailByIndex);
+          setDetailOrder(cachedDetail.detailOrder);
+          setDetailError(null);
+          setDetailLoading(false);
+          return;
+        }
+      }
 
       setDetailOrder((prev) => {
         const next = [...prev];
@@ -455,6 +522,10 @@ export function useLeftPanelState({
           for (const e of detail.errors) {
             next[e.index] = e;
           }
+          detailCache.set(pairKey, {
+            detailByIndex: next,
+            detailOrder: Object.keys(next).map((k) => Number(k) as ErrorIndex),
+          });
           return next;
         });
       } catch (err) {
@@ -474,6 +545,31 @@ export function useLeftPanelState({
     if (!currentPair) return;
     const keyAtStart = pairKey;
 
+    const cachedRank = rankCache.get(pairKey);
+    if (cachedRank) {
+      setRanked(cachedRank);
+      setRankError(null);
+      setRankLoading(false);
+
+      const cachedDetail = detailCache.get(pairKey);
+      if (cachedDetail) {
+        setDetailByIndex(cachedDetail.detailByIndex);
+        setDetailOrder(cachedDetail.detailOrder);
+        setDetailError(null);
+        setDetailLoading(false);
+        setPageIndex(0);
+        setSelected([]);
+        setPinnedSelected([]);
+        return;
+      }
+
+      const top3 = cachedRank.map((x) => x.index).slice(0, 3);
+      if (top3.length > 0) {
+        void fetchDetails(top3);
+      }
+      return;
+    }
+
     setRankLoading(true);
     setRankError(null);
     setDetailError(null);
@@ -483,6 +579,7 @@ export function useLeftPanelState({
       if (isStale(keyAtStart)) return;
 
       setRanked(r.ranked);
+      rankCache.set(pairKey, r.ranked);
 
       setDetailByIndex({});
       setDetailOrder([]);

@@ -477,7 +477,7 @@ export function RightPanel({
               <div className="bg-red-50 border border-red-200 text-red-800 p-5 rounded-lg">
                 <p className="mb-3 text-base">{thoughtsError}</p>
                 <Button
-                  onClick={() => void generateAlternatives()}
+                  onClick={() => void generateAlternatives({ force: true })}
                   variant="outline"
                   size="sm"
                 >
@@ -515,7 +515,7 @@ export function RightPanel({
               saved={isAlternativeSaved(selectedAlternativeThought)}
               onReviewAlternatives={() => {
                 onSetSelectedAlternativeThought("");
-                void generateAlternatives();
+                void generateAlternatives({ force: true });
               }}
               reviewDisabled={thoughtsLoading}
               onSave={handleSaveAlternative}

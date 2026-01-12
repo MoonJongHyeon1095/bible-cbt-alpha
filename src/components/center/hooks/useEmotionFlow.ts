@@ -13,6 +13,8 @@ function makePrefetchKey(emotion: string, input: string): PrefetchKey {
   return `${emotion}::${input.trim()}`;
 }
 
+const thoughtsCache = new Map<PrefetchKey, string[]>();
+
 export type EmotionView = "grid" | "detail" | "intensity" | "thoughts";
 
 interface UseEmotionFlowParams {
@@ -79,6 +81,18 @@ export function useEmotionFlow({
 
     const key = makePrefetchKey(selectedEmotion, userInput);
 
+    const cachedThoughts = thoughtsCache.get(key);
+    if (cachedThoughts) {
+      prefetchKeyRef.current = key;
+      prefetchPromiseRef.current = Promise.resolve();
+      setGeneratedThoughts(cachedThoughts);
+      setSelectedThoughtIndex(null);
+      setCustomThought("");
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     if (prefetchKeyRef.current === key && prefetchPromiseRef.current) return;
 
     prefetchKeyRef.current = key;
@@ -94,6 +108,7 @@ export function useEmotionFlow({
       const thoughts = result.sdtThoughts.map((st) => st.thought);
 
       if (prefetchKeyRef.current === key) {
+        thoughtsCache.set(key, thoughts);
         setGeneratedThoughts(thoughts);
         setSelectedThoughtIndex(null);
         setCustomThought("");
@@ -113,7 +128,10 @@ export function useEmotionFlow({
     prefetchPromiseRef.current = p;
   };
 
-  const finalizeEmotionAndShowThoughts = async (emotionOverride?: string) => {
+  const finalizeEmotionAndShowThoughts = async (
+    emotionOverride?: string,
+    force?: boolean
+  ) => {
     const emotion = emotionOverride ?? selectedEmotion;
     if (!emotion || !userInput.trim()) return;
 
@@ -121,6 +139,17 @@ export function useEmotionFlow({
 
     setView("thoughts");
     setError(null);
+
+    if (!force) {
+      const cachedThoughts = thoughtsCache.get(key);
+      if (cachedThoughts) {
+        setGeneratedThoughts(cachedThoughts);
+        setSelectedThoughtIndex(null);
+        setCustomThought("");
+        onScrollTop();
+        return;
+      }
+    }
 
     if (prefetchKeyRef.current === key && prefetchPromiseRef.current) {
       await prefetchPromiseRef.current;
@@ -135,6 +164,7 @@ export function useEmotionFlow({
         emotion
       );
       const thoughts = result.sdtThoughts.map((st) => st.thought);
+      thoughtsCache.set(key, thoughts);
       setGeneratedThoughts(thoughts);
       setSelectedThoughtIndex(null);
       setCustomThought("");
