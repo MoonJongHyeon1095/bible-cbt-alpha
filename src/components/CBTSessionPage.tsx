@@ -135,6 +135,7 @@ export function CBTSessionPage({
             onSetEmotionThoughtPairs={setEmotionThoughtPairs}
             onNext={handleNext}
             onPrevious={handlePrevious}
+            onExit={resetAll}
             mode={mode}
             user={user}
             resumeCenterView={resumeCenterView}
@@ -157,6 +158,7 @@ export function CBTSessionPage({
             onSelectCognitiveErrors={setSelectedCognitiveErrors}
             onNext={handleNext}
             onPrevious={handlePrevious}
+            onExit={resetAll}
             mode={mode}
             resumeLeftView={resumeLeftView}
             onResumeLeftViewHandled={() => setResumeLeftView(null)}
@@ -179,6 +181,7 @@ export function CBTSessionPage({
           onRestartWithSameInput={restartWithSameInput}
           onNext={handleNext}
           onPrevious={handlePrevious}
+          onExit={resetAll}
           mode={mode}
           user={user}
         />

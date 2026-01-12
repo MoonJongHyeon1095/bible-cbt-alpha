@@ -1,6 +1,6 @@
 // src/components/center/CenterPanel.tsx
 import type { User } from "@supabase/supabase-js";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, DoorOpen } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { EMOTIONS } from "../../constants/emotions";
@@ -29,6 +29,7 @@ interface CenterPanelProps {
   onSetEmotionThoughtPairs: (pairs: EmotionThoughtPair[]) => void;
   onNext: () => void;
   onPrevious?: () => void;
+  onExit?: () => void;
   mode: CbtMode;
   user: User | null;
   resumeCenterView?: "thoughts" | null;
@@ -50,6 +51,7 @@ export function CenterPanel({
   onSetEmotionThoughtPairs,
   onNext,
   onPrevious,
+  onExit,
   mode,
   user,
   resumeCenterView,
@@ -203,15 +205,26 @@ export function CenterPanel({
   return (
     <div className="relative p-6 min-h-[600px] flex flex-col">
       {showBackButton && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleBack}
-          className="absolute right-4 top-4 z-10 rounded-full"
-          aria-label="이전 단계"
-        >
-          <ArrowLeft className="size-5" />
-        </Button>
+        <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            className="rounded-full"
+            aria-label="이전 단계"
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onExit}
+            className="rounded-full"
+            aria-label="세션 종료"
+          >
+            <DoorOpen className="size-5" />
+          </Button>
+        </div>
       )}
       <div className="mb-6">
         <CenterHeader

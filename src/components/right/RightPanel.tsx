@@ -1,6 +1,12 @@
 // src/components/right/RightPanel.tsx
 import type { User } from "@supabase/supabase-js";
-import { ArrowLeft, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  DoorOpen,
+  Loader2,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { CognitiveBehaviorId } from "../../constants/behaviors";
@@ -39,6 +45,7 @@ interface RightPanelProps {
   onRestartWithSameInput?: () => void;
   onNext: () => void;
   onPrevious?: () => void;
+  onExit?: () => void;
   mode: CbtMode;
   user: User | null;
 }
@@ -55,6 +62,7 @@ export function RightPanel({
   onRestartWithSameInput,
   onNext,
   onPrevious,
+  onExit,
   user,
   mode,
 }: RightPanelProps) {
@@ -466,15 +474,26 @@ export function RightPanel({
   return (
     <div className="relative p-6 min-h-[600px] flex flex-col">
       {showBackButton && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleBack}
-          className="absolute right-4 top-4 z-10 rounded-full"
-          aria-label="이전 단계"
-        >
-          <ArrowLeft className="size-5" />
-        </Button>
+        <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            className="rounded-full"
+            aria-label="이전 단계"
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onExit}
+            className="rounded-full"
+            aria-label="세션 종료"
+          >
+            <DoorOpen className="size-5" />
+          </Button>
+        </div>
       )}
       <div className="mb-4 space-y-2">
         <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
