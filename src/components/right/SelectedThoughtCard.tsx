@@ -31,7 +31,7 @@ export function SelectedThoughtCard({
     >
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-base font-semibold text-purple-800">
+          <p className="text-base font-semibold text-purple-800 whitespace-nowrap shrink-0">
             선택한 대안사고
           </p>
           <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
