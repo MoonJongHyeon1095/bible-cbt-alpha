@@ -22,10 +22,10 @@ export function EmotionDetailCard({
     <div className="space-y-3">
       <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-lg border-2 border-indigo-300">
         <h2 className="text-indigo-900 text-base mb-1">
-          지금 이 순간의 감정 인식하기: {emotion.label}
+          지금 이 순간의 <strong>{emotion.label}</strong> 인식하기
         </h2>
         <p className="text-slate-700 text-xs">{emotion.description}</p>
-        <p className="text-slate-600 text-xs mt-1">💭 {emotion.physical}</p>
+        <p className="text-slate-600 text-xs mt-1">{emotion.physical}</p>
       </div>
 
       <div className="rounded-lg border border-green-300 bg-green-50 p-3">
@@ -110,12 +110,6 @@ export function EmotionDetailCard({
           이 감정 다루기
         </Button>
       </div>
-
-      {!confirmed && (
-        <p className="text-center text-slate-500 text-xs">
-          💡 긍정적 의미/주의할 점을 확인하셨다면 체크 후 진행할 수 있어요.
-        </p>
-      )}
     </div>
   );
 }

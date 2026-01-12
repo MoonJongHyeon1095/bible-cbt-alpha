@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { EMOTIONS } from "./constants/emotions";
+import { EMOTIONS } from "../../constants/emotions";
 import type { EmotionData } from "./types";
 
 interface EmotionGridProps {
@@ -13,20 +13,11 @@ export function EmotionGridCard({
 }: EmotionGridProps) {
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border-2 border-blue-200">
+      {/* <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border-2 border-blue-200">
         <h3 className="text-blue-900 mb-2 text-lg">
           당신이 느낀 감정을 <strong>1가지</strong> 선택해주세요.
         </h3>
-      </div>
-
-      {selectedEmotion && (
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-xl text-center text-green-900 border-2 border-green-300 shadow-sm">
-          <span className="text-lg">
-            선택된 감정: <strong className="text-xl">{selectedEmotion}</strong>{" "}
-            ✓
-          </span>
-        </div>
-      )}
+      </div> */}
 
       <div className="grid grid-cols-2 gap-3 max-h-[550px] overflow-y-auto pr-2">
         {EMOTIONS.map((emotion) => {

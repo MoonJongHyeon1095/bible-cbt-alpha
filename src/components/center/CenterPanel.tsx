@@ -4,7 +4,8 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import type { EmotionThoughtPair } from "../../types";
 import { CbtMode } from "../header/navigation/ModePicker";
-import { Card } from "../ui/card";
+import { Button } from "../ui/button";
+import { ArrowLeft } from "lucide-react";
 import { CenterHeader } from "./CenterHeader";
 import { ALL_EXAMPLES } from "./constants/examples";
 import { EmotionDetailCard } from "./EmotionDetailCard";
@@ -26,6 +27,7 @@ interface CenterPanelProps {
   onInputChange: (input: string) => void;
   onSetEmotionThoughtPairs: (pairs: EmotionThoughtPair[]) => void;
   onNext: () => void;
+  onPrevious?: () => void;
   mode: CbtMode;
   user: User | null;
 }
@@ -44,9 +46,12 @@ export function CenterPanel({
   onInputChange,
   onSetEmotionThoughtPairs,
   onNext,
+  onPrevious,
   mode,
   user,
 }: CenterPanelProps) {
+  const showBackButton = step > 1 && Boolean(onPrevious);
+
   // ref for scrolling
   const containerRef = useRef<HTMLDivElement>(null);
   const handleScrollTop = () => scrollToTop(containerRef);
@@ -132,12 +137,25 @@ export function CenterPanel({
   };
 
   return (
-    <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
-      <CenterHeader
-        step={step}
-        emotionSet={emotionSet}
-        showEmotionDetail={showEmotionDetail}
-      />
+    <div className="relative p-6 min-h-[600px] flex flex-col">
+      {showBackButton && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onPrevious}
+          className="absolute right-4 top-4 z-10 rounded-full"
+          aria-label="이전 단계"
+        >
+          <ArrowLeft className="size-5" />
+        </Button>
+      )}
+      <div className="mb-6">
+        <CenterHeader
+          step={step}
+          emotionSet={emotionSet}
+          showEmotionDetail={showEmotionDetail}
+        />
+      </div>
 
       <FirstEmotionIntensityModal
         // ✅ deep일 때만 실제로 열리게 방지
@@ -277,6 +295,6 @@ export function CenterPanel({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }

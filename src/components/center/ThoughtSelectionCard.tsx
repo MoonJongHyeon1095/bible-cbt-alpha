@@ -1,10 +1,10 @@
 import { Bookmark, Check, FolderOpen, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { validateUserText } from "../../utils/validation";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { LoadingInsightCard } from "./LoadingInsightCard";
 import type { EmotionData } from "./types";
-import { validateUserText } from "../../utils/validation";
 
 interface ThoughtSelectionCardProps {
   selectedEmotion: string;
@@ -116,6 +116,7 @@ export function ThoughtSelectionCard({
       <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
         <p className="text-slate-700">
           <strong>{selectedEmotion}</strong> 뒤에 숨어있을 수 있는 생각들입니다.{" "}
+          <br />
           <strong>가장 잘 맞는 것을 1개 골라주세요.</strong>
           <br />
           만약 없으면 <strong>다시 만들기</strong>를 누르시거나{" "}
@@ -222,8 +223,7 @@ export function ThoughtSelectionCard({
               variant="outline"
               size="sm"
               disabled={
-                savingDetail ||
-                (isDetailSaved?.(customThoughtTrimmed) ?? false)
+                savingDetail || (isDetailSaved?.(customThoughtTrimmed) ?? false)
               }
               className="gap-2 border-yellow-300 text-yellow-700 hover:bg-yellow-50 disabled:opacity-60 disabled:cursor-not-allowed"
             >

@@ -4,7 +4,8 @@ import { COGNITIVE_ERRORS } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
 import type { SelectedCognitiveError } from "../../types/sessionHistory";
 import type { CbtMode } from "../header/navigation/ModePicker";
-import { Card } from "../ui/card";
+import { Button } from "../ui/button";
+import { ArrowLeft } from "lucide-react";
 import { CognitiveErrorPickerCard } from "./CognitiveErrorPickerCard";
 import { EmotionIntensityModal } from "./EmotionIntensityModal";
 import { EmpathyCard } from "./EmpathyCard";
@@ -19,6 +20,7 @@ interface LeftPanelProps {
   onSetPositiveReframes: (reframes: { [emotion: string]: string }) => void;
   onSelectCognitiveErrors: (errors: SelectedCognitiveError[]) => void;
   onNext: () => void;
+  onPrevious?: () => void;
   mode: CbtMode;
 }
 
@@ -31,8 +33,10 @@ export function LeftPanel({
   onSetPositiveReframes,
   onSelectCognitiveErrors,
   onNext,
+  onPrevious,
   mode,
 }: LeftPanelProps) {
+  const showBackButton = step > 1 && Boolean(onPrevious);
   const {
     burnsEmpathy,
     canConfirmSelection,
@@ -79,7 +83,18 @@ export function LeftPanel({
   });
 
   return (
-    <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col text-[15px] leading-6">
+    <div className="relative p-6 min-h-[600px] flex flex-col text-[15px] leading-6">
+      {showBackButton && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onPrevious}
+          className="absolute right-4 top-4 z-10 rounded-full"
+          aria-label="이전 단계"
+        >
+          <ArrowLeft className="size-5" />
+        </Button>
+      )}
       <div className="mb-4 space-y-2">
         <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
           {header.badge}
@@ -160,6 +175,6 @@ export function LeftPanel({
           onCancel={() => setShowIntensityModal(false)}
         />
       )}
-    </Card>
+    </div>
   );
 }

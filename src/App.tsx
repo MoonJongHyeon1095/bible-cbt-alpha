@@ -161,7 +161,7 @@ export default function App() {
       />
 
       <main
-        className={isNativeMobile ? undefined : "pb-16"}
+        className={isNativeMobile ? undefined : "pb-8"}
         style={
           isNativeMobile
             ? { paddingBottom: "var(--mobile-tabbar-height, 96px)" }
@@ -173,7 +173,7 @@ export default function App() {
 
       {/* Footer: 모바일에서는 숨김 */}
       {isDesktop && (
-        <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-8 mt-8">
+        <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-6 mt-4">
           <div className="max-w-[1800px] mx-auto px-8">
             <div className="text-center mb-8">
               <div className="inline-block bg-white border border-slate-200 shadow-sm rounded-2xl px-10 py-5 mb-6">
