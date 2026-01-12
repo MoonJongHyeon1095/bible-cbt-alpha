@@ -63,7 +63,7 @@ export function IncidentInputSection({
         value={userInput}
         onChange={(e) => onInputChange(e.target.value)}
         placeholder="여기에 직접 입력하세요..."
-        className="min-h-[170px] resize-none rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm shadow-sm transition focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-200"
+        className="min-h-[220px] sm:min-h-[260px] resize-none rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm shadow-sm transition focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-200"
       />
 
       <Button
