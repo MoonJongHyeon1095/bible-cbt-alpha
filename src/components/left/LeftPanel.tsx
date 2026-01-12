@@ -7,9 +7,9 @@ import type { SelectedCognitiveError } from "../../types/sessionHistory";
 import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
 import { ArrowLeft } from "lucide-react";
-import { CognitiveErrorPickerCard } from "./CognitiveErrorPickerCard";
+import { CognitiveErrorPickerCard } from "./error-picker/CognitiveErrorPickerCard";
 import { EmotionIntensityModal } from "./EmotionIntensityModal";
-import { EmpathyCard } from "./EmpathyCard";
+import { EmpathyCard } from "./empathy/EmpathyCard";
 import { useLeftPanelState } from "./hooks/useLeftPanelState";
 
 interface LeftPanelProps {

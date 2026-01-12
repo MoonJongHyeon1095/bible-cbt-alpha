@@ -1,9 +1,11 @@
-// src/components/left/EmpathyCard.tsx
+// src/components/left/empathy/EmpathyCard.tsx
 
 import { Loader2 } from "lucide-react";
-import type { EmotionThoughtPair } from "../../types";
-import type { CbtMode } from "../header/navigation/ModePicker";
-import { Button } from "../ui/button";
+import type { EmotionThoughtPair } from "../../../types";
+import type { CbtMode } from "../../header/navigation/ModePicker";
+import { Button } from "../../ui/button";
+import { EmotionThoughtSummaryCard } from "../EmotionThoughtSummaryCard";
+import { FlowActionButton } from "../FlowActionButton";
 
 type BurnsEmpathyShape = {
   thoughtEmpathy: string;
@@ -69,24 +71,10 @@ export function EmpathyCard({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-100 p-4 shadow-sm">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-              현재 감정
-            </p>
-            <p className="text-emerald-900 font-semibold text-lg">
-              {currentPair.emotion}
-            </p>
-          </div>
-        </div>
-        <div className="mt-3 rounded-xl border border-emerald-200 bg-white p-3">
-          <p className="text-xs font-semibold text-emerald-700 mb-1">
-            자동사고 문장
-          </p>
-          <p className="text-slate-700 italic">“{currentPair.thought}”</p>
-        </div>
-      </div>
+      <EmotionThoughtSummaryCard
+        emotionLabel={currentPair.emotion}
+        thoughtText={currentPair.thought}
+      />
 
       {empathyLoading ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -147,21 +135,14 @@ export function EmpathyCard({
           </div>
 
           {!isLite && (
-            <Button
+            <FlowActionButton
               onClick={onOpenIntensityModal}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 text-base shadow-lg"
-            >
-              감정 강도 조절하기
-            </Button>
+              label="감정 강도 조절하기"
+            />
           )}
 
           {isLite && (
-            <Button
-              onClick={onLiteNext}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-5 text-base shadow-lg"
-            >
-              다음 단계로 이동
-            </Button>
+            <FlowActionButton onClick={onLiteNext} label="다음 단계로 이동" />
           )}
 
           {showCognitivePreparingHint && (
