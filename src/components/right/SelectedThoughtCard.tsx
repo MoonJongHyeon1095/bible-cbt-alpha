@@ -30,17 +30,17 @@ export function SelectedThoughtCard({
       className={`rounded-2xl border border-purple-200/70 bg-purple-50 p-5 shadow-sm ${className}`}
     >
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
           <p className="text-base font-semibold text-purple-800 whitespace-nowrap shrink-0">
             선택한 대안사고
           </p>
-          <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
+          <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto sm:ml-auto">
             {canShowBack ? (
               <Button
                 size="sm"
                 variant="outline"
                 onClick={onBackToAlternatives}
-                className="gap-1 border-purple-300 text-purple-700 hover:bg-purple-50 whitespace-normal leading-tight"
+                className="gap-1 border-purple-300 text-purple-700 hover:bg-purple-50 whitespace-nowrap w-full sm:w-auto justify-center"
                 disabled={backDisabled}
               >
                 <ArrowLeft className="size-4" />
@@ -52,7 +52,9 @@ export function SelectedThoughtCard({
                 size="sm"
                 variant="outline"
                 onClick={onSave}
-                className="gap-1 border-yellow-400 text-yellow-700 hover:bg-yellow-50 whitespace-normal leading-tight"
+                className={`gap-1 border-yellow-400 hover:bg-yellow-50 whitespace-nowrap w-full sm:w-auto justify-center ${
+                  saved ? "text-purple-700" : "text-yellow-700"
+                }`}
                 disabled={saving || saved}
               >
                 {saving ? (

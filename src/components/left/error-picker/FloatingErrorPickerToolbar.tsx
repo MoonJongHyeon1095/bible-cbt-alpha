@@ -26,7 +26,12 @@ export function FloatingErrorPickerToolbar({
   return (
     <div
       className="pointer-events-none"
-      style={{ position: "fixed", bottom: 24, right: 24, zIndex: 60 }}
+      style={{
+        position: "fixed",
+        bottom: "calc(var(--mobile-tabbar-height, 0px) + 24px)",
+        right: 24,
+        zIndex: 60,
+      }}
     >
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-emerald-800 text-sm shadow-sm flex items-center gap-3">
         <span className={selectedCount === 0 ? "opacity-60" : "opacity-100"}>
