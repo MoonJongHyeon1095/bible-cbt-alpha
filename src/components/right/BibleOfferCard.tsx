@@ -1,4 +1,3 @@
-import { Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface BibleOfferCardProps {
@@ -19,19 +18,23 @@ export function BibleOfferCard({
       <p className="text-blue-900 mb-4">
         하나님의 위로의 말씀을 찾아보시겠습니까?
         <br />
-        그분은 말씀으로 기도하면 응답하십니다.
+        그분은 말씀에 의지하여 기도하면 응답하십니다.
       </p>
 
       {!bibleLoading && (
         <div className="grid grid-cols-2 gap-3 mb-3">
           <Button
             onClick={onAccept}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="rounded-full bg-blue-600 hover:bg-blue-700"
           >
             말씀을 찾습니다
           </Button>
 
-          <Button onClick={onDecline} variant="outline">
+          <Button
+            onClick={onDecline}
+            variant="outline"
+            className="rounded-full"
+          >
             아니오
           </Button>
         </div>

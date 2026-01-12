@@ -146,8 +146,8 @@ export function ModePicker({
 
           <div className="mt-2 rounded-lg border border-slate-100 px-3">
             <ToggleRow
-              label="심화 모드 활성화"
-              description="더 많은 단계와 깊이 있는 성찰을 제공합니다."
+              label="감정 다이얼 활성화"
+              description="감정 강도 측정하는 단계를 추가합니다."
               checked={deepEnabled}
               onChange={(next) =>
                 onChange({

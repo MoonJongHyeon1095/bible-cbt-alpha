@@ -551,7 +551,11 @@ export function useEmotionNotes({
       thought,
     };
 
-    onSetEmotionThoughtPairs([...emotionThoughtPairs, newPair]);
+    const nextPairs = [
+      ...emotionThoughtPairs.filter((pair) => pair.emotion !== newPair.emotion),
+      newPair,
+    ];
+    onSetEmotionThoughtPairs(nextPairs);
 
     onScrollTop();
     onNext();

@@ -2,54 +2,60 @@ import type { AlternativeThought } from "./types";
 
 interface AlternativeThoughtCardProps {
   item: AlternativeThought;
-  index: number;
   onSelect: (thought: string) => void;
 }
 
 export function AlternativeThoughtCard({
   item,
-  index,
   onSelect,
 }: AlternativeThoughtCardProps) {
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect(item.thought)}
-      className="w-full text-left p-6 rounded-xl border-2 border-slate-200 hover:border-purple-400 bg-white transition-all group hover:shadow-lg"
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect(item.thought);
+        }
+      }}
+      className="group relative w-full cursor-pointer overflow-hidden rounded-2xl border border-purple-200/70 bg-white/90 p-6 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-purple-300 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/60"
     >
-      <div className="flex items-start gap-3">
-        <span className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-base group-hover:bg-purple-600 transition-colors">
-          {index + 1}
-        </span>
+      <div className="absolute right-0 top-0 h-20 w-32 rounded-bl-[80px] bg-gradient-to-bl from-purple-200/60 via-fuchsia-100/40 to-transparent" />
+      <div className="relative flex flex-col gap-4">
+        <div className="flex items-center justify-between"></div>
 
-        <div className="flex-1 space-y-4">
-          <div className="space-y-3">
-            {item.thought.split(/\. (?=[A-Z가-힣])/).map(
-              (sentence, sIndex) =>
-                sentence.trim() && (
-                  <p
-                    key={sIndex}
-                    className="text-slate-800 text-base leading-relaxed"
-                  >
-                    {sentence.trim()}
-                    {!sentence.endsWith(".") && "."}
-                  </p>
-                )
-            )}
-          </div>
+        <div
+          className="space-y-3 text-[15px] leading-7 text-slate-800"
+          style={{
+            fontFamily:
+              '"Nanum Myeongjo", "Noto Serif KR", "Apple SD Gothic Neo", serif',
+          }}
+        >
+          {item.thought.split(/\. (?=[A-Z가-힣])/).map(
+            (sentence, sIndex) =>
+              sentence.trim() && (
+                <p key={sIndex} className="whitespace-pre-line">
+                  {sentence.trim()}
+                  {!sentence.endsWith(".") && "."}
+                </p>
+              )
+          )}
+        </div>
 
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-indigo-700 text-base">🎯</span>
-              <span className="text-indigo-900 font-semibold">
-                {item.technique}
-              </span>
-            </div>
-            <p className="text-slate-600 text-sm italic leading-relaxed">
-              {item.techniqueDescription}
-            </p>
+        <div className="rounded-xl border border-purple-200/70 bg-gradient-to-r from-purple-50 via-white to-fuchsia-50 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-purple-700 text-base">🎯</span>
+            <span className="text-purple-900 font-semibold">
+              {item.technique}
+            </span>
           </div>
+          <p className="text-slate-600 text-sm italic leading-relaxed">
+            {item.techniqueDescription}
+          </p>
         </div>
       </div>
-    </button>
+    </div>
   );
 }

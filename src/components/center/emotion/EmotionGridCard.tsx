@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
-import { EMOTIONS } from "../../constants/emotions";
-import type { EmotionData } from "./types";
+import { EMOTIONS } from "../../../constants/emotions";
+import type { EmotionData } from "../types";
 
 interface EmotionGridProps {
   selectedEmotion: string;
@@ -43,7 +43,7 @@ export function EmotionGridCard({
                 <p className="text-slate-700 text-xs leading-relaxed">
                   {emotion.description}
                 </p>
-                <p className="text-slate-500 text-xs">💭 {emotion.physical}</p>
+                <p className="text-slate-500 text-xs">{emotion.physical}</p>
               </div>
             </button>
           );

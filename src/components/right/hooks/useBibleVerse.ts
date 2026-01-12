@@ -3,6 +3,8 @@ import { generateBibleVerse } from "../../../lib/ai";
 import type { EmotionThoughtPair } from "../../../types";
 import type { BibleVerseResult } from "../types";
 
+const bibleVerseCache = new Map<string, BibleVerseResult>();
+
 type UseBibleVerseParams = {
   step: number;
   userInput: string;
@@ -44,8 +46,6 @@ export function useBibleVerse({
     lockBibleChoice();
 
     setWantsBibleVerse(true);
-    setBibleLoading(true);
-    setBibleError(null);
 
     try {
       const emotions = emotionThoughtPairs
@@ -56,7 +56,25 @@ export function useBibleVerse({
         )
         .join(", ");
 
+      const cacheKey = JSON.stringify({
+        userInput,
+        emotions,
+      });
+
+      const cached = bibleVerseCache.get(cacheKey);
+      if (cached) {
+        setBibleVerse(cached);
+        setBibleError(null);
+        setBibleLoading(false);
+        onAdvance();
+        return;
+      }
+
+      setBibleLoading(true);
+      setBibleError(null);
+
       const verse = await generateBibleVerse(userInput, emotions);
+      bibleVerseCache.set(cacheKey, verse);
       setBibleVerse(verse);
       onAdvance();
     } catch (err) {

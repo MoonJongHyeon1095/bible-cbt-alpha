@@ -117,6 +117,7 @@
     --color-green-800: oklch(.448 .119 151.328);
     --color-green-900: oklch(.393 .095 152.535);
     --color-emerald-50: oklch(.979 .021 166.113);
+    --color-emerald-100: oklch(.942 .057 165.132);
     --color-emerald-200: oklch(.905 .093 164.15);
     --color-emerald-300: oklch(.845 .143 164.978);
     --color-emerald-400: oklch(.765 .177 163.223);
@@ -1558,6 +1559,22 @@
 
   .bg-green-600 {
     background-color: var(--color-green-600);
+  }
+
+  .bg-emerald-50 {
+    background-color: var(--color-emerald-50);
+  }
+
+  .bg-emerald-100 {
+    background-color: var(--color-emerald-100);
+  }
+
+  .bg-emerald-200 {
+    background-color: var(--color-emerald-200);
+  }
+
+  .bg-emerald-600 {
+    background-color: var(--color-emerald-600);
   }
 
   .bg-indigo-50 {
@@ -4025,4 +4042,14 @@ html {
     opacity: var(--tw-exit-opacity, 1);
     transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));
   }
+}
+
+.flow-action-button {
+  transition-property: background-color, box-shadow;
+  transition-duration: 200ms;
+}
+
+.flow-action-button:hover {
+  background-color: var(--color-emerald-800);
+  box-shadow: 0 25px 50px -12px #00000040;
 }

@@ -19,6 +19,10 @@ export function CBTSessionPage({
 }) {
   const [step, setStep] = useState<number>(1);
   const [userInput, setUserInput] = useState<string>("");
+  const [resumeCenterView, setResumeCenterView] = useState<"thoughts" | null>(
+    null
+  );
+  const [resumeLeftView, setResumeLeftView] = useState<"errors" | null>(null);
 
   const [emotionThoughtPairs, setEmotionThoughtPairs] = useState<
     EmotionThoughtPair[]
@@ -68,7 +72,15 @@ export function CBTSessionPage({
   };
 
   const handlePrevious = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > 1) {
+      if (step === 3) {
+        setResumeCenterView("thoughts");
+      }
+      if (step === 4) {
+        setResumeLeftView("errors");
+      }
+      setStep(step - 1);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -123,8 +135,11 @@ export function CBTSessionPage({
             onSetEmotionThoughtPairs={setEmotionThoughtPairs}
             onNext={handleNext}
             onPrevious={handlePrevious}
+            onExit={resetAll}
             mode={mode}
             user={user}
+            resumeCenterView={resumeCenterView}
+            onResumeCenterViewHandled={() => setResumeCenterView(null)}
           />
         </div>
       );
@@ -143,7 +158,10 @@ export function CBTSessionPage({
             onSelectCognitiveErrors={setSelectedCognitiveErrors}
             onNext={handleNext}
             onPrevious={handlePrevious}
+            onExit={resetAll}
             mode={mode}
+            resumeLeftView={resumeLeftView}
+            onResumeLeftViewHandled={() => setResumeLeftView(null)}
           />
         </div>
       );
@@ -163,6 +181,7 @@ export function CBTSessionPage({
           onRestartWithSameInput={restartWithSameInput}
           onNext={handleNext}
           onPrevious={handlePrevious}
+          onExit={resetAll}
           mode={mode}
           user={user}
         />
