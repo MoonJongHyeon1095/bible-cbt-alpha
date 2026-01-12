@@ -204,6 +204,11 @@ export function RightPanel({
 
   const handleBackToAlternatives = () => {
     onSetSelectedAlternativeThought("");
+    setWantsBibleVerse(null);
+
+    if (step >= 5) {
+      onPrevious?.();
+    }
   };
 
   const handleDoesNotWantBible = async () => {
@@ -410,18 +415,9 @@ export function RightPanel({
   };
 
   useEffect(() => {
-    // 단계 변화나 영역 전환 시 스크롤을 상단으로
+    // 단계 변화 시 스크롤을 상단으로
     scrollToTop();
-  }, [step, showBibleResult, showFinalArea, hasSelectedThought]);
-
-  useEffect(() => {
-    if (!wantsBibleVerse) return;
-    if (!bibleSectionRef.current) return;
-    bibleSectionRef.current.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }, [bibleError, bibleLoading, bibleVerse, wantsBibleVerse]);
+  }, [step]);
 
   const header = useMemo(() => {
     if (step < 4) {

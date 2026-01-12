@@ -1,6 +1,6 @@
 // src/components/left/error-picker/CognitiveErrorPickerCard.tsx
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ErrorIndex } from "../../../lib/ai";
 import { Button } from "../../ui/button";
 import { EmotionThoughtSummaryCard } from "../EmotionThoughtSummaryCard";
@@ -73,6 +73,19 @@ export function CognitiveErrorPickerCard({
   const canPrev = pageIndex > 0;
   const canNext = pageIndex < totalPages - 1;
   const [hasRerolled, setHasRerolled] = useState(false);
+  const topRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!topRef.current) return;
+    topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    topRef.current.focus({ preventScroll: true });
+    const scroller = topRef.current.closest<HTMLElement>(".overflow-y-auto");
+    if (scroller) {
+      requestAnimationFrame(() => {
+        scroller.scrollBy({ top: -24, behavior: "smooth" });
+      });
+    }
+  }, []);
 
   const renderCard = (idx: ErrorIndex) => {
     const meta = COGNITIVE_ERRORS.find((item) => item.index === idx);
@@ -99,7 +112,7 @@ export function CognitiveErrorPickerCard({
   };
 
   return (
-    <div className="space-y-5">
+    <div ref={topRef} tabIndex={-1} className="space-y-5 focus:outline-none">
       <EmotionThoughtSummaryCard
         emotionLabel={emotionLabel}
         thoughtText={thoughtText}
