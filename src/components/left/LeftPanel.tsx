@@ -149,7 +149,13 @@ export function LeftPanel({
         <p className="text-slate-600 text-sm mt-1">{header.desc}</p>
       </div>
 
-      <div className="flex-1 space-y-6 overflow-y-auto">
+      <div
+        className={`flex-1 space-y-6 ${
+          step === 3 && currentPair && !intensitySet
+            ? "overflow-visible"
+            : "overflow-y-auto"
+        }`}
+      >
         {step < 3 && (
           <div className="flex items-center justify-center h-full">
             <p className="text-slate-500">감정과 자동사고를 선택해주세요.</p>
