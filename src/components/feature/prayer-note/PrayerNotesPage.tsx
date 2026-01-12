@@ -696,7 +696,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
                   </div>
                 </div>
 
-                <p className="text-slate-600 text-sm mb-3 whitespace-pre-wrap">
+                <p className="text-slate-600 text-base mb-3 whitespace-pre-wrap leading-relaxed">
                   {note.content}
                 </p>
 
@@ -823,7 +823,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
                                   </div>
                                 </div>
                                 {isExpanded && (
-                                  <p className="mt-3 text-slate-700 whitespace-pre-wrap break-words">
+                                  <p className="mt-3 text-slate-700 text-base whitespace-pre-wrap break-words leading-relaxed">
                                     {response.content}
                                   </p>
                                 )}

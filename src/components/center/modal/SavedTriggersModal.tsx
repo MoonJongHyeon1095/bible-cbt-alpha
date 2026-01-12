@@ -1,4 +1,4 @@
-import { Bookmark, Loader2 } from "lucide-react";
+import { Bookmark, ChevronDown, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   Dialog,
@@ -25,11 +25,13 @@ export function SavedTriggersModal({
 }: SavedTriggersModalProps) {
   const pageSize = 5;
   const [page, setPage] = useState(1);
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
   const totalPages = Math.max(1, Math.ceil(triggers.length / pageSize));
   const paged = triggers.slice((page - 1) * pageSize, page * pageSize);
 
   useEffect(() => {
     setPage(1);
+    setExpandedIds({});
   }, [triggers, open]);
 
   return (
@@ -68,7 +70,9 @@ export function SavedTriggersModal({
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {paged.map((note) => (
+                  {paged.map((note) => {
+                    const isExpanded = Boolean(expandedIds[note.id]);
+                    return (
                     <button
                       key={note.id}
                       onClick={() => onSelect(note)}
@@ -78,12 +82,39 @@ export function SavedTriggersModal({
                         <div className="text-slate-800 font-semibold text-sm">
                           {note.title || "저장된 상황"}
                         </div>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setExpandedIds((prev) => ({
+                              ...prev,
+                              [note.id]: !prev[note.id],
+                            }));
+                          }}
+                          className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 sm:hidden"
+                          aria-expanded={isExpanded}
+                          aria-label="내용 펼치기"
+                        >
+                          자세히
+                          <ChevronDown
+                            className={`size-3 transition-transform ${
+                              isExpanded ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
                       </div>
-                      <div className="text-slate-700 text-sm leading-6 line-clamp-3 mt-1">
+                      <div
+                        className={`text-slate-700 text-sm leading-6 mt-1 overflow-hidden transition-[max-height] duration-300 ease-out sm:group-hover:max-h-48 sm:group-hover:line-clamp-none ${
+                          isExpanded
+                            ? "max-h-48"
+                            : "line-clamp-2 max-h-12"
+                        }`}
+                      >
                         {note.trigger}
                       </div>
                     </button>
-                  ))}
+                  );
+                  })}
                 </div>
               )}
             </div>

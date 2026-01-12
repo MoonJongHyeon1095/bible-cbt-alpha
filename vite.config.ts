@@ -3,8 +3,10 @@
 import path from 'path';
 import { defineConfig } from 'vite';
 
-  export default defineConfig({
-    plugins: [react()],
+  export default defineConfig(async () => {
+    const { default: tailwindcss } = await import('@tailwindcss/vite');
+    return {
+      plugins: [react(), tailwindcss()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
@@ -64,4 +66,5 @@ import { defineConfig } from 'vite';
           },
     },
     },
-  });
+  };
+});

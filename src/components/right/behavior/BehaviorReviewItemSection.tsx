@@ -58,8 +58,8 @@ export function BehaviorReviewItemSection({
           </div>
 
           {isSelected && (
-            <div className="group-data-[state=closed]:hidden mt-1 flex flex-wrap items-center gap-2">
-              <span className="inline-flex h-6 items-center rounded-full bg-indigo-600 px-2 text-[10px] font-medium uppercase tracking-wide text-white">
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <span className="inline-flex h-8 items-center rounded-full bg-indigo-600 px-3 text-xs font-medium uppercase tracking-wide text-white">
                 선택됨
               </span>
               {onSaveBehavior && hasSuggestion
@@ -68,10 +68,10 @@ export function BehaviorReviewItemSection({
                     return (
                       <Button
                         asChild
-                        size="sm"
+                        size="default"
                         variant="outline"
-                        className={`h-6 gap-1 rounded-full border-yellow-400 px-2 text-[10px] font-medium hover:bg-yellow-50 ${
-                          behaviorSaved ? "text-indigo-700" : "text-yellow-700"
+                        className={`h-8 gap-2 rounded-full border-indigo-300 px-3 text-xs font-medium hover:bg-indigo-50 ${
+                          behaviorSaved ? "text-indigo-700" : "text-indigo-700"
                         }`}
                         disabled={savingBehavior || behaviorSaved}
                       >
@@ -98,11 +98,11 @@ export function BehaviorReviewItemSection({
                           }}
                         >
                           {savingBehavior ? (
-                            <Loader2 className="size-3 animate-spin" />
+                            <Loader2 className="size-4 animate-spin" />
                           ) : behaviorSaved ? (
-                            <Bookmark className="size-3 text-indigo-600" />
+                            <Bookmark className="size-4 text-indigo-600" />
                           ) : (
-                            <Bookmark className="size-3" />
+                            <Bookmark className="size-4" />
                           )}
                           {savingBehavior
                             ? "저장 중..."
@@ -117,11 +117,11 @@ export function BehaviorReviewItemSection({
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-2 group-data-[state=closed]:hidden">
+          <div className="flex flex-wrap items-center gap-2">
             {item.tags.map((tag) => (
               <span
                 key={`${item.behavior.id}-${tag}`}
-                className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-slate-500"
+                className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-500"
               >
                 #{tag}
               </span>
@@ -132,19 +132,19 @@ export function BehaviorReviewItemSection({
       </AccordionTrigger>
       <AccordionContent className="text-indigo-800">
         <div className="flex items-center gap-2 mt-2 mb-2">
-          <span className="rounded-full border border-indigo-200 bg-white px-2 py-0.5 text-[10px] font-medium text-indigo-700">
+          <span className="rounded-full border border-indigo-200 bg-white px-3 py-1 text-xs font-medium text-indigo-700">
             {item.behavior.category}
           </span>
         </div>
         <p className="text-sm">{item.behavior.description}</p>
         <div className="mt-6">
-          <span className="rounded-full border border-indigo-200 bg-white px-2 py-0.5 text-[10px] font-medium text-indigo-700">
+          <span className="rounded-full border border-indigo-200 bg-white px-3 py-1 text-xs font-medium text-indigo-700">
             사용방법
           </span>
         </div>
         <p className="text-sm mt-2">{item.behavior.usage_description}</p>
         <div className="mt-6 flex items-center gap-2">
-          <span className="rounded-full border border-indigo-200 bg-white px-2 py-0.5 text-[10px] font-medium text-indigo-700">
+          <span className="rounded-full border border-indigo-200 bg-white px-3 py-1 text-xs font-medium text-indigo-700">
             행동 제안
           </span>
           <button

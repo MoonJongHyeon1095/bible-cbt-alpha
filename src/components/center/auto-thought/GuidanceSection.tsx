@@ -4,7 +4,7 @@ export function GuidanceSection({
   selectedEmotion: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200/70 bg-gradient-to-br from-white via-blue-50/70 to-indigo-50/40 p-5 shadow-sm">
+    <div className="rounded-2xl border border-slate-200/70 bg-transparent p-5 shadow-sm">
       <p className="text-sm font-semibold text-slate-700">
         현재의 감정: <span className="text-blue-700">{selectedEmotion}</span>
       </p>

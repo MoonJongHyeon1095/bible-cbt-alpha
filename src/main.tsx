@@ -4,7 +4,7 @@
 // src/main.tsx
 import { createRoot } from "react-dom/client";
 import App from "./App";
-import "./index.css";
+import "./styles/globals.css";
 
 import { Capacitor } from "@capacitor/core";
 import { supabase } from "./lib/supabase/client";

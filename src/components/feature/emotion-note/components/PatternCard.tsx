@@ -240,7 +240,7 @@ export function PatternCard({
           </div>
         ) : (
           <div className="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+            <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
               <Brain className="size-4" />
               배후의 자동 사고
             </div>
@@ -251,10 +251,15 @@ export function PatternCard({
         )}
 
         <div className="alternatives-card rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm md:col-span-2">
-          <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-green-900">
-            <Lightbulb className="size-4" />
-            대안적 접근
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-900">
+              <Lightbulb className="size-4" />
+              대안적 접근
+            </div>
+            <span className="text-xs text-green-800">
+              {pattern.alternatives.length}개
+            </span>
+          </div>
           {pattern.alternatives.length ? (
             <div className="space-y-2">
               {pattern.alternatives.map((alt) => {
@@ -314,10 +319,15 @@ export function PatternCard({
         </div>
 
         <div className="error-card rounded-xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
-          <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-rose-900">
-            <AlertCircle className="size-4 text-rose-700" />
-            인지오류
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-900">
+              <AlertCircle className="size-4 text-rose-700" />
+              인지오류
+            </div>
+            <span className="text-xs text-rose-800">
+              {(pattern.errorDetails ?? []).length}개
+            </span>
+          </div>
           {(pattern.errorDetails ?? []).length ? (
             <div className="space-y-2">
               {(pattern.errorDetails ?? []).map((detail) => {
@@ -378,10 +388,15 @@ export function PatternCard({
         </div>
 
         <div className="behavior-card rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
-          <p className="mb-2 inline-flex items-center gap-2 text-xs font-semibold text-blue-900">
-            <Footprints className="size-4 text-blue-700" />
-            행동 반응
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-900">
+              <Footprints className="size-4 text-blue-700" />
+              행동 반응
+            </div>
+            <span className="text-xs text-blue-800">
+              {(pattern.behaviorDetails ?? []).length}개
+            </span>
+          </div>
           {(pattern.behaviorDetails ?? []).length ? (
             <div className="space-y-2">
               {(pattern.behaviorDetails ?? []).map((detail) => {
