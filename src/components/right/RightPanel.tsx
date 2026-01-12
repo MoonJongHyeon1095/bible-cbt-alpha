@@ -88,6 +88,29 @@ export function RightPanel({
     if (step < 5) onNext();
   };
 
+  const renderRestartWithSameInput = () => {
+    if (!onRestartWithSameInput) return null;
+
+    return (
+      <Button
+        onClick={() => {
+          if (
+            confirm(
+              "같은 주제로 다시 하시겠습니까? 아직 감정이 남아 있다면 반복하시면 더욱 효과적입니다."
+            )
+          ) {
+            onRestartWithSameInput();
+          }
+        }}
+        variant="outline"
+        className="mb-4 w-full gap-2 rounded-full border-2 border-green-400 text-green-700 transition-all hover:-translate-y-0.5 hover:border-green-500 hover:bg-green-50 hover:shadow-md"
+      >
+        <RefreshCw className="size-4" />
+        같은 주제로 다시 하기
+      </Button>
+    );
+  };
+
   const {
     alternativeThoughts,
     thoughtsLoading,
@@ -664,6 +687,7 @@ export function RightPanel({
                   >
                     {isBehaviorGenerating ? "행동제안 생성 중" : "완료"}
                   </Button>
+                  {renderRestartWithSameInput()}
                 </div>
               </>
             )}
@@ -743,24 +767,7 @@ export function RightPanel({
                   >
                     {isBehaviorGenerating ? "행동 제안 생성중" : "완료"}
                   </Button>
-                  {onRestartWithSameInput && (
-                    <Button
-                      onClick={() => {
-                        if (
-                          confirm(
-                            "같은 주제로 다시 하시겠습니까? 아직 감정이 남아 있다면 반복하시면 더욱 효과적입니다."
-                          )
-                        ) {
-                          onRestartWithSameInput();
-                        }
-                      }}
-                      variant="outline"
-                      className="mb-4 w-full gap-2 rounded-full border-2 border-green-400 text-green-700 transition-all hover:-translate-y-0.5 hover:border-green-500 hover:bg-green-50 hover:shadow-md"
-                    >
-                      <RefreshCw className="size-4" />
-                      같은 주제로 다시 하기
-                    </Button>
-                  )}
+                  {renderRestartWithSameInput()}
                 </>
               )}
             </div>

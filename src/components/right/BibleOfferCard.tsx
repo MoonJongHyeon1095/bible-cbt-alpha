@@ -26,12 +26,12 @@ export function BibleOfferCard({
         <div className="grid grid-cols-2 gap-3 mb-3">
           <Button
             onClick={onAccept}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="rounded-full bg-blue-600 hover:bg-blue-700"
           >
             말씀을 찾습니다
           </Button>
 
-          <Button onClick={onDecline} variant="outline">
+          <Button onClick={onDecline} variant="outline" className="rounded-full">
             아니오
           </Button>
         </div>
