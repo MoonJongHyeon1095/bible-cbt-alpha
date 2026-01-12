@@ -1,6 +1,6 @@
 import { Bookmark, FolderOpen, Loader2 } from "lucide-react";
-import { Button } from "../ui/button";
-import { Textarea } from "../ui/textarea";
+import { Button } from "../../ui/button";
+import { Textarea } from "../../ui/textarea";
 
 interface IncidentInputSectionProps {
   userInput: string;

@@ -1,25 +1,25 @@
 // src/components/center/CenterPanel.tsx
 import type { User } from "@supabase/supabase-js";
+import { ArrowLeft } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { EMOTIONS } from "../../constants/emotions";
 import type { EmotionThoughtPair } from "../../types";
+import { validateUserText } from "../../utils/validation";
 import { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ThoughtSelectionCard } from "./auto-thought/ThoughtSelectionCard";
 import { CenterHeader } from "./CenterHeader";
 import { ALL_EXAMPLES } from "./constants/examples";
-import { EmotionDetailCard } from "./EmotionDetailCard";
-import { EmotionGridCard } from "./EmotionGridCard";
+import { EmotionDetailCard } from "./emotion/EmotionDetailCard";
+import { EmotionGridCard } from "./emotion/EmotionGridCard";
 import { useEmotionFlow } from "./hooks/useEmotionFlow";
 import { useEmotionNotes } from "./hooks/useEmotionNotes";
-import { IncidentStepCard } from "./IncidentStepCard";
+import { IncidentStepCard } from "./incident/IncidentStepCard";
 import { FirstEmotionIntensityModal } from "./modal/FirstEmotionIntensityModal";
 import { SavedDetailsModal } from "./modal/SavedDetailsModal";
 import { SavedTriggersModal } from "./modal/SavedTriggersModal";
-import { ThoughtSelectionCard } from "./ThoughtSelectionCard";
 import type { EmotionNote } from "./types";
-import { validateUserText } from "../../utils/validation";
-import { EMOTIONS } from "../../constants/emotions";
 
 interface CenterPanelProps {
   step: number;

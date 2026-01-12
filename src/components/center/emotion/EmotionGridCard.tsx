@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
-import { EMOTIONS } from "../../constants/emotions";
-import type { EmotionData } from "./types";
+import { EMOTIONS } from "../../../constants/emotions";
+import type { EmotionData } from "../types";
 
 interface EmotionGridProps {
   selectedEmotion: string;
