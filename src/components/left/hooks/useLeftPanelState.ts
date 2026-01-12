@@ -72,7 +72,9 @@ export function useLeftPanelState({
   mode,
 }: UseLeftPanelStateParams) {
   const currentPair =
-    emotionThoughtPairs.length > 0 ? emotionThoughtPairs[0] : null;
+    emotionThoughtPairs.length > 0
+      ? emotionThoughtPairs[emotionThoughtPairs.length - 1]
+      : null;
 
   const isLite = mode.detailMode === "lite";
 
