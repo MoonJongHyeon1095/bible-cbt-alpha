@@ -14,7 +14,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "../../../lib/supabase/client";
-import { EMOTIONS } from "../../center/constants/emotions";
+import { EMOTIONS } from "../../../constants/emotions";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";

@@ -1,6 +1,6 @@
 // src/components/right/RightPanel.tsx
 import type { User } from "@supabase/supabase-js";
-import { Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { CognitiveBehaviorId } from "../../constants/behaviors";
@@ -12,7 +12,6 @@ import type {
 } from "../../types/sessionHistory";
 import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
-import { Card } from "../ui/card";
 import { AlternativeThoughtCard } from "./AlternativeThoughtCard";
 import { AlternativeThoughtIntroCard } from "./AlternativeThoughtIntroCard";
 import { AlternativeThoughtQuoteCard } from "./AlternativeThoughtQuoteCard";
@@ -39,6 +38,7 @@ interface RightPanelProps {
   onComplete: () => void;
   onRestartWithSameInput?: () => void;
   onNext: () => void;
+  onPrevious?: () => void;
   mode: CbtMode;
   user: User | null;
 }
@@ -54,6 +54,7 @@ export function RightPanel({
   onComplete,
   onRestartWithSameInput,
   onNext,
+  onPrevious,
   user,
   mode,
 }: RightPanelProps) {
@@ -69,6 +70,8 @@ export function RightPanel({
     () => emotionThoughtPairs.some((p) => p.intensity != null),
     [emotionThoughtPairs]
   );
+
+  const showBackButton = step > 1 && Boolean(onPrevious);
 
   const [savingScripture, setSavingScripture] = useState(false);
   const [savingPrayer, setSavingPrayer] = useState(false);
@@ -416,7 +419,18 @@ export function RightPanel({
   }, [step, hasSelectedThought, wantsBibleVerse]);
 
   return (
-    <Card className="bg-slate-50/95 backdrop-blur-sm p-6 shadow-2xl border border-slate-200/50 min-h-[600px] flex flex-col">
+    <div className="relative p-6 min-h-[600px] flex flex-col">
+      {showBackButton && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onPrevious}
+          className="absolute right-4 top-4 z-10 rounded-full"
+          aria-label="이전 단계"
+        >
+          <ArrowLeft className="size-5" />
+        </Button>
+      )}
       <div className="mb-4 space-y-2">
         <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
           {header.badge}
@@ -700,6 +714,6 @@ export function RightPanel({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }

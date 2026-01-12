@@ -113,7 +113,7 @@ export function CBTSessionPage({
   const renderStepScreen = () => {
     if (step === 1 || step === 2) {
       return (
-        <div className="max-w-4xl mx-auto">
+        <div className="w-full">
           <CenterPanel
             key={`center-${step}`}
             step={step}
@@ -122,6 +122,7 @@ export function CBTSessionPage({
             onInputChange={setUserInput}
             onSetEmotionThoughtPairs={setEmotionThoughtPairs}
             onNext={handleNext}
+            onPrevious={handlePrevious}
             mode={mode}
             user={user}
           />
@@ -131,7 +132,7 @@ export function CBTSessionPage({
 
     if (step === 3) {
       return (
-        <div className="max-w-4xl mx-auto">
+        <div className="w-full">
           <LeftPanel
             step={step}
             emotionThoughtPairs={emotionThoughtPairs}
@@ -141,6 +142,7 @@ export function CBTSessionPage({
             onSetPositiveReframes={setPositiveReframes}
             onSelectCognitiveErrors={setSelectedCognitiveErrors}
             onNext={handleNext}
+            onPrevious={handlePrevious}
             mode={mode}
           />
         </div>
@@ -148,7 +150,7 @@ export function CBTSessionPage({
     }
 
     return (
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full">
         <RightPanel
           step={step}
           emotionThoughtPairs={emotionThoughtPairs}
@@ -160,6 +162,7 @@ export function CBTSessionPage({
           onComplete={resetAll}
           onRestartWithSameInput={restartWithSameInput}
           onNext={handleNext}
+          onPrevious={handlePrevious}
           mode={mode}
           user={user}
         />
@@ -168,7 +171,7 @@ export function CBTSessionPage({
   };
 
   return (
-    <div className="max-w-[1800px] mx-auto px-4 sm:px-8 py-6 sm:py-8">
+    <div className="w-full px-4 sm:px-8 py-6 sm:py-8">
       {/* Header (추천 섹션 제거) */}
       <header className="text-center mb-5 sm:mb-8">
         {/* 필요하면 여기 타이틀/서브타이틀만 유지 */}

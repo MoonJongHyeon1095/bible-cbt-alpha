@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { COGNITIVE_ERRORS } from "../../../../constants/errors";
 import { COGNITIVE_BEHAVIORS } from "../../../../constants/behaviors";
-import { EMOTIONS } from "../../../center/constants/emotions";
+import { EMOTIONS } from "../../../../constants/emotions";
 import { Button } from "../../../ui/button";
 import { Card } from "../../../ui/card";
 import { Input } from "../../../ui/input";

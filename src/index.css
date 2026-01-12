@@ -64,21 +64,13 @@
   }
 }
 
-.emotion-note-page {
-  font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR",
-    "Nanum Gothic", sans-serif;
-  letter-spacing: -0.01em;
-}
-
-.emotion-note-page h1,
-.emotion-note-page h2,
-.emotion-note-page h3 {
-  letter-spacing: -0.02em;
-}
 
 @layer theme {
   :root, :host {
-    --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-sans: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR",
+      "Nanum Gothic", ui-sans-serif, system-ui, sans-serif,
+      "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+      "Noto Color Emoji";
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --color-red-50: oklch(.971 .013 17.38);
     --color-red-200: oklch(.885 .062 18.334);
