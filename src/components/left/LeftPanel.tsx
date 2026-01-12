@@ -1,5 +1,6 @@
 // src/components/left/LeftPanel.tsx
 import type { User } from "@supabase/supabase-js";
+import { useEffect } from "react";
 import { COGNITIVE_ERRORS } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
 import type { SelectedCognitiveError } from "../../types/sessionHistory";
@@ -22,6 +23,8 @@ interface LeftPanelProps {
   onNext: () => void;
   onPrevious?: () => void;
   mode: CbtMode;
+  resumeLeftView?: "errors" | null;
+  onResumeLeftViewHandled?: () => void;
 }
 
 export function LeftPanel({
@@ -35,6 +38,8 @@ export function LeftPanel({
   onNext,
   onPrevious,
   mode,
+  resumeLeftView,
+  onResumeLeftViewHandled,
 }: LeftPanelProps) {
   const showBackButton = step > 1 && Boolean(onPrevious);
   const {
@@ -82,6 +87,19 @@ export function LeftPanel({
     onNext,
     mode,
   });
+
+  useEffect(() => {
+    if (step !== 3 || resumeLeftView !== "errors") return;
+    setShowIntensityModal(false);
+    handleIntensitySet();
+    onResumeLeftViewHandled?.();
+  }, [
+    handleIntensitySet,
+    onResumeLeftViewHandled,
+    resumeLeftView,
+    setShowIntensityModal,
+    step,
+  ]);
 
   const handleBack = () => {
     if (step === 3) {

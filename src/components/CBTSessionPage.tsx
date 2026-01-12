@@ -22,6 +22,7 @@ export function CBTSessionPage({
   const [resumeCenterView, setResumeCenterView] = useState<"thoughts" | null>(
     null
   );
+  const [resumeLeftView, setResumeLeftView] = useState<"errors" | null>(null);
 
   const [emotionThoughtPairs, setEmotionThoughtPairs] = useState<
     EmotionThoughtPair[]
@@ -74,6 +75,9 @@ export function CBTSessionPage({
     if (step > 1) {
       if (step === 3) {
         setResumeCenterView("thoughts");
+      }
+      if (step === 4) {
+        setResumeLeftView("errors");
       }
       setStep(step - 1);
     }
@@ -154,6 +158,8 @@ export function CBTSessionPage({
             onNext={handleNext}
             onPrevious={handlePrevious}
             mode={mode}
+            resumeLeftView={resumeLeftView}
+            onResumeLeftViewHandled={() => setResumeLeftView(null)}
           />
         </div>
       );
