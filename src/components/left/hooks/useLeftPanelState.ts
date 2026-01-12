@@ -419,6 +419,10 @@ export function useLeftPanelState({
     setIntensitySet(true);
   }, []);
 
+  const resetIntensitySet = useCallback(() => {
+    setIntensitySet(false);
+  }, []);
+
   const fetchDetails = useCallback(
     async (candidates: ErrorIndex[]) => {
       if (!currentPair) return;
@@ -792,5 +796,6 @@ export function useLeftPanelState({
     showIntensityModal,
     targetIntensity,
     toggleSelect,
+    resetIntensitySet,
   };
 }

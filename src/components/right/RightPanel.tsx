@@ -418,13 +418,29 @@ export function RightPanel({
     };
   }, [step, hasSelectedThought, wantsBibleVerse]);
 
+  const handleBack = () => {
+    if (showFinalIntensity) {
+      setShowFinalIntensity(false);
+      return;
+    }
+    if (showBibleResult) {
+      setWantsBibleVerse(null);
+      return;
+    }
+    if (step === 4 && hasSelectedThought) {
+      onSetSelectedAlternativeThought("");
+      return;
+    }
+    onPrevious?.();
+  };
+
   return (
     <div className="relative p-6 min-h-[600px] flex flex-col">
       {showBackButton && (
         <Button
           variant="ghost"
           size="icon"
-          onClick={onPrevious}
+          onClick={handleBack}
           className="absolute right-4 top-4 z-10 rounded-full"
           aria-label="이전 단계"
         >

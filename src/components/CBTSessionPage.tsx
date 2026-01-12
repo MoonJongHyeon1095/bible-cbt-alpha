@@ -19,6 +19,9 @@ export function CBTSessionPage({
 }) {
   const [step, setStep] = useState<number>(1);
   const [userInput, setUserInput] = useState<string>("");
+  const [resumeCenterView, setResumeCenterView] = useState<"thoughts" | null>(
+    null
+  );
 
   const [emotionThoughtPairs, setEmotionThoughtPairs] = useState<
     EmotionThoughtPair[]
@@ -68,7 +71,12 @@ export function CBTSessionPage({
   };
 
   const handlePrevious = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > 1) {
+      if (step === 3) {
+        setResumeCenterView("thoughts");
+      }
+      setStep(step - 1);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -125,6 +133,8 @@ export function CBTSessionPage({
             onPrevious={handlePrevious}
             mode={mode}
             user={user}
+            resumeCenterView={resumeCenterView}
+            onResumeCenterViewHandled={() => setResumeCenterView(null)}
           />
         </div>
       );

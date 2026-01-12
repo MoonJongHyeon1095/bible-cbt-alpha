@@ -1,6 +1,6 @@
 // src/components/center/CenterPanel.tsx
 import type { User } from "@supabase/supabase-js";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { EmotionThoughtPair } from "../../types";
 import { CbtMode } from "../header/navigation/ModePicker";
@@ -19,6 +19,7 @@ import { SavedTriggersModal } from "./modal/SavedTriggersModal";
 import { ThoughtSelectionCard } from "./ThoughtSelectionCard";
 import type { EmotionNote } from "./types";
 import { validateUserText } from "../../utils/validation";
+import { EMOTIONS } from "../../constants/emotions";
 
 interface CenterPanelProps {
   step: number;
@@ -30,6 +31,8 @@ interface CenterPanelProps {
   onPrevious?: () => void;
   mode: CbtMode;
   user: User | null;
+  resumeCenterView?: "thoughts" | null;
+  onResumeCenterViewHandled?: () => void;
 }
 
 const MIN_TRIGGER_LENGTH = 10;
@@ -49,6 +52,8 @@ export function CenterPanel({
   onPrevious,
   mode,
   user,
+  resumeCenterView,
+  onResumeCenterViewHandled,
 }: CenterPanelProps) {
   const showBackButton = step > 1 && Boolean(onPrevious);
 
@@ -93,6 +98,65 @@ export function CenterPanel({
   const showEmotionDetail = flow.view === "detail";
   const showIntensityModal = flow.view === "intensity";
   const emotionSet = flow.view === "thoughts";
+
+  const resumeHandledRef = useRef(false);
+
+  useEffect(() => {
+    if (!resumeCenterView) {
+      resumeHandledRef.current = false;
+      return;
+    }
+
+    if (step !== 2 || resumeHandledRef.current) return;
+
+    const lastPair = emotionThoughtPairs[emotionThoughtPairs.length - 1];
+    if (!lastPair?.emotion) {
+      resumeHandledRef.current = true;
+      onResumeCenterViewHandled?.();
+      return;
+    }
+
+    const emotionData =
+      EMOTIONS.find((item) => item.label === lastPair.emotion) ?? null;
+
+    flow.setSelectedEmotion(lastPair.emotion);
+    flow.setSelectedEmotionData(emotionData);
+    flow.setEmotionDetailConfirmed(true);
+    if (lastPair.intensity != null) {
+      flow.setEmotionIntensity(lastPair.intensity);
+    }
+
+    void flow.finalizeEmotionAndShowThoughts(lastPair.emotion);
+
+    resumeHandledRef.current = true;
+    onResumeCenterViewHandled?.();
+  }, [
+    resumeCenterView,
+    step,
+    emotionThoughtPairs,
+    flow,
+    onResumeCenterViewHandled,
+  ]);
+
+  const handleBack = () => {
+    if (step === 2) {
+      if (showIntensityModal) {
+        flow.setView("detail");
+        return;
+      }
+      if (emotionSet) {
+        flow.setView("detail");
+        return;
+      }
+      if (showEmotionDetail) {
+        flow.setView("grid");
+        flow.setSelectedEmotionData(null);
+        flow.setEmotionDetailConfirmed(false);
+        return;
+      }
+    }
+    onPrevious?.();
+  };
 
   // 예시 클릭
   const handleInputChange = (value: string, preserveNote = false) => {
@@ -142,7 +206,7 @@ export function CenterPanel({
         <Button
           variant="ghost"
           size="icon"
-          onClick={onPrevious}
+          onClick={handleBack}
           className="absolute right-4 top-4 z-10 rounded-full"
           aria-label="이전 단계"
         >

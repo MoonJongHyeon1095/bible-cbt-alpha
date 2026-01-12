@@ -72,6 +72,7 @@ export function LeftPanel({
     showIntensityModal,
     targetIntensity,
     toggleSelect,
+    resetIntensitySet,
   } = useLeftPanelState({
     step,
     emotionThoughtPairs,
@@ -82,13 +83,27 @@ export function LeftPanel({
     mode,
   });
 
+  const handleBack = () => {
+    if (step === 3) {
+      if (showIntensityModal) {
+        setShowIntensityModal(false);
+        return;
+      }
+      if (intensitySet) {
+        resetIntensitySet();
+        return;
+      }
+    }
+    onPrevious?.();
+  };
+
   return (
     <div className="relative p-6 min-h-[600px] flex flex-col text-[15px] leading-6">
       {showBackButton && (
         <Button
           variant="ghost"
           size="icon"
-          onClick={onPrevious}
+          onClick={handleBack}
           className="absolute right-4 top-4 z-10 rounded-full"
           aria-label="이전 단계"
         >
