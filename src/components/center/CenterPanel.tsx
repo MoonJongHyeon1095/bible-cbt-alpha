@@ -266,7 +266,12 @@ export function CenterPanel({
         onDelete={(id) => void notes.removeFromFavorites(id)}
       />
 
-      <div className="flex-1 space-y-6 overflow-y-auto" ref={containerRef}>
+      <div
+        className={`flex-1 space-y-6 ${
+          step === 1 ? "overflow-visible" : "overflow-y-auto"
+        }`}
+        ref={containerRef}
+      >
         {/* ================= Step 1: 사건 기록  ================= */}
         {step === 1 && (
           <IncidentStepCard
