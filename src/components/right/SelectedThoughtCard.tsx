@@ -52,8 +52,8 @@ export function SelectedThoughtCard({
                 size="sm"
                 variant="outline"
                 onClick={onSave}
-                className={`gap-1 border-yellow-400 hover:bg-yellow-50 whitespace-nowrap w-full sm:w-auto justify-center ${
-                  saved ? "text-purple-700" : "text-yellow-700"
+                className={`gap-1 border-purple-300 hover:bg-purple-50 whitespace-nowrap w-full sm:w-auto justify-center ${
+                  saved ? "text-purple-700" : "text-purple-700"
                 }`}
                 disabled={saving || saved}
               >

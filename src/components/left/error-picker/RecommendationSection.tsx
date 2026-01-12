@@ -31,7 +31,7 @@ export function RecommendationSection({
           다른 인지오류 검토
         </button>
       </div>
-      <div className="space-y-3 max-h-[360px] overflow-y-auto">
+      <div className="space-y-3">
         {uiIndices.map((idx) => renderCard(idx))}
       </div>
     </div>

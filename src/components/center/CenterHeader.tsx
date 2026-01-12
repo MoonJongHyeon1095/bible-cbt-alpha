@@ -13,7 +13,7 @@ export function CenterHeader({
     if (step === 1) {
       return {
         badge: "STEP 1 · 사건 기록",
-        title: "오늘 무슨 일이 있었는지 들려주세요.",
+        title: "오늘 무슨 일이 있었나요?",
         desc: "힘들었던 경험이나 불편했던 상황을 자유롭게 적어주세요.",
       };
     }

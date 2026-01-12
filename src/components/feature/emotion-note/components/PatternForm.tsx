@@ -314,7 +314,7 @@ export function PatternForm({
                         size="sm"
                         onClick={onAddDetail}
                         disabled={!emotion.trim() || !automaticThought.trim()}
-                        className="bg-yellow-500 text-slate-900 hover:bg-yellow-600"
+                        className="bg-yellow-500 text-white hover:bg-yellow-600"
                       >
                         <Save className="size-4 mr-1" />
                         자동사고 저장
@@ -369,7 +369,7 @@ export function PatternForm({
                         size="sm"
                         onClick={onAddAlternative}
                         disabled={!alternativeText.trim()}
-                        className="bg-green-500 text-slate-900 hover:bg-green-600"
+                        className="bg-green-500 text-white hover:bg-green-600"
                       >
                         <Save className="size-4 mr-1" />
                         대안 사고 저장
@@ -417,7 +417,7 @@ export function PatternForm({
                         size="sm"
                         onClick={onAddErrorDetail}
                         disabled={!errorLabel.trim()}
-                        className="bg-rose-500 text-slate-900 hover:bg-rose-600"
+                        className="bg-rose-500 text-white hover:bg-rose-600"
                       >
                         <Save className="size-4 mr-1" />
                         인지오류 저장
@@ -474,7 +474,7 @@ export function PatternForm({
                         size="sm"
                         onClick={onAddBehaviorDetail}
                         disabled={!behaviorLabel.trim()}
-                        className="bg-blue-500 text-slate-900 hover:bg-blue-600"
+                        className="bg-blue-500 text-white hover:bg-blue-600"
                       >
                         <Save className="size-4 mr-1" />
                         행동 저장

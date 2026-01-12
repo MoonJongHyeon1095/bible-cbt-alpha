@@ -81,7 +81,7 @@ export function CustomThoughtSection({
           value={customThought}
           onChange={(e) => onCustomThoughtChange(e.target.value)}
           placeholder="예: 나는 이렇게 하면 안 된다고 생각해..."
-          className="min-h-[120px] resize-none rounded-2xl border border-slate-200 bg-white/90 p-4 text-sm shadow-sm transition focus-visible:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-200"
+          className="min-h-[72px] resize-none rounded-2xl border border-slate-200 bg-white/90 p-3 text-[15px] leading-relaxed shadow-sm transition focus-visible:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-200"
         />
       </div>
 

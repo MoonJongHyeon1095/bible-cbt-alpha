@@ -73,7 +73,7 @@ export function BibleVerseCard({
         )}
       </div>
       <blockquote className="relative pl-4 text-slate-900 text-lg sm:text-xl leading-relaxed">
-        <span className="absolute left-0 top-1 h-12 w-1 rounded-full bg-amber-400" />
+        <span className="absolute left-0 inset-y-1 w-1 rounded-full bg-amber-400" />
         <span className="block italic" style={serifFont}>
           "{bibleVerse.verse}"
         </span>

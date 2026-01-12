@@ -94,7 +94,7 @@ export function FirstEmotionIntensityModal({
       }}
     >
       <DialogContent
-        className="!w-[720px] !min-w-[720px] !max-w-none bg-white border-2 border-pink-200 shadow-2xl rounded-2xl max-h-[95vh] overflow-y-auto p-0"
+        className="w-[92vw] max-w-[720px] bg-white border-2 border-pink-200 shadow-2xl rounded-2xl max-h-[95vh] overflow-y-auto p-0 sm:w-full"
         onPointerDownOutside={(e: { preventDefault: () => any }) =>
           e.preventDefault()
         }
