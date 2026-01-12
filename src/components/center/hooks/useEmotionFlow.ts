@@ -244,7 +244,11 @@ export function useEmotionFlow({
     };
     setSelectedThoughtIndex(999);
     setCustomThought(trimmed);
-    onSetEmotionThoughtPairs([...emotionThoughtPairs, newPair]);
+    const nextPairs = [
+      ...emotionThoughtPairs.filter((pair) => pair.emotion !== newPair.emotion),
+      newPair,
+    ];
+    onSetEmotionThoughtPairs(nextPairs);
 
     onScrollTop();
     onNext();
@@ -261,7 +265,11 @@ export function useEmotionFlow({
       thought: generatedThoughts[selectedThoughtIndex],
     };
 
-    onSetEmotionThoughtPairs([...emotionThoughtPairs, newPair]);
+    const nextPairs = [
+      ...emotionThoughtPairs.filter((pair) => pair.emotion !== newPair.emotion),
+      newPair,
+    ];
+    onSetEmotionThoughtPairs(nextPairs);
     onScrollTop();
     onNext();
   };
@@ -276,7 +284,13 @@ export function useEmotionFlow({
         intensity: storedIntensity,
         thought: customThought.trim(),
       };
-      onSetEmotionThoughtPairs([...emotionThoughtPairs, newPair]);
+      const nextPairs = [
+        ...emotionThoughtPairs.filter(
+          (pair) => pair.emotion !== newPair.emotion
+        ),
+        newPair,
+      ];
+      onSetEmotionThoughtPairs(nextPairs);
       onNext();
       return;
     }

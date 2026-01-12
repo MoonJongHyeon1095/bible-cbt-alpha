@@ -4043,3 +4043,13 @@ html {
     transform: translate3d(var(--tw-exit-translate-x, 0), var(--tw-exit-translate-y, 0), 0) scale3d(var(--tw-exit-scale, 1), var(--tw-exit-scale, 1), var(--tw-exit-scale, 1)) rotate(var(--tw-exit-rotate, 0));
   }
 }
+
+.flow-action-button {
+  transition-property: background-color, box-shadow;
+  transition-duration: 200ms;
+}
+
+.flow-action-button:hover {
+  background-color: var(--color-emerald-800);
+  box-shadow: 0 25px 50px -12px #00000040;
+}

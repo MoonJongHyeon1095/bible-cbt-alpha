@@ -1,5 +1,5 @@
-import { useMemo } from "react";
 import type { User } from "@supabase/supabase-js";
+import { useMemo } from "react";
 import type { EmotionThoughtPair } from "../../../types";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
 import type { CbtMode } from "../../header/navigation/ModePicker";
@@ -53,7 +53,7 @@ export function useLeftPanelState({
 
     if (step === 3 && !intensitySet) {
       return {
-        badge: "STEP 3 · 공감 및 목표",
+        badge: "STEP 3 · 공감 및 제안",
         title: "생각 속 오류를 함께 찾아볼까요?",
         desc: "숨어있는 오류 가능성을 검토해보려 합니다.",
       };
