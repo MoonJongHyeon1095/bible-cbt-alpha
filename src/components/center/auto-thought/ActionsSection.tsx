@@ -27,7 +27,7 @@ export function ActionsSection({
     !!selectedThought && savingDetail && savingDetailId === selectedThought;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200/70 bg-white/80 p-3 shadow-sm">
+    <div className="ml-auto flex w-fit flex-wrap items-center justify-end gap-2 rounded-2xl border border-slate-200/70 bg-white/80 p-3 shadow-sm">
       <Button
         onClick={onRegenerate}
         variant="outline"

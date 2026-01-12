@@ -125,16 +125,18 @@ export function ThoughtSelectionCard({
   return (
     <>
       <GuidanceSection selectedEmotion={selectedEmotion} />
-      <ActionsSection
-        currentPrefetchKey={currentPrefetchKey}
-        selectedThought={selectedGeneratedThought}
-        savingDetail={savingDetail}
-        savingDetailId={savingDetailId}
-        isDetailSaved={isDetailSaved}
-        onRegenerate={onRegenerate}
-        onSaveSelectedThought={onAddFavorite}
-        onLoadFavorites={onLoadFavorites}
-      />
+      <div className="flex justify-end">
+        <ActionsSection
+          currentPrefetchKey={currentPrefetchKey}
+          selectedThought={selectedGeneratedThought}
+          savingDetail={savingDetail}
+          savingDetailId={savingDetailId}
+          isDetailSaved={isDetailSaved}
+          onRegenerate={onRegenerate}
+          onSaveSelectedThought={onAddFavorite}
+          onLoadFavorites={onLoadFavorites}
+        />
+      </div>
       <GeneratedThoughtsSection
         generatedThoughts={generatedThoughts}
         selectedThoughtIndex={selectedThoughtIndex}

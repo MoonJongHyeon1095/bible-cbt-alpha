@@ -1,6 +1,6 @@
 // src/components/right/RightPanel.tsx
 import type { User } from "@supabase/supabase-js";
-import { ArrowLeft, Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { CognitiveBehaviorId } from "../../constants/behaviors";
@@ -15,17 +15,17 @@ import { Button } from "../ui/button";
 import { AlternativeThoughtCard } from "./AlternativeThoughtCard";
 import { AlternativeThoughtIntroCard } from "./AlternativeThoughtIntroCard";
 import { AlternativeThoughtQuoteCard } from "./AlternativeThoughtQuoteCard";
-import { BehaviorReviewCard } from "./BehaviorReviewCard";
+import { BehaviorReviewCard } from "./behavior/BehaviorReviewCard";
 import { BibleOfferCard } from "./BibleOfferCard";
 import { BibleVerseCard } from "./BibleVerseCard";
 import { FinalIntensityCard } from "./FinalIntensityCard";
-import { ProgressSummaryCard } from "./ProgressSummaryCard";
-import { SelectedThoughtCard } from "./SelectedThoughtCard";
-import { ShalomCard } from "./ShalomCard";
 import { useAlternativeThoughts } from "./hooks/useAlternativeThoughts";
 import { useBibleVerse } from "./hooks/useBibleVerse";
 import { useFinalIntensity } from "./hooks/useFinalIntensity";
 import { useTriggerNotes } from "./hooks/useTriggerNotes";
+import { ProgressSummaryCard } from "./ProgressSummaryCard";
+import { SelectedThoughtCard } from "./SelectedThoughtCard";
+import { ShalomCard } from "./ShalomCard";
 
 interface RightPanelProps {
   step: number;
@@ -166,15 +166,21 @@ export function RightPanel({
     }
   };
 
+  const handleReviewAlternatives = () => {
+    onSetSelectedAlternativeThought("");
+    void generateAlternatives({ force: true });
+  };
+
+  const handleBackToAlternatives = () => {
+    onSetSelectedAlternativeThought("");
+  };
+
   const handleDoesNotWantBible = async () => {
     lockBibleChoice();
 
     setWantsBibleVerse(false);
 
-    if (!isDeep) {
-      await handleFinalComplete();
-      return;
-    }
+    if (!isDeep) return;
 
     setShowFinalIntensity(true);
     seedFinalIntensitiesFromPairs();
@@ -486,14 +492,27 @@ export function RightPanel({
               </div>
             ) : (
               <div className="space-y-4">
-                {alternativeThoughts.map((item, index) => (
-                  <AlternativeThoughtCard
-                    key={index}
-                    item={item}
-                    index={index}
-                    onSelect={handleSelectThought}
-                  />
-                ))}
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleReviewAlternatives}
+                    className="gap-1 border-purple-300 text-purple-700 hover:bg-purple-50 whitespace-normal leading-tight"
+                    disabled={thoughtsLoading}
+                  >
+                    <RefreshCw className="size-4" />
+                    다른 답변 검토
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  {alternativeThoughts.map((item, index) => (
+                    <AlternativeThoughtCard
+                      key={index}
+                      item={item}
+                      onSelect={handleSelectThought}
+                    />
+                  ))}
+                </div>
               </div>
             )}
 
@@ -513,11 +532,8 @@ export function RightPanel({
               canSave={Boolean(userInput.trim())}
               saving={savingAlternative}
               saved={isAlternativeSaved(selectedAlternativeThought)}
-              onReviewAlternatives={() => {
-                onSetSelectedAlternativeThought("");
-                void generateAlternatives({ force: true });
-              }}
-              reviewDisabled={thoughtsLoading}
+              onBackToAlternatives={handleBackToAlternatives}
+              backDisabled={savingAlternative}
               onSave={handleSaveAlternative}
             />
             <BehaviorReviewCard
@@ -541,22 +557,39 @@ export function RightPanel({
                 bibleError={bibleError}
               />
             ) : (
-              <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
-                <ShalomCard />
-                {isDeep ? (
-                  <div className="flex items-center gap-2 text-slate-600 text-sm">
-                    <Loader2 className="size-4 animate-spin" />
-                    마무리 단계로 이동 중...
+              <div className="relative overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 via-white to-sky-50 p-5 shadow-sm">
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-blue-500">
+                      마무리
+                    </p>
+                    <h3 className="text-base font-semibold text-blue-900">
+                      평안의 마침
+                    </h3>
                   </div>
-                ) : (
-                  <Button
-                    onClick={handleDoesNotWantBible}
-                    className="w-full bg-purple-600 hover:bg-purple-700"
-                    disabled={isBehaviorGenerating}
-                  >
-                    {isBehaviorGenerating ? "행동 제안 생성중" : "완료하기"}
-                  </Button>
-                )}
+                  <div className="flex size-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                    <Sparkles className="size-4" />
+                  </div>
+                </div>
+
+                <ShalomCard className="text-sm leading-relaxed text-blue-900" />
+
+                <div className="mt-4 border-t border-blue-100 pt-4">
+                  {isDeep ? (
+                    <div className="flex items-center gap-2 text-slate-600 text-sm">
+                      <Loader2 className="size-4 animate-spin" />
+                      마무리 단계로 이동 중...
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={handleFinalComplete}
+                      className="w-full rounded-full bg-purple-600 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-md"
+                      disabled={isBehaviorGenerating}
+                    >
+                      {isBehaviorGenerating ? "행동 제안 생성중" : "완료하기"}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -600,6 +633,8 @@ export function RightPanel({
                   canSave={Boolean(userInput.trim())}
                   saving={savingAlternative}
                   saved={isAlternativeSaved(selectedAlternativeThought)}
+                  onBackToAlternatives={handleBackToAlternatives}
+                  backDisabled={savingAlternative}
                   onSave={handleSaveAlternative}
                 />
                 <BehaviorReviewCard
@@ -624,7 +659,7 @@ export function RightPanel({
                   />
                   <Button
                     onClick={handleFinalComplete}
-                    className="w-full py-6 text-lg bg-purple-600 hover:bg-purple-700"
+                    className="w-full rounded-full bg-purple-600 py-6 text-lg transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-lg"
                     disabled={isBehaviorGenerating}
                   >
                     {isBehaviorGenerating ? "행동제안 생성 중" : "완료"}
@@ -647,6 +682,8 @@ export function RightPanel({
               canSave={Boolean(userInput.trim())}
               saving={savingAlternative}
               saved={isAlternativeSaved(selectedAlternativeThought)}
+              onBackToAlternatives={handleBackToAlternatives}
+              backDisabled={savingAlternative}
               onSave={handleSaveAlternative}
             />
             <BehaviorReviewCard
@@ -701,7 +738,7 @@ export function RightPanel({
                 <>
                   <Button
                     onClick={handleFinalComplete}
-                    className="w-full bg-purple-600 hover:bg-purple-700 mb-4"
+                    className="mb-4 w-full rounded-full bg-purple-600 transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-lg"
                     disabled={isBehaviorGenerating}
                   >
                     {isBehaviorGenerating ? "행동 제안 생성중" : "완료"}
@@ -718,7 +755,7 @@ export function RightPanel({
                         }
                       }}
                       variant="outline"
-                      className="w-full mb-4 gap-2 border-2 border-green-400 text-green-700 hover:bg-green-50"
+                      className="mb-4 w-full gap-2 rounded-full border-2 border-green-400 text-green-700 transition-all hover:-translate-y-0.5 hover:border-green-500 hover:bg-green-50 hover:shadow-md"
                     >
                       <RefreshCw className="size-4" />
                       같은 주제로 다시 하기

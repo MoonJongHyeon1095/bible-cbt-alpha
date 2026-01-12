@@ -1,3 +1,5 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
 type Props = {
   isVisible: boolean;
   selectedCount: number;
@@ -36,9 +38,10 @@ export function FloatingErrorPickerToolbar({
             type="button"
             onClick={onPrevPage}
             disabled={!canPrev}
-            className="rounded-lg border border-emerald-200 bg-white px-3 py-1 text-xs text-emerald-800 shadow-sm disabled:opacity-50"
+            className="rounded-lg border border-emerald-200 bg-white p-2 text-emerald-800 shadow-sm disabled:opacity-50"
+            aria-label="이전 페이지"
           >
-            이전
+            <ChevronLeft className="size-4" />
           </button>
           <div className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-600">
             {pageIndex + 1} / {totalPages}
@@ -47,9 +50,10 @@ export function FloatingErrorPickerToolbar({
             type="button"
             onClick={onNextPage}
             disabled={!canNext}
-            className="rounded-lg border border-emerald-200 bg-white px-3 py-1 text-xs text-emerald-800 shadow-sm disabled:opacity-50"
+            className="rounded-lg border border-emerald-200 bg-white p-2 text-emerald-800 shadow-sm disabled:opacity-50"
+            aria-label="다음 페이지"
           >
-            다음
+            <ChevronRight className="size-4" />
           </button>
         </div>
       </div>
