@@ -51,70 +51,71 @@ export function BehaviorReviewItemSection({
     >
       <AccordionTrigger className="py-2 text-indigo-900 text-sm items-start gap-2">
         <div className="flex flex-1 flex-col gap-2">
-          <div className="flex w-full items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium">
-                {item.behavior.replacement_title}
+          <div className="flex w-full items-start justify-between gap-2">
+            <span className="font-medium">
+              {item.behavior.replacement_title}
+            </span>
+          </div>
+
+          {isSelected && (
+            <div className="group-data-[state=closed]:hidden mt-1 flex flex-wrap items-center gap-2">
+              <span className="inline-flex h-6 items-center rounded-full bg-indigo-600 px-2 text-[10px] font-medium uppercase tracking-wide text-white">
+                선택됨
               </span>
-              {isSelected && (
-                <span className="inline-flex h-6 items-center rounded-full bg-indigo-600 px-2 text-[10px] font-medium uppercase tracking-wide text-white">
-                  선택됨
-                </span>
-              )}
-            </div>
-            {isSelected && onSaveBehavior && hasSuggestion ? (
-              <div className="group-data-[state=closed]:hidden">
-                {(() => {
-                  const behaviorSaved = isBehaviorSaved?.() ?? false;
-                  return (
-                    <Button
-                      asChild
-                      size="sm"
-                      variant="outline"
-                      className="h-6 gap-1 rounded-full border-yellow-400 px-2 text-[10px] font-medium text-yellow-700 hover:bg-yellow-50"
-                      disabled={savingBehavior || behaviorSaved}
-                    >
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          if (behaviorSaved || savingBehavior) return;
-                          onSaveBehavior();
-                        }}
-                        onPointerDown={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter" || event.key === " ") {
+              {onSaveBehavior && hasSuggestion
+                ? (() => {
+                    const behaviorSaved = isBehaviorSaved?.() ?? false;
+                    return (
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className={`h-6 gap-1 rounded-full border-yellow-400 px-2 text-[10px] font-medium hover:bg-yellow-50 ${
+                          behaviorSaved ? "text-indigo-700" : "text-yellow-700"
+                        }`}
+                        disabled={savingBehavior || behaviorSaved}
+                      >
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
                             if (behaviorSaved || savingBehavior) return;
                             onSaveBehavior();
-                          }
-                        }}
-                      >
-                        {savingBehavior ? (
-                          <Loader2 className="size-3 animate-spin" />
-                        ) : behaviorSaved ? (
-                          <Bookmark className="size-3 text-indigo-600" />
-                        ) : (
-                          <Bookmark className="size-3" />
-                        )}
-                        {savingBehavior
-                          ? "저장 중..."
-                          : behaviorSaved
-                          ? "저장됨"
-                          : "감정노트에 저장"}
-                      </span>
-                    </Button>
-                  );
-                })()}
-              </div>
-            ) : null}
-          </div>
+                          }}
+                          onPointerDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              if (behaviorSaved || savingBehavior) return;
+                              onSaveBehavior();
+                            }
+                          }}
+                        >
+                          {savingBehavior ? (
+                            <Loader2 className="size-3 animate-spin" />
+                          ) : behaviorSaved ? (
+                            <Bookmark className="size-3 text-indigo-600" />
+                          ) : (
+                            <Bookmark className="size-3" />
+                          )}
+                          {savingBehavior
+                            ? "저장 중..."
+                            : behaviorSaved
+                            ? "저장됨"
+                            : "감정노트에 저장"}
+                        </span>
+                      </Button>
+                    );
+                  })()
+                : null}
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center gap-2 group-data-[state=closed]:hidden">
             {item.tags.map((tag) => (

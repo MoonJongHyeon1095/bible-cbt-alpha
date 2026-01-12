@@ -49,8 +49,8 @@ export function CognitiveErrorCandidateCard({
           : "border-slate-200 bg-white"
       }`}
     >
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <div className="space-y-1">
+      <div className="flex flex-col gap-2 mb-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="order-2 space-y-1 sm:order-1">
           <p className="text-slate-900 font-semibold">
             {meta?.title ?? "인지오류"}
           </p>
@@ -58,7 +58,7 @@ export function CognitiveErrorCandidateCard({
             {meta?.description ?? ""}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="order-1 flex flex-wrap items-center gap-2 self-end sm:order-2 sm:self-auto sm:flex-nowrap sm:justify-end">
           {selectedOn && (
             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-2 py-1 text-[11px] font-semibold text-emerald-800">
               <Check className="size-3" />
