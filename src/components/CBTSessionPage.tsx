@@ -13,9 +13,11 @@ import { RightPanel } from "./right/RightPanel";
 export function CBTSessionPage({
   mode,
   user,
+  onStepChange,
 }: {
   mode: CbtMode;
   user: User | null;
+  onStepChange?: (step: number) => void;
 }) {
   const [step, setStep] = useState<number>(1);
   const [userInput, setUserInput] = useState<string>("");
@@ -65,6 +67,10 @@ export function CBTSessionPage({
       localStorage.removeItem("voice_input_text");
     }
   }, []);
+
+  useEffect(() => {
+    onStepChange?.(step);
+  }, [onStepChange, step]);
 
   const handleNext = () => {
     if (step < 6) setStep(step + 1);

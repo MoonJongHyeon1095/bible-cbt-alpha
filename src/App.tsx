@@ -27,6 +27,7 @@ const getIsDesktop = () =>
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("cbt");
+  const [cbtStep, setCbtStep] = useState(1);
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -115,7 +116,13 @@ export default function App() {
   const renderPage = () => {
     switch (currentPage) {
       case "cbt":
-        return <CBTSessionPage mode={mode} user={user} />;
+        return (
+          <CBTSessionPage
+            mode={mode}
+            user={user}
+            onStepChange={setCbtStep}
+          />
+        );
 
       case "dashboard":
         return <DashboardPage user={user} />;
@@ -172,7 +179,7 @@ export default function App() {
       </main>
 
       {/* Footer: 모바일에서는 숨김 */}
-      {isDesktop && (
+      {isDesktop && (currentPage !== "cbt" || cbtStep === 1) && (
         <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-6 mt-4">
           <div className="max-w-[1800px] mx-auto px-8">
             <div className="text-center mb-8">
