@@ -12,6 +12,7 @@ import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPag
 import { ScriptureNotesPage } from "./components/feature/scripture-note/ScriptureNotesPage";
 import { CommentSection } from "./components/footer/CommentSection";
 import { Navigation } from "./components/header/navigation/Navigation";
+import { Notice } from "./components/Notice";
 import { Toaster } from "./components/ui/sonner";
 import { authHelpers } from "./lib/supabase/auth";
 
@@ -117,11 +118,7 @@ export default function App() {
     switch (currentPage) {
       case "cbt":
         return (
-          <CBTSessionPage
-            mode={mode}
-            user={user}
-            onStepChange={setCbtStep}
-          />
+          <CBTSessionPage mode={mode} user={user} onStepChange={setCbtStep} />
         );
 
       case "dashboard":
@@ -166,6 +163,8 @@ export default function App() {
         mode={mode}
         onChangeMode={(next) => setMode(next)}
       />
+
+      <Notice />
 
       <main
         className={isNativeMobile ? undefined : "pb-8"}
