@@ -39,9 +39,6 @@ export function MobileTopBar({
             <div className="text-sm text-slate-900 truncate">
               마음생각 다시 쓰기
             </div>
-            <div className="text-[11px] text-slate-500 truncate">
-              by 617ALLIANCE
-            </div>
           </div>
         </button>
 

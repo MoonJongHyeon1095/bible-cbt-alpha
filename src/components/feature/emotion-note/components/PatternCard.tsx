@@ -282,16 +282,6 @@ export function PatternCard({
                             </EmotionInfoPopover>
                           )}
                         </div>
-                        <span
-                          className="text-slate-400"
-                          style={{ fontSize: "14px", lineHeight: "1" }}
-                        >
-                          {detail.createdAt
-                            ? new Date(detail.createdAt).toLocaleDateString(
-                                "ko-KR"
-                              )
-                            : ""}
-                        </span>
                       </div>
                       <button
                         type="button"
@@ -409,36 +399,27 @@ export function PatternCard({
                         ) : (
                           <ChevronRight className="size-4 text-slate-400" />
                         )}
-                        <span className="min-w-0 flex-1 text-sm text-slate-600">
-                          {formatErrorTitle(label)}
+                        <span className="min-w-0 flex-1">
+                          <span className="inline-flex items-center gap-1 text-sm text-slate-600">
+                            {formatErrorTitle(label)}
+                            {meta && (
+                              <CognitiveErrorInfoPopover
+                                errorLabel={meta.title}
+                                align="end"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={(event) => event.stopPropagation()}
+                                  className="rounded-full p-1 text-rose-500 hover:bg-rose-100"
+                                  aria-label={`${meta.title} 설명 보기`}
+                                >
+                                  <Info className="size-4" />
+                                </button>
+                              </CognitiveErrorInfoPopover>
+                            )}
+                          </span>
                         </span>
                       </button>
-                      <div className="flex items-center gap-2">
-                        {meta && (
-                          <CognitiveErrorInfoPopover
-                            errorLabel={meta.title}
-                            align="end"
-                          >
-                            <button
-                              type="button"
-                              className="rounded-full p-1 text-rose-500 hover:bg-rose-100"
-                              aria-label={`${meta.title} 설명 보기`}
-                            >
-                              <Info className="size-4" />
-                            </button>
-                          </CognitiveErrorInfoPopover>
-                        )}
-                        <span
-                          className="text-slate-400"
-                          style={{ fontSize: "14px", lineHeight: "1" }}
-                        >
-                          {detail.createdAt
-                            ? new Date(detail.createdAt).toLocaleDateString(
-                                "ko-KR"
-                              )
-                            : ""}
-                        </span>
-                      </div>
                     </div>
                     {isExpanded && (
                       <>
@@ -529,14 +510,6 @@ export function PatternCard({
                           {formatAlternativeTitle(alt.alternative || "-")}
                         </span>
                       </button>
-                      <span
-                        className="text-slate-400"
-                        style={{ fontSize: "14px", lineHeight: "1" }}
-                      >
-                        {alt.createdAt
-                          ? new Date(alt.createdAt).toLocaleDateString("ko-KR")
-                          : ""}
-                      </span>
                     </div>
                     {isExpanded && (
                       <>
@@ -618,36 +591,27 @@ export function PatternCard({
                         ) : (
                           <ChevronRight className="size-4 text-slate-400" />
                         )}
-                        <span className="min-w-0 flex-1 text-sm text-slate-600">
-                          {formatBehaviorTitle(label)}
+                        <span className="min-w-0 flex-1">
+                          <span className="inline-flex items-center gap-1 text-sm text-slate-600">
+                            {formatBehaviorTitle(label)}
+                            {behaviorMeta && (
+                              <BehaviorInfoPopover
+                                behaviorLabel={behaviorMeta.replacement_title}
+                                align="end"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={(event) => event.stopPropagation()}
+                                  className="rounded-full p-1 text-blue-500 hover:bg-blue-100"
+                                  aria-label={`${behaviorMeta.replacement_title} 설명 보기`}
+                                >
+                                  <Info className="size-4" />
+                                </button>
+                              </BehaviorInfoPopover>
+                            )}
+                          </span>
                         </span>
                       </button>
-                      <div className="flex items-center gap-2">
-                        {behaviorMeta && (
-                          <BehaviorInfoPopover
-                            behaviorLabel={behaviorMeta.replacement_title}
-                            align="end"
-                          >
-                            <button
-                              type="button"
-                              className="rounded-full p-1 text-blue-500 hover:bg-blue-100"
-                              aria-label={`${behaviorMeta.replacement_title} 설명 보기`}
-                            >
-                              <Info className="size-4" />
-                            </button>
-                          </BehaviorInfoPopover>
-                        )}
-                        <span
-                          className="text-slate-400"
-                          style={{ fontSize: "14px", lineHeight: "1" }}
-                        >
-                          {detail.createdAt
-                            ? new Date(detail.createdAt).toLocaleDateString(
-                                "ko-KR"
-                              )
-                            : ""}
-                        </span>
-                      </div>
                     </div>
                     {detail.errorTags?.length ? (
                       <div className="mt-2 flex flex-wrap gap-4">
