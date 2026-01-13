@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import type { KeyboardEvent, ReactNode } from "react";
 
-type Tone = "blue";
+type Tone = "blue" | "green" | "amber" | "rose";
 
 const toneStyles: Record<
   Tone,
@@ -21,6 +21,30 @@ const toneStyles: Record<
     indicatorSelected: "bg-blue-500 text-white",
     status: "text-slate-400 group-hover:text-blue-700",
     statusSelected: "text-blue-700",
+  },
+  green: {
+    base: "bg-white hover:border-green-300 hover:bg-green-50/70 border-green-100",
+    selected: "border-green-400 bg-green-50/80",
+    indicator: "bg-green-100 text-green-800",
+    indicatorSelected: "bg-green-500 text-white",
+    status: "text-slate-400 group-hover:text-green-700",
+    statusSelected: "text-green-700",
+  },
+  amber: {
+    base: "bg-white hover:border-amber-300 hover:bg-amber-50/70 border-amber-100",
+    selected: "border-amber-400 bg-amber-50/80",
+    indicator: "bg-amber-100 text-amber-800",
+    indicatorSelected: "bg-amber-500 text-white",
+    status: "text-slate-400 group-hover:text-amber-700",
+    statusSelected: "text-amber-700",
+  },
+  rose: {
+    base: "bg-white hover:border-rose-300 hover:bg-rose-50/70 border-rose-100",
+    selected: "border-rose-400 bg-rose-50/80",
+    indicator: "bg-rose-100 text-rose-800",
+    indicatorSelected: "bg-rose-500 text-white",
+    status: "text-slate-400 group-hover:text-rose-700",
+    statusSelected: "text-rose-700",
   },
 };
 

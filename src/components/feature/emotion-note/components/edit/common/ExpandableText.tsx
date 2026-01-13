@@ -2,11 +2,14 @@ interface ExpandableTextProps {
   text: string;
   expanded: boolean;
   onToggle: () => void;
-  tone?: "blue";
+  tone?: "blue" | "green" | "amber" | "rose";
 }
 
-const toneText: Record<"blue", string> = {
+const toneText: Record<"blue" | "green" | "amber" | "rose", string> = {
   blue: "text-blue-700",
+  green: "text-green-700",
+  amber: "text-amber-700",
+  rose: "text-rose-700",
 };
 
 export function ExpandableText({

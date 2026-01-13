@@ -1,21 +1,21 @@
 import {
-  ArrowLeft,
   Check,
   Footprints,
   Info,
   Loader2,
   Save,
   Sparkles,
+  X,
 } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { COGNITIVE_BEHAVIORS } from "../../../../../constants/behaviors";
 import { getRecommendedBehaviors } from "../../../../../constants/errorBehaviorMap";
 import { COGNITIVE_ERRORS } from "../../../../../constants/errors";
 import { generateBehaviorSuggestions } from "../../../../../lib/ai";
 import { Button } from "../../../../ui/button";
+import { DialogClose } from "../../../../ui/dialog";
 import { Textarea } from "../../../../ui/textarea";
 import type {
   PatternAlternative,
@@ -30,6 +30,7 @@ import { BehaviorSelector } from "./PatternSelectors";
 import { AiCandidatesPanel } from "./common/AiCandidatesPanel";
 import { AiLoadingCard } from "./common/AiLoadingCard";
 import { ExpandableText } from "./common/ExpandableText";
+import { FloatingStepNav } from "./common/FloatingStepNav";
 import { SelectionCard } from "./common/SelectionCard";
 import { SelectionPanel } from "./common/SelectionPanel";
 
@@ -254,10 +255,6 @@ export function PatternBehaviorAddSection({
     aiStep === "select-thought" ||
     aiStep === "select-errors" ||
     aiStep === "select-alternative";
-  const floatingRoot =
-    typeof document !== "undefined"
-      ? document.querySelector('[data-floating-root="pattern-edit"]')
-      : null;
 
   const handleNextStep = () => {
     if (aiStep === "select-thought") {
@@ -317,9 +314,20 @@ export function PatternBehaviorAddSection({
 
   return (
     <div className="border border-blue-200 rounded-xl bg-white shadow-sm">
-      <div className="border-b border-blue-200 px-4 py-3 text-sm font-semibold text-slate-800 flex items-center gap-2">
-        <Footprints className="size-4" />
-        행동 반응 추가
+      <div className="border-b border-blue-200 px-4 py-3 text-sm font-semibold text-slate-800 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Footprints className="size-4" />
+          행동 반응 추가
+        </div>
+        <DialogClose asChild>
+          <button
+            type="button"
+            className="rounded-full border border-blue-200 bg-white p-2 text-blue-700 transition hover:bg-blue-50"
+            aria-label="닫기"
+          >
+            <X className="size-4" />
+          </button>
+        </DialogClose>
       </div>
       <div className="p-5 space-y-4 bg-blue-50/70">
         <div className="flex items-center justify-between gap-2 text-sm text-slate-700">
@@ -673,34 +681,14 @@ export function PatternBehaviorAddSection({
             </AiCandidatesPanel>
           )}
         </div>
-        {showFloatingNext &&
-          floatingRoot &&
-          createPortal(
-            <div className="pointer-events-none absolute bottom-4 right-4 z-20">
-              <div className="pointer-events-auto flex items-center gap-2">
-                {showBackButton && (
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    onClick={handleBackStep}
-                    className="rounded-full border-blue-200 bg-white text-blue-600 hover:bg-blue-50"
-                    aria-label="뒤로가기"
-                  >
-                    <ArrowLeft className="size-4" />
-                  </Button>
-                )}
-                <Button
-                  size="sm"
-                  onClick={handleNextStep}
-                  disabled={nextDisabled}
-                  className="bg-blue-500 text-white hover:bg-blue-600 shadow-lg"
-                >
-                  다음
-                </Button>
-              </div>
-            </div>,
-            floatingRoot
-          )}
+        <FloatingStepNav
+          show={showFloatingNext}
+          onNext={handleNextStep}
+          nextDisabled={nextDisabled}
+          showBack={showBackButton}
+          onBack={handleBackStep}
+          tone="blue"
+        />
       </div>
     </div>
   );

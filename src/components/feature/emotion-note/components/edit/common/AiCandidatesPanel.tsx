@@ -4,18 +4,35 @@ interface AiCandidatesPanelProps {
   title: string;
   description?: string;
   countText?: string;
-  tone?: "blue";
+  tone?: "blue" | "green" | "amber" | "rose";
   children: ReactNode;
 }
 
-const toneStyles: Record<"blue", { border: string; badge: string; title: string }> =
-  {
-    blue: {
-      border: "border-blue-200",
-      badge: "border-blue-200 bg-blue-50 text-blue-800",
-      title: "text-blue-900",
-    },
-  };
+const toneStyles: Record<
+  "blue" | "green" | "amber" | "rose",
+  { border: string; badge: string; title: string }
+> = {
+  blue: {
+    border: "border-blue-200",
+    badge: "border-blue-200 bg-blue-50 text-blue-800",
+    title: "text-blue-900",
+  },
+  green: {
+    border: "border-green-200",
+    badge: "border-green-200 bg-green-50 text-green-800",
+    title: "text-green-900",
+  },
+  amber: {
+    border: "border-amber-200",
+    badge: "border-amber-200 bg-amber-50 text-amber-800",
+    title: "text-amber-900",
+  },
+  rose: {
+    border: "border-rose-200",
+    badge: "border-rose-200 bg-rose-50 text-rose-800",
+    title: "text-rose-900",
+  },
+};
 
 export function AiCandidatesPanel({
   title,

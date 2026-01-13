@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-type Tone = "blue";
+type Tone = "blue" | "green" | "amber" | "rose";
 
 const toneStyles: Record<
   Tone,
@@ -10,6 +10,24 @@ const toneStyles: Record<
     border: "border-blue-200",
     badge: "border-blue-200 bg-blue-50 text-blue-800",
     title: "text-blue-900",
+    text: "text-slate-500",
+  },
+  green: {
+    border: "border-green-200",
+    badge: "border-green-200 bg-green-50 text-green-800",
+    title: "text-green-900",
+    text: "text-slate-500",
+  },
+  amber: {
+    border: "border-amber-200",
+    badge: "border-amber-200 bg-amber-50 text-amber-800",
+    title: "text-amber-900",
+    text: "text-slate-500",
+  },
+  rose: {
+    border: "border-rose-200",
+    badge: "border-rose-200 bg-rose-50 text-rose-800",
+    title: "text-rose-900",
     text: "text-slate-500",
   },
 };

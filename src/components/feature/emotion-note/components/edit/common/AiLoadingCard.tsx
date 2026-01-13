@@ -3,17 +3,34 @@ import { Loader2 } from "lucide-react";
 interface AiLoadingCardProps {
   title: string;
   description: string;
-  tone?: "blue";
+  tone?: "blue" | "green" | "amber" | "rose";
 }
 
-const toneStyles: Record<"blue", { icon: string; pulse: string; border: string }> =
-  {
-    blue: {
-      icon: "text-blue-500",
-      pulse: "bg-blue-100",
-      border: "border-blue-200",
-    },
-  };
+const toneStyles: Record<
+  "blue" | "green" | "amber" | "rose",
+  { icon: string; pulse: string; border: string }
+> = {
+  blue: {
+    icon: "text-blue-500",
+    pulse: "bg-blue-100",
+    border: "border-blue-200",
+  },
+  green: {
+    icon: "text-green-500",
+    pulse: "bg-green-100",
+    border: "border-green-200",
+  },
+  amber: {
+    icon: "text-amber-500",
+    pulse: "bg-amber-100",
+    border: "border-amber-200",
+  },
+  rose: {
+    icon: "text-rose-500",
+    pulse: "bg-rose-100",
+    border: "border-rose-200",
+  },
+};
 
 export function AiLoadingCard({
   title,

@@ -190,7 +190,6 @@ export function PatternsPage({ user }: PatternsPageProps) {
       });
       if (ok) {
         setAutomaticThought("");
-        setEmotion("");
         toast.success("저장되었습니다.");
       }
     } finally {
@@ -251,8 +250,6 @@ export function PatternsPage({ user }: PatternsPageProps) {
         errorDescription,
       });
       if (ok) {
-        setErrorLabel("");
-        setErrorDescription("");
         toast.success("저장되었습니다.");
       }
     } finally {
@@ -577,6 +574,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
       <PatternEditModal
         open={activeEditor?.type === "trigger-edit"}
         title="트리거 텍스트 편집"
+        chromeless
+        hideClose
         onOpenChange={(nextOpen) => {
           if (!nextOpen) closeEditor();
         }}
@@ -586,6 +585,10 @@ export function PatternsPage({ user }: PatternsPageProps) {
             title={title}
             trigger={trigger}
             loading={savingTrigger}
+            saveDisabled={
+              title.trim() === activePattern.title.trim() &&
+              trigger.trim() === activePattern.trigger.trim()
+            }
             onChangeTitle={setTitle}
             onChangeTrigger={setTrigger}
             onSave={handleTriggerSave}
@@ -597,6 +600,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
       <PatternEditModal
         open={activeEditor?.type === "details-edit"}
         title="배후의 자동 사고 편집"
+        chromeless
+        hideClose
         onOpenChange={(nextOpen) => {
           if (!nextOpen) closeEditor();
         }}
@@ -613,6 +618,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
       <PatternEditModal
         open={activeEditor?.type === "errors-edit"}
         title="인지오류 편집"
+        chromeless
+        hideClose
         onOpenChange={(nextOpen) => {
           if (!nextOpen) closeEditor();
         }}
@@ -629,6 +636,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
       <PatternEditModal
         open={activeEditor?.type === "alternatives-edit"}
         title="대안적 접근 편집"
+        chromeless
+        hideClose
         onOpenChange={(nextOpen) => {
           if (!nextOpen) closeEditor();
         }}
@@ -645,6 +654,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
       <PatternEditModal
         open={activeEditor?.type === "behaviors-edit"}
         title="행동 반응 편집"
+        chromeless
+        hideClose
         onOpenChange={(nextOpen) => {
           if (!nextOpen) closeEditor();
         }}
@@ -661,6 +672,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
       <PatternEditModal
         open={activeEditor?.type === "details-add"}
         title="배후의 자동 사고 추가"
+        hideClose
+        chromeless
         onOpenChange={(nextOpen) => {
           if (!nextOpen) closeEditor();
         }}
@@ -681,6 +694,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
       <PatternEditModal
         open={activeEditor?.type === "errors-add"}
         title="인지오류 추가"
+        hideClose
+        chromeless
         onOpenChange={(nextOpen) => {
           if (!nextOpen) closeEditor();
         }}
@@ -702,6 +717,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
       <PatternEditModal
         open={activeEditor?.type === "alternatives-add"}
         title="대안적 접근 추가"
+        hideClose
+        chromeless
         onOpenChange={(nextOpen) => {
           if (!nextOpen) closeEditor();
         }}
@@ -722,6 +739,8 @@ export function PatternsPage({ user }: PatternsPageProps) {
       <PatternEditModal
         open={activeEditor?.type === "behaviors-add"}
         title="행동 반응 추가"
+        hideClose
+        chromeless
         onOpenChange={(nextOpen) => {
           if (!nextOpen) closeEditor();
         }}
