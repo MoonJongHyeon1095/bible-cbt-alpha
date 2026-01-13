@@ -124,8 +124,12 @@ export function PatternAlternativesCard({
                     disabled={savingId === alt.id}
                     className="bg-green-600 hover:bg-green-700"
                   >
-                    <Save className="size-4 mr-1" />
-                    저장
+                    {savingId === alt.id ? (
+                      <Loader2 className="size-4 mr-1 animate-spin" />
+                    ) : (
+                      <Save className="size-4 mr-1" />
+                    )}
+                    {savingId === alt.id ? "저장 중" : "저장"}
                   </Button>
                 )}
                 <Button

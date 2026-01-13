@@ -1,4 +1,4 @@
-import { Footprints, Info, Save } from "lucide-react";
+import { Footprints, Info, Loader2, Save } from "lucide-react";
 import { COGNITIVE_ERRORS } from "../../../../../constants/errors";
 import { Button } from "../../../../ui/button";
 import { Textarea } from "../../../../ui/textarea";
@@ -44,8 +44,12 @@ export function PatternBehaviorAddSection({
             disabled={!behaviorLabel.trim() || loading}
             className="bg-blue-500 text-white hover:bg-blue-600"
           >
-            <Save className="size-4 mr-1" />
-            저장
+            {loading ? (
+              <Loader2 className="size-4 mr-1 animate-spin" />
+            ) : (
+              <Save className="size-4 mr-1" />
+            )}
+            {loading ? "저장 중" : "저장"}
           </Button>
         </div>
         <div>

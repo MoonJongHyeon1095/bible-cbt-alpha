@@ -1,4 +1,4 @@
-import { AlertCircle, Save, X } from "lucide-react";
+import { AlertCircle, Loader2, Save, X } from "lucide-react";
 import { Button } from "../../../../ui/button";
 import { Input } from "../../../../ui/input";
 import { Textarea } from "../../../../ui/textarea";
@@ -30,8 +30,12 @@ export function PatternTriggerSection({
           disabled={loading}
           className="bg-indigo-600 hover:bg-indigo-700"
         >
-          <Save className="size-4 mr-2" />
-          저장
+          {loading ? (
+            <Loader2 className="size-4 mr-2 animate-spin" />
+          ) : (
+            <Save className="size-4 mr-2" />
+          )}
+          {loading ? "저장 중" : "저장"}
         </Button>
         <Button onClick={onCancel} variant="outline">
           <X className="size-4 mr-2" />

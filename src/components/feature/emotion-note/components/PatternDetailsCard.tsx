@@ -129,8 +129,12 @@ export function PatternDetailsCard({
                     disabled={savingId === detail.id}
                     className="bg-indigo-600 hover:bg-indigo-700"
                   >
-                    <Save className="size-4 mr-1" />
-                    저장
+                    {savingId === detail.id ? (
+                      <Loader2 className="size-4 mr-1 animate-spin" />
+                    ) : (
+                      <Save className="size-4 mr-1" />
+                    )}
+                    {savingId === detail.id ? "저장 중" : "저장"}
                   </Button>
                 )}
                 <Button

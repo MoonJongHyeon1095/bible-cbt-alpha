@@ -1,4 +1,4 @@
-import { Lightbulb, Save } from "lucide-react";
+import { Lightbulb, Loader2, Save } from "lucide-react";
 import { Button } from "../../../../ui/button";
 import { Textarea } from "../../../../ui/textarea";
 
@@ -30,8 +30,12 @@ export function PatternAlternativesAddSection({
             disabled={!alternativeText.trim() || loading}
             className="bg-green-500 text-white hover:bg-green-600"
           >
-            <Save className="size-4 mr-1" />
-            저장
+            {loading ? (
+              <Loader2 className="size-4 mr-1 animate-spin" />
+            ) : (
+              <Save className="size-4 mr-1" />
+            )}
+            {loading ? "저장 중" : "저장"}
           </Button>
         </div>
         <Textarea

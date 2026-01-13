@@ -1,6 +1,6 @@
 import type { User } from "@supabase/supabase-js";
-import { HeartPulse, Plus } from "lucide-react";
-import { useState } from "react";
+import { ChevronUp, HeartPulse, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../../../ui/button";
 import { Card } from "../../../ui/card";
@@ -124,6 +124,12 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const [deletingBehaviors, setDeletingBehaviors] = useState<
     Record<string, boolean>
   >({});
+  const [savingTrigger, setSavingTrigger] = useState(false);
+  const [savingDetailAdd, setSavingDetailAdd] = useState(false);
+  const [savingAlternativeAdd, setSavingAlternativeAdd] = useState(false);
+  const [savingErrorAdd, setSavingErrorAdd] = useState(false);
+  const [savingBehaviorAdd, setSavingBehaviorAdd] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const formatThoughtTitle = (content: string) => {
     const trimmed = content.trim();
@@ -175,14 +181,20 @@ export function PatternsPage({ user }: PatternsPageProps) {
       toast.error("먼저 노트를 선택하거나 저장해주세요.");
       return;
     }
-    const ok = await addDetail({
-      patternId: editingId,
-      emotion,
-      automaticThought,
-    });
-    if (ok) {
-      setAutomaticThought("");
-      setEmotion("");
+    setSavingDetailAdd(true);
+    try {
+      const ok = await addDetail({
+        patternId: editingId,
+        emotion,
+        automaticThought,
+      });
+      if (ok) {
+        setAutomaticThought("");
+        setEmotion("");
+        toast.success("저장되었습니다.");
+      }
+    } finally {
+      setSavingDetailAdd(false);
     }
   };
 
@@ -191,12 +203,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
       toast.error("먼저 노트를 선택하거나 저장해주세요.");
       return;
     }
-    const ok = await addAlternative({
-      patternId: editingId,
-      alternativeText,
-    });
-    if (ok) {
-      setAlternativeText("");
+    setSavingAlternativeAdd(true);
+    try {
+      const ok = await addAlternative({
+        patternId: editingId,
+        alternativeText,
+      });
+      if (ok) {
+        setAlternativeText("");
+        toast.success("저장되었습니다.");
+      }
+    } finally {
+      setSavingAlternativeAdd(false);
     }
   };
 
@@ -225,14 +243,20 @@ export function PatternsPage({ user }: PatternsPageProps) {
       toast.error("먼저 노트를 선택하거나 저장해주세요.");
       return;
     }
-    const ok = await addErrorDetail({
-      patternId: editingId,
-      errorLabel,
-      errorDescription,
-    });
-    if (ok) {
-      setErrorLabel("");
-      setErrorDescription("");
+    setSavingErrorAdd(true);
+    try {
+      const ok = await addErrorDetail({
+        patternId: editingId,
+        errorLabel,
+        errorDescription,
+      });
+      if (ok) {
+        setErrorLabel("");
+        setErrorDescription("");
+        toast.success("저장되었습니다.");
+      }
+    } finally {
+      setSavingErrorAdd(false);
     }
   };
 
@@ -251,16 +275,22 @@ export function PatternsPage({ user }: PatternsPageProps) {
       toast.error("먼저 노트를 선택하거나 저장해주세요.");
       return;
     }
-    const ok = await addBehaviorDetail({
-      patternId: editingId,
-      behaviorLabel,
-      behaviorDescription,
-      errorTags: behaviorErrorTags,
-    });
-    if (ok) {
-      setBehaviorLabel("");
-      setBehaviorDescription("");
-      setBehaviorErrorTags([]);
+    setSavingBehaviorAdd(true);
+    try {
+      const ok = await addBehaviorDetail({
+        patternId: editingId,
+        behaviorLabel,
+        behaviorDescription,
+        errorTags: behaviorErrorTags,
+      });
+      if (ok) {
+        setBehaviorLabel("");
+        setBehaviorDescription("");
+        setBehaviorErrorTags([]);
+        toast.success("저장되었습니다.");
+      }
+    } finally {
+      setSavingBehaviorAdd(false);
     }
   };
 
@@ -299,14 +329,20 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
   const handleTriggerSave = async () => {
     if (!editingId) return;
-    const ok = await updatePattern({
-      id: editingId,
-      title,
-      trigger,
-      behavior,
-    });
-    if (ok) {
-      closeEditor();
+    setSavingTrigger(true);
+    try {
+      const ok = await updatePattern({
+        id: editingId,
+        title,
+        trigger,
+        behavior,
+      });
+      if (ok) {
+        toast.success("저장되었습니다.");
+        closeEditor();
+      }
+    } finally {
+      setSavingTrigger(false);
     }
   };
 
@@ -377,6 +413,15 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const activePattern = activeEditor
     ? patterns.find((pattern) => pattern.id === activeEditor.patternId) ?? null
     : null;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="max-w-[1400px] mx-auto px-8 py-8">
@@ -534,7 +579,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
           <PatternTriggerSection
             title={title}
             trigger={trigger}
-            loading={loading}
+            loading={savingTrigger}
             onChangeTitle={setTitle}
             onChangeTrigger={setTrigger}
             onSave={handleTriggerSave}
@@ -616,9 +661,10 @@ export function PatternsPage({ user }: PatternsPageProps) {
       >
         {activePattern && (
           <PatternDetailsAddSection
+            triggerText={activePattern.trigger}
             automaticThought={automaticThought}
             emotion={emotion}
-            loading={loading}
+            loading={savingDetailAdd}
             onChangeAutomaticThought={setAutomaticThought}
             onSelectEmotion={setEmotion}
             onAddDetail={handleAddDetail}
@@ -635,9 +681,11 @@ export function PatternsPage({ user }: PatternsPageProps) {
       >
         {activePattern && (
           <PatternErrorAddSection
+            triggerText={activePattern.trigger}
+            details={activePattern.details}
             errorLabel={errorLabel}
             errorDescription={errorDescription}
-            loading={loading}
+            loading={savingErrorAdd}
             onChangeErrorLabel={setErrorLabel}
             onChangeErrorDescription={setErrorDescription}
             onAddErrorDetail={handleAddError}
@@ -655,7 +703,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
         {activePattern && (
           <PatternAlternativesAddSection
             alternativeText={alternativeText}
-            loading={loading}
+            loading={savingAlternativeAdd}
             onChangeAlternativeText={setAlternativeText}
             onAddAlternative={handleAddAlternative}
           />
@@ -674,7 +722,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
             behaviorLabel={behaviorLabel}
             behaviorDescription={behaviorDescription}
             behaviorErrorTags={behaviorErrorTags}
-            loading={loading}
+            loading={savingBehaviorAdd}
             onChangeBehaviorLabel={setBehaviorLabel}
             onChangeBehaviorDescription={setBehaviorDescription}
             onChangeBehaviorErrorTags={setBehaviorErrorTags}
@@ -682,6 +730,23 @@ export function PatternsPage({ user }: PatternsPageProps) {
           />
         )}
       </PatternEditModal>
+
+      <Button
+        type="button"
+        size="icon"
+        aria-label="맨 위로 이동"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        className={[
+          "fixed z-40 rounded-full bg-indigo-600 text-white shadow-lg",
+          "right-5 md:right-8 bottom-[calc(env(safe-area-inset-bottom)+20px)] md:bottom-8",
+          "transition-all duration-300",
+          showScrollTop
+            ? "opacity-100 translate-y-0"
+            : "pointer-events-none opacity-0 translate-y-4",
+        ].join(" ")}
+      >
+        <ChevronUp className="size-5" />
+      </Button>
     </div>
   );
 }
