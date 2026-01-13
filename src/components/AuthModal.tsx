@@ -96,6 +96,9 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
       <DialogContent
         className="max-w-md bg-white border-2 border-purple-200"
         aria-describedby="auth-description"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+        }}
       >
         <DialogHeader>
           <DialogTitle className="text-2xl text-purple-900 flex items-center gap-2">

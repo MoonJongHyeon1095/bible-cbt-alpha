@@ -73,7 +73,6 @@ export function WebCompactNav({
                 className="border-red-200 text-red-600 hover:bg-red-50"
               >
                 <LogOut className="size-4 mr-1.5" />
-                로그아웃
               </Button>
             ) : (
               <Button
