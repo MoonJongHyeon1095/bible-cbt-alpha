@@ -7,7 +7,6 @@ import type { EmotionData } from "../types";
 import { validateUserText } from "../../../utils/validation";
 
 type PrefetchKey = string;
-const MIN_TRIGGER_LENGTH = 10;
 
 function makePrefetchKey(emotion: string, input: string): PrefetchKey {
   return `${emotion}::${input.trim()}`;
@@ -226,11 +225,10 @@ export function useEmotionFlow({
   const submitCustomThought = (customText: string) => {
     const trimmed = customText.trim();
     if (!trimmed) return;
-    if (trimmed.length < MIN_TRIGGER_LENGTH) {
-      toast.error("직접 입력한 생각을 10자 이상 적어주세요.");
-      return;
-    }
-    const validation = validateUserText(trimmed);
+    const validation = validateUserText(trimmed, {
+      minLength: 10,
+      minLengthMessage: "직접 입력한 생각을 10자 이상 적어주세요.",
+    });
     if (!validation.ok) {
       toast.error(validation.message);
       return;

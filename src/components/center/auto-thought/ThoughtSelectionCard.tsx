@@ -60,8 +60,6 @@ export function ThoughtSelectionCard({
   isDetailSaved,
 }: ThoughtSelectionCardProps) {
   const customThoughtTrimmed = customThought.trim();
-  const isCustomTooShort =
-    customThoughtTrimmed.length > 0 && customThoughtTrimmed.length < 10;
   const selectedGeneratedThought =
     selectedThoughtIndex !== null &&
     selectedThoughtIndex !== 999 &&
@@ -71,11 +69,10 @@ export function ThoughtSelectionCard({
       : null;
 
   const handleSaveCustomThought = () => {
-    if (isCustomTooShort) {
-      toast.error("직접 입력한 생각을 10자 이상 적어주세요.");
-      return;
-    }
-    const validation = validateUserText(customThoughtTrimmed);
+    const validation = validateUserText(customThoughtTrimmed, {
+      minLength: 10,
+      minLengthMessage: "직접 입력한 생각을 10자 이상 적어주세요.",
+    });
     if (!validation.ok) {
       toast.error(validation.message);
       return;
@@ -84,8 +81,12 @@ export function ThoughtSelectionCard({
   };
 
   const handleSelectCustomThought = () => {
-    if (isCustomTooShort) {
-      toast.error("직접 입력한 생각을 10자 이상 적어주세요.");
+    const validation = validateUserText(customThoughtTrimmed, {
+      minLength: 10,
+      minLengthMessage: "직접 입력한 생각을 10자 이상 적어주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
     onCustomThoughtSelect();
