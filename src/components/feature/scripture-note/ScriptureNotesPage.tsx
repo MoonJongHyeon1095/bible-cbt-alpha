@@ -17,6 +17,7 @@ import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
+import { FeatureHeader } from "../common/FeatureHeader";
 
 interface ScriptureNote {
   id: string;
@@ -37,6 +38,10 @@ interface ScriptureNotesPageProps {
 }
 
 export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
+  const scriptureFont = {
+    fontFamily:
+      '"Nanum Myeongjo", "Noto Serif KR", "Apple SD Gothic Neo", serif',
+  };
   const [notes, setNotes] = useState<ScriptureNote[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -543,97 +548,96 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-8 py-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
-            <BookMarked className="size-8 text-amber-600" />
-            말씀 노트
-          </h1>
-          <p className="text-slate-600">말씀과 묵상을 기록하세요.</p>
-        </div>
-        <div className="flex gap-2">
-          {!isCreating && (
-            <Button
-              onClick={() => setIsCreating(true)}
-              className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
-            >
-              <Plus className="size-5 mr-2" />새 말씀 노트
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* 작성/수정 폼 */}
-      {isCreating && (
-        <Card className="p-6 mb-6 bg-amber-50 border-2 border-amber-200">
-          <h3 className="text-lg text-slate-900 mb-4">
-            {editingId ? "말씀 노트 수정" : "새 말씀 노트 작성"}
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm text-slate-700 mb-2 block">
-                성경 구절
-              </label>
-              <Input
-                ref={referenceRef}
-                value={reference}
-                onChange={(e) => setReference(e.target.value)}
-                placeholder="예: 요한복음 3:16, 시편 23:1"
-                className="border-amber-200"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-slate-700 mb-2 block">
-                말씀 본문
-              </label>
-              <Textarea
-                value={verse}
-                onChange={(e) => setVerse(e.target.value)}
-                placeholder="성경 말씀 본문을 입력하세요..."
-                className="min-h-[120px] border-amber-200"
-              />
-            </div>
-
-            <div className="flex gap-2">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50/70 via-white to-emerald-50/40">
+      <div className="max-w-[960px] mx-auto px-6 sm:px-8 py-10">
+        <FeatureHeader
+          overline="Scripture Notes"
+          title="말씀 노트"
+          subtitle="말씀과 묵상을 한 권의 책처럼 기록하세요."
+          icon={BookMarked}
+          iconClassName="text-emerald-600"
+          action={
+            !isCreating ? (
               <Button
-                onClick={() =>
-                  editingId ? handleUpdate(editingId) : handleCreate()
-                }
-                disabled={loading}
-                className="bg-amber-600 hover:bg-amber-700"
+                onClick={() => setIsCreating(true)}
+                className="bg-emerald-700 hover:bg-emerald-800 shadow-md shadow-emerald-900/10"
               >
-                <Save className="size-4 mr-2" />
-                {editingId ? "수정 완료" : "저장"}
+                <Plus className="size-5 mr-2" />새 말씀 노트
               </Button>
-              <Button onClick={resetForm} variant="outline">
-                <X className="size-4 mr-2" />
-                취소
-              </Button>
+            ) : null
+          }
+        />
+        {/* 작성/수정 폼 */}
+        {isCreating && (
+          <Card className="p-8 mb-8 bg-white/90 border border-emerald-100 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.45)]">
+            <h3 className="text-lg text-slate-900 mb-5">
+              {editingId ? "말씀 노트 수정" : "새 말씀 노트 작성"}
+            </h3>
+            <div className="space-y-5">
+              <div>
+                <label className="text-sm text-slate-700 mb-2 block">
+                  성경 구절
+                </label>
+                <Input
+                  ref={referenceRef}
+                  value={reference}
+                  onChange={(e) => setReference(e.target.value)}
+                  placeholder="예: 요한복음 3:16, 시편 23:1"
+                  className="border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-slate-700 mb-2 block">
+                  말씀 본문
+                </label>
+                <Textarea
+                  value={verse}
+                  onChange={(e) => setVerse(e.target.value)}
+                  placeholder="성경 말씀 본문을 입력하세요..."
+                  className="min-h-[160px] border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
+                  style={scriptureFont}
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={() =>
+                    editingId ? handleUpdate(editingId) : handleCreate()
+                  }
+                  disabled={loading}
+                  className="bg-emerald-700 hover:bg-emerald-800"
+                >
+                  <Save className="size-4 mr-2" />
+                  {editingId ? "수정 완료" : "저장"}
+                </Button>
+                <Button onClick={resetForm} variant="outline">
+                  <X className="size-4 mr-2" />
+                  취소
+                </Button>
+              </div>
             </div>
-          </div>
-        </Card>
-      )}
+          </Card>
+        )}
 
       {/* 노트 목록 */}
       {loading ? (
-        <Card className="p-12 text-center">
-          <BookMarked className="size-16 text-slate-300 mx-auto mb-4 animate-pulse" />
+        <Card className="p-12 text-center bg-white/80 border border-emerald-100">
+          <BookMarked className="size-16 text-emerald-200 mx-auto mb-4 animate-pulse" />
           <p className="text-slate-500 text-lg mb-2">
             말씀 노트를 불러오는 중입니다...
           </p>
         </Card>
       ) : notes.length === 0 ? (
-        <Card className="p-12 text-center">
-          <BookMarked className="size-16 text-slate-300 mx-auto mb-4" />
+        <Card className="p-12 text-center bg-white/80 border border-emerald-100">
+          <BookMarked className="size-16 text-emerald-200 mx-auto mb-4" />
           <p className="text-slate-500 text-lg mb-2">
             아직 말씀 노트가 없습니다.
           </p>
           <p className="text-slate-400">첫 번째 말씀 노트를 작성해보세요.</p>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-8">
           {notes.map((note) => {
             const reflections = [...note.reflections].sort(
               (a, b) =>
@@ -644,39 +648,50 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             return (
               <Card
                 key={note.id}
-                className="p-6 hover:shadow-lg transition-shadow bg-white border-amber-100"
+                className="p-8 hover:shadow-[0_24px_60px_-42px_rgba(15,23,42,0.6)] transition-shadow bg-white/95 border border-emerald-100"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-xl text-amber-900 flex-1">
-                    {note.reference}
-                  </h3>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6">
+                  <div className="flex-1">
+                    <div className="text-xs uppercase tracking-[0.2em] text-emerald-600/70 mb-2">
+                      Reference
+                    </div>
+                    <h3
+                      className="text-2xl sm:text-3xl text-emerald-900 leading-tight"
+                      style={scriptureFont}
+                    >
+                      {note.reference}
+                    </h3>
+                  </div>
                   <div className="flex gap-1">
                     <button
                       onClick={() => handleEdit(note)}
-                      className="text-amber-600 hover:text-amber-700 p-1"
+                      className="text-emerald-600 hover:text-emerald-700 p-1"
                       title="수정"
                     >
                       <Edit2 className="size-4" />
                     </button>
-                  <button
-                    onClick={() => handleDelete(note.id)}
-                    className="text-red-600 hover:text-red-700 p-1"
-                    title="삭제"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
+                    <button
+                      onClick={() => handleDelete(note.id)}
+                      className="text-red-600 hover:text-red-700 p-1"
+                      title="삭제"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
                   </div>
                 </div>
 
-                <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-3">
-                  <p className="text-slate-700 italic leading-relaxed whitespace-pre-wrap">
+                <div className="bg-emerald-50/70 border-l-2 border-emerald-400 p-5 rounded-r-2xl mb-6">
+                  <p
+                    className="text-[15px] sm:text-base text-slate-700 leading-7 sm:leading-8 whitespace-pre-wrap"
+                    style={scriptureFont}
+                  >
                     "{note.verse}"
                   </p>
                 </div>
 
-                <div className="bg-slate-50 p-4 rounded-lg mb-3">
-                  <p className="text-sm text-slate-600 mb-3 flex items-center gap-2">
-                    <NotebookPen className="size-4 text-slate-500" />
+                <div className="bg-white border border-slate-100 p-5 rounded-2xl mb-6">
+                  <p className="text-sm text-slate-600 mb-4 flex items-center gap-2">
+                    <NotebookPen className="size-4 text-emerald-600" />
                     묵상 기록
                   </p>
                   {reflections.length === 0 ? (
@@ -684,7 +699,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                       아직 묵상이 없습니다.
                     </p>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {reflections.map((reflection) => {
                         const isEditing =
                           editingReflectionNoteId === note.id &&
@@ -697,7 +712,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                         return (
                           <div
                             key={reflection.id}
-                            className="rounded-lg border border-slate-200 bg-white p-3"
+                            className="rounded-2xl border border-slate-100 bg-emerald-50/30 p-4"
                           >
                             {isEditing ? (
                               <div className="space-y-2">
@@ -786,11 +801,14 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                                   </div>
                                 </div>
                                 {isExpanded && (
-                                  <p className="mt-3 text-slate-700 whitespace-pre-wrap break-words">
+                                  <p
+                                    className="mt-3 text-[15px] sm:text-base text-slate-700 leading-7 whitespace-pre-wrap break-words"
+                                    style={scriptureFont}
+                                  >
                                     {reflection.content}
                                   </p>
                                 )}
-                                <p className="text-xs text-slate-400 mt-2">
+                                <p className="text-xs text-slate-400 mt-3">
                                   {formatDate(reflection.timestamp)}
                                 </p>
                               </div>
@@ -801,7 +819,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                     </div>
                   )}
 
-                  <div className="mt-4 space-y-2">
+                  <div className="mt-5 space-y-3">
                     <Textarea
                       value={reflectionDrafts[note.id] ?? ""}
                       onChange={(e) =>
@@ -811,11 +829,12 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                         }))
                       }
                       placeholder="묵상을 기록하세요..."
-                      className="min-h-[120px] border-slate-200"
+                      className="min-h-[140px] border-slate-200"
+                      style={scriptureFont}
                     />
                     <Button
                       onClick={() => handleCreateReflection(note.id)}
-                      className="bg-amber-600 hover:bg-amber-700"
+                      className="bg-emerald-700 hover:bg-emerald-800"
                     >
                       <Plus className="size-4 mr-2" />
                       묵상 추가
@@ -831,6 +850,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }

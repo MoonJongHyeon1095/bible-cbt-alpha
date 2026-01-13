@@ -3,14 +3,28 @@ import {
   Brain,
   ChevronDown,
   ChevronRight,
-  Edit2,
   Footprints,
+  Info,
   Lightbulb,
   Trash2,
 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "../../../ui/button";
 import { Card } from "../../../ui/card";
 import type { Pattern } from "../types";
+import {
+  BehaviorInfoPopover,
+  CognitiveErrorInfoPopover,
+  EmotionInfoPopover,
+  getBehaviorMeta,
+  getCognitiveErrorMeta,
+  getEmotionMeta,
+} from "./info-popovers";
+import {
+  PatternContentActions,
+  PatternPreviewDialog,
+  PatternSectionHeader,
+} from "./PatternCardParts";
 
 interface PatternCardProps {
   pattern: Pattern;
@@ -30,16 +44,36 @@ interface PatternCardProps {
     React.SetStateAction<Record<string, boolean>>
   >;
   expandedErrors: Record<string, boolean>;
-  setExpandedErrors: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setExpandedErrors: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
   expandedBehaviors: Record<string, boolean>;
-  setExpandedBehaviors: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  setExpandedBehaviors: React.Dispatch<
+    React.SetStateAction<Record<string, boolean>>
+  >;
   getFrequencyBadgeStyle: (frequency: number) => React.CSSProperties;
   onIncrementFrequency: (id: string) => void;
   onDecrementFrequency: (id: string) => void;
-  onEdit: (pattern: Pattern) => void;
+  onEditTrigger: (pattern: Pattern) => void;
+  onEditDetails: (pattern: Pattern) => void;
+  onAddDetails: (pattern: Pattern) => void;
+  onEditAlternatives: (pattern: Pattern) => void;
+  onAddAlternatives: (pattern: Pattern) => void;
+  onEditErrors: (pattern: Pattern) => void;
+  onAddErrors: (pattern: Pattern) => void;
+  onEditBehaviors: (pattern: Pattern) => void;
+  onAddBehaviors: (pattern: Pattern) => void;
   onRequestDelete: (id: string) => void;
   onConfirmDelete: (id: string) => void;
   onCancelDelete: () => void;
+  onDeleteDetail: (patternId: string, detailId: string) => void;
+  onDeleteAlternative: (patternId: string, alternativeId: string) => void;
+  onDeleteError: (patternId: string, errorId: string) => void;
+  onDeleteBehavior: (patternId: string, behaviorId: string) => void;
+  deletingDetails: Record<string, boolean>;
+  deletingAlternatives: Record<string, boolean>;
+  deletingErrors: Record<string, boolean>;
+  deletingBehaviors: Record<string, boolean>;
 }
 
 export function PatternCard({
@@ -62,11 +96,56 @@ export function PatternCard({
   getFrequencyBadgeStyle,
   onIncrementFrequency,
   onDecrementFrequency,
-  onEdit,
+  onEditTrigger,
+  onEditDetails,
+  onAddDetails,
+  onEditAlternatives,
+  onAddAlternatives,
+  onEditErrors,
+  onAddErrors,
+  onEditBehaviors,
+  onAddBehaviors,
   onRequestDelete,
   onConfirmDelete,
   onCancelDelete,
+  onDeleteDetail,
+  onDeleteAlternative,
+  onDeleteError,
+  onDeleteBehavior,
+  deletingDetails,
+  deletingAlternatives,
+  deletingErrors,
+  deletingBehaviors,
 }: PatternCardProps) {
+  const [previewContent, setPreviewContent] = useState<{
+    title: string;
+    content: string;
+    label?: string;
+    tone?: "amber" | "rose" | "green" | "blue" | "slate";
+  } | null>(null);
+
+  const handleCopy = async (text: string) => {
+    if (!text.trim()) return;
+    if (navigator?.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return;
+      } catch (_error) {
+        // Fallback to legacy copy below.
+      }
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "true");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  };
+
   return (
     <Card
       id={`pattern-${pattern.id}`}
@@ -97,6 +176,14 @@ export function PatternCard({
             >
               -1회
             </button>
+            <button
+              onClick={() => onRequestDelete(pattern.id)}
+              className="text-red-600 hover:text-red-700 p-1"
+              title="삭제"
+              aria-label="노트 삭제"
+            >
+              <Trash2 className="size-4" />
+            </button>
           </div>
         </div>
         <div className="flex items-start justify-between gap-2">
@@ -106,30 +193,17 @@ export function PatternCard({
               최초 기록: {formatDate(pattern.timestamp)}
             </p>
             <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-              <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
-                <AlertCircle className="size-4" />
-                트리거 텍스트
-              </p>
-              <p className="text-sm text-slate-800 whitespace-pre-wrap">
+              <PatternSectionHeader
+                tone="slate"
+                title="트리거 텍스트"
+                icon={<AlertCircle className="size-4" />}
+                onEdit={() => onEditTrigger(pattern)}
+                editLabel="트리거 텍스트 편집"
+              />
+              <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
                 {pattern.trigger}
               </p>
             </div>
-          </div>
-          <div className="flex gap-1">
-            <button
-              onClick={() => onEdit(pattern)}
-              className="text-indigo-600 hover:text-indigo-700 p-1"
-              title="수정"
-            >
-              <Edit2 className="size-4" />
-            </button>
-            <button
-              onClick={() => onRequestDelete(pattern.id)}
-              className="text-red-600 hover:text-red-700 p-1"
-              title="삭제"
-            >
-              <Trash2 className="size-4" />
-            </button>
           </div>
         </div>
         {confirmDeleteId === pattern.id && (
@@ -165,16 +239,16 @@ export function PatternCard({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {pattern.details.length > 0 ? (
-          <div className="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
-                <Brain className="size-4" />
-                배후의 자동 사고
-              </div>
-              <span className="text-xs text-amber-800">
-                {pattern.details.length}개
-              </span>
-            </div>
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3 shadow-sm">
+            <PatternSectionHeader
+              tone="amber"
+              title="배후의 자동 사고"
+              icon={<Brain className="size-4" />}
+              onEdit={() => onEditDetails(pattern)}
+              onAdd={() => onAddDetails(pattern)}
+              editLabel="배후의 자동 사고 편집"
+              addLabel="배후의 자동 사고 추가"
+            />
             <div className="space-y-2">
               {pattern.details.map((detail) => {
                 const detailKey = `${pattern.id}-${detail.id}`;
@@ -186,22 +260,28 @@ export function PatternCard({
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span
-                          className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 font-semibold text-blue-700"
-                          style={{ fontSize: "14px", lineHeight: "1" }}
-                        >
-                          {detail.emotion || "-"}
-                        </span>
-                        <span
-                          className="text-slate-400"
-                          style={{ fontSize: "14px", lineHeight: "1" }}
-                        >
-                          {detail.createdAt
-                            ? new Date(detail.createdAt).toLocaleDateString(
-                                "ko-KR"
-                              )
-                            : ""}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 font-semibold text-blue-700"
+                            style={{ fontSize: "14px", lineHeight: "1" }}
+                          >
+                            {detail.emotion || "-"}
+                          </span>
+                          {getEmotionMeta(detail.emotion) && (
+                            <EmotionInfoPopover
+                              emotionLabel={detail.emotion}
+                              align="start"
+                            >
+                              <button
+                                type="button"
+                                className="rounded-full p-1 text-blue-500 hover:bg-blue-100"
+                                aria-label={`${detail.emotion} 설명 보기`}
+                              >
+                                <Info className="size-4" />
+                              </button>
+                            </EmotionInfoPopover>
+                          )}
+                        </div>
                       </div>
                       <button
                         type="button"
@@ -229,9 +309,31 @@ export function PatternCard({
                       </button>
                     </div>
                     {isExpanded && (
-                      <p className="mt-3 text-slate-800 text-sm whitespace-pre-wrap break-words">
-                        {detail.automaticThought || "-"}
-                      </p>
+                      <>
+                        <p className="mt-3 text-sm text-slate-700 whitespace-pre-wrap break-words leading-relaxed">
+                          {detail.automaticThought || "-"}
+                        </p>
+                        <PatternContentActions
+                          tone="amber"
+                          onCopy={() =>
+                            handleCopy(detail.automaticThought || "-")
+                          }
+                          onExpand={() =>
+                            setPreviewContent({
+                              title: "배후의 자동 사고",
+                              content: detail.automaticThought || "-",
+                              tone: "amber",
+                            })
+                          }
+                          onDelete={() =>
+                            onDeleteDetail(pattern.id, detail.id)
+                          }
+                          deleting={Boolean(deletingDetails[detail.id])}
+                          copyLabel="복사"
+                          expandLabel="확대"
+                          deleteLabel="삭제"
+                        />
+                      </>
                     )}
                   </div>
                 );
@@ -239,26 +341,141 @@ export function PatternCard({
             </div>
           </div>
         ) : (
-          <div className="md:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
-              <Brain className="size-4" />
-              배후의 자동 사고
-            </div>
-            <p className="mt-2 text-sm text-amber-900">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <PatternSectionHeader
+              tone="amber"
+              title="배후의 자동 사고"
+              icon={<Brain className="size-4" />}
+              onEdit={() => onEditDetails(pattern)}
+              onAdd={() => onAddDetails(pattern)}
+              editLabel="배후의 자동 사고 편집"
+              addLabel="배후의 자동 사고 추가"
+            />
+            <p className="mt-2 text-sm text-amber-900 leading-relaxed">
               아직 배후의 자동 사고가 저장되지 않았습니다.
             </p>
           </div>
         )}
 
-        <div className="alternatives-card rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm md:col-span-2">
-          <div className="flex items-center justify-between mb-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-900">
-              <Lightbulb className="size-4" />
-              대안적 접근
+        <div className="error-card rounded-xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
+          <div className="mb-2">
+            <PatternSectionHeader
+              tone="rose"
+              title="인지오류"
+              icon={<AlertCircle className="size-4 text-rose-700" />}
+              onEdit={() => onEditErrors(pattern)}
+              onAdd={() => onAddErrors(pattern)}
+              editLabel="인지오류 편집"
+              addLabel="인지오류 추가"
+            />
+          </div>
+          {(pattern.errorDetails ?? []).length ? (
+            <div className="space-y-2">
+              {(pattern.errorDetails ?? []).map((detail) => {
+                const errorKey = `${pattern.id}-${detail.id}`;
+                const isExpanded = Boolean(expandedErrors[errorKey]);
+                const label =
+                  detail.errorLabel || detail.errorDescription || "-";
+                const meta = getCognitiveErrorMeta(detail.errorLabel);
+                return (
+                  <div
+                    key={detail.id}
+                    className="rounded-lg border border-rose-200 bg-white p-3 shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedErrors((prev) => ({
+                            ...prev,
+                            [errorKey]: !isExpanded,
+                          }))
+                        }
+                        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                        title={isExpanded ? "인지오류 접기" : "인지오류 펼치기"}
+                      >
+                        {isExpanded ? (
+                          <ChevronDown className="size-4 text-slate-400" />
+                        ) : (
+                          <ChevronRight className="size-4 text-slate-400" />
+                        )}
+                        <span className="min-w-0 flex-1">
+                          <span className="inline-flex items-center gap-1 text-sm text-slate-600">
+                            {formatErrorTitle(label)}
+                            {meta && (
+                              <CognitiveErrorInfoPopover
+                                errorLabel={meta.title}
+                                align="end"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={(event) => event.stopPropagation()}
+                                  className="rounded-full p-1 text-rose-500 hover:bg-rose-100"
+                                  aria-label={`${meta.title} 설명 보기`}
+                                >
+                                  <Info className="size-4" />
+                                </button>
+                              </CognitiveErrorInfoPopover>
+                            )}
+                          </span>
+                        </span>
+                      </button>
+                    </div>
+                    {isExpanded && (
+                      <>
+                        <p className="mt-3 text-sm text-slate-700 whitespace-pre-wrap break-words leading-relaxed">
+                          {detail.errorDescription || detail.errorLabel || "-"}
+                        </p>
+                        <PatternContentActions
+                          tone="rose"
+                          onCopy={() =>
+                            handleCopy(
+                              detail.errorDescription ||
+                                detail.errorLabel ||
+                                "-"
+                            )
+                          }
+                          onExpand={() =>
+                            setPreviewContent({
+                              title: "인지오류",
+                              label: detail.errorLabel || undefined,
+                              content:
+                                detail.errorDescription ||
+                                detail.errorLabel ||
+                                "-",
+                              tone: "rose",
+                            })
+                          }
+                          onDelete={() => onDeleteError(pattern.id, detail.id)}
+                          deleting={Boolean(deletingErrors[detail.id])}
+                          copyLabel="복사"
+                          expandLabel="확대"
+                          deleteLabel="삭제"
+                        />
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            <span className="text-xs text-green-800">
-              {pattern.alternatives.length}개
-            </span>
+          ) : (
+            <p className="text-sm text-rose-800 whitespace-pre-wrap leading-relaxed">
+              아직 인지오류가 저장되지 않았습니다.
+            </p>
+          )}
+        </div>
+
+        <div className="alternatives-card rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm">
+          <div className="mb-2">
+            <PatternSectionHeader
+              tone="green"
+              title="대안적 접근"
+              icon={<Lightbulb className="size-4" />}
+              onEdit={() => onEditAlternatives(pattern)}
+              onAdd={() => onAddAlternatives(pattern)}
+              editLabel="대안적 접근 편집"
+              addLabel="대안적 접근 추가"
+            />
           </div>
           {pattern.alternatives.length ? (
             <div className="space-y-2">
@@ -293,109 +510,54 @@ export function PatternCard({
                           {formatAlternativeTitle(alt.alternative || "-")}
                         </span>
                       </button>
-                      <span
-                        className="text-slate-400"
-                        style={{ fontSize: "14px", lineHeight: "1" }}
-                      >
-                        {alt.createdAt
-                          ? new Date(alt.createdAt).toLocaleDateString("ko-KR")
-                          : ""}
-                      </span>
                     </div>
                     {isExpanded && (
-                      <p className="mt-3 text-slate-800 text-sm whitespace-pre-wrap break-words">
-                        {alt.alternative || "-"}
-                      </p>
+                      <>
+                        <p className="mt-3 text-sm text-slate-700 whitespace-pre-wrap break-words leading-relaxed">
+                          {alt.alternative || "-"}
+                        </p>
+                        <PatternContentActions
+                          tone="green"
+                          onCopy={() => handleCopy(alt.alternative || "-")}
+                          onExpand={() =>
+                            setPreviewContent({
+                              title: "대안적 접근",
+                              content: alt.alternative || "-",
+                              tone: "green",
+                            })
+                          }
+                          onDelete={() =>
+                            onDeleteAlternative(pattern.id, alt.id)
+                          }
+                          deleting={Boolean(deletingAlternatives[alt.id])}
+                          copyLabel="복사"
+                          expandLabel="확대"
+                          deleteLabel="삭제"
+                        />
+                      </>
                     )}
                   </div>
                 );
               })}
             </div>
           ) : (
-            <p className="text-sm text-green-800 whitespace-pre-wrap">
+            <p className="text-sm text-green-800 whitespace-pre-wrap leading-relaxed">
               아직 대안이 작성되지 않았습니다.
             </p>
           )}
         </div>
 
-        <div className="error-card rounded-xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-900">
-              <AlertCircle className="size-4 text-rose-700" />
-              인지오류
-            </div>
-            <span className="text-xs text-rose-800">
-              {(pattern.errorDetails ?? []).length}개
-            </span>
-          </div>
-          {(pattern.errorDetails ?? []).length ? (
-            <div className="space-y-2">
-              {(pattern.errorDetails ?? []).map((detail) => {
-                const errorKey = `${pattern.id}-${detail.id}`;
-                const isExpanded = Boolean(expandedErrors[errorKey]);
-                const label = detail.errorLabel || detail.errorDescription || "-";
-                return (
-                  <div
-                    key={detail.id}
-                    className="rounded-lg border border-rose-200 bg-white p-3 shadow-sm"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setExpandedErrors((prev) => ({
-                            ...prev,
-                            [errorKey]: !isExpanded,
-                          }))
-                        }
-                        className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                        title={isExpanded ? "인지오류 접기" : "인지오류 펼치기"}
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="size-4 text-slate-400" />
-                        ) : (
-                          <ChevronRight className="size-4 text-slate-400" />
-                        )}
-                        <span className="min-w-0 flex-1 text-sm text-slate-600">
-                          {formatErrorTitle(label)}
-                        </span>
-                      </button>
-                      <span
-                        className="text-slate-400"
-                        style={{ fontSize: "14px", lineHeight: "1" }}
-                      >
-                        {detail.createdAt
-                          ? new Date(detail.createdAt).toLocaleDateString(
-                              "ko-KR"
-                            )
-                          : ""}
-                      </span>
-                    </div>
-                    {isExpanded && (
-                      <p className="mt-3 text-slate-800 text-sm whitespace-pre-wrap break-words">
-                        {detail.errorDescription || detail.errorLabel || "-"}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p className="text-sm text-rose-800 whitespace-pre-wrap">
-              아직 인지오류가 저장되지 않았습니다.
-            </p>
-          )}
-        </div>
-
         <div className="behavior-card rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-900">
-              <Footprints className="size-4 text-blue-700" />
-              행동 반응
-            </div>
-            <span className="text-xs text-blue-800">
-              {(pattern.behaviorDetails ?? []).length}개
-            </span>
+          <div className="mb-2">
+            <PatternSectionHeader
+              tone="blue"
+              title="행동 반응"
+              icon={<Footprints className="size-4 text-blue-700" />}
+              onEdit={() => onEditBehaviors(pattern)}
+              onAdd={() => onAddBehaviors(pattern)}
+              editLabel="행동 반응 편집"
+              addLabel="행동 반응 추가"
+            />
           </div>
           {(pattern.behaviorDetails ?? []).length ? (
             <div className="space-y-2">
@@ -404,6 +566,7 @@ export function PatternCard({
                 const isExpanded = Boolean(expandedBehaviors[behaviorKey]);
                 const label =
                   detail.behaviorLabel || detail.behaviorDescription || "-";
+                const behaviorMeta = getBehaviorMeta(detail.behaviorLabel);
                 return (
                   <div
                     key={detail.id}
@@ -428,61 +591,154 @@ export function PatternCard({
                         ) : (
                           <ChevronRight className="size-4 text-slate-400" />
                         )}
-                        <span className="min-w-0 flex-1 text-sm text-slate-600">
-                          {formatBehaviorTitle(label)}
+                        <span className="min-w-0 flex-1">
+                          <span className="inline-flex items-center gap-1 text-sm text-slate-600">
+                            {formatBehaviorTitle(label)}
+                            {behaviorMeta && (
+                              <BehaviorInfoPopover
+                                behaviorLabel={behaviorMeta.replacement_title}
+                                align="end"
+                              >
+                                <button
+                                  type="button"
+                                  onClick={(event) => event.stopPropagation()}
+                                  className="rounded-full p-1 text-blue-500 hover:bg-blue-100"
+                                  aria-label={`${behaviorMeta.replacement_title} 설명 보기`}
+                                >
+                                  <Info className="size-4" />
+                                </button>
+                              </BehaviorInfoPopover>
+                            )}
+                          </span>
                         </span>
                       </button>
-                      <span
-                        className="text-slate-400"
-                        style={{ fontSize: "14px", lineHeight: "1" }}
-                      >
-                        {detail.createdAt
-                          ? new Date(detail.createdAt).toLocaleDateString(
-                              "ko-KR"
-                            )
-                          : ""}
-                      </span>
                     </div>
                     {detail.errorTags?.length ? (
                       <div className="mt-2 flex flex-wrap gap-4">
-                        {detail.errorTags.map((tag) => (
-                          <span
-                            key={`${detail.id}-${tag}`}
-                            className="inline-flex font-normal text-blue-700"
-                            style={{
-                              fontSize: "10px",
-                              lineHeight: "1",
-                              transform: "scale(1.2)",
-                              transformOrigin: "left center",
-                            }}
-                          >
-                            #{tag}
-                          </span>
-                        ))}
+                        {detail.errorTags.map((tag) => {
+                          const errorMeta = getCognitiveErrorMeta(tag);
+                          return errorMeta ? (
+                            <CognitiveErrorInfoPopover
+                              key={`${detail.id}-${tag}`}
+                              errorLabel={errorMeta.title}
+                              align="start"
+                              caption="태그 설명"
+                              tone="blue"
+                            >
+                              <button
+                                type="button"
+                                className="inline-flex font-normal text-blue-700 hover:text-blue-800"
+                                style={{
+                                  fontSize: "10px",
+                                  lineHeight: "1",
+                                  transform: "scale(1.2)",
+                                  transformOrigin: "left center",
+                                }}
+                                aria-label={`${errorMeta.title} 설명 보기`}
+                              >
+                                #{tag}
+                              </button>
+                            </CognitiveErrorInfoPopover>
+                          ) : (
+                            <span
+                              key={`${detail.id}-${tag}`}
+                              className="inline-flex font-normal text-blue-700"
+                              style={{
+                                fontSize: "10px",
+                                lineHeight: "1",
+                                transform: "scale(1.2)",
+                                transformOrigin: "left center",
+                              }}
+                            >
+                              #{tag}
+                            </span>
+                          );
+                        })}
                       </div>
                     ) : null}
                     {isExpanded && (
-                      <p className="mt-3 text-slate-800 text-sm whitespace-pre-wrap break-words">
-                        {detail.behaviorDescription ||
-                          detail.behaviorLabel ||
-                          "-"}
-                      </p>
+                      <>
+                        <p className="mt-3 text-sm text-slate-700 whitespace-pre-wrap break-words leading-relaxed">
+                          {detail.behaviorDescription ||
+                            detail.behaviorLabel ||
+                            "-"}
+                        </p>
+                        <PatternContentActions
+                          tone="blue"
+                          onCopy={() =>
+                            handleCopy(
+                              detail.behaviorDescription ||
+                                detail.behaviorLabel ||
+                                "-"
+                            )
+                          }
+                          onExpand={() =>
+                            setPreviewContent({
+                              title: "행동 반응",
+                              label: detail.behaviorLabel || undefined,
+                              content:
+                                detail.behaviorDescription ||
+                                detail.behaviorLabel ||
+                                "-",
+                              tone: "blue",
+                            })
+                          }
+                          onDelete={() =>
+                            onDeleteBehavior(pattern.id, detail.id)
+                          }
+                          deleting={Boolean(deletingBehaviors[detail.id])}
+                          copyLabel="복사"
+                          expandLabel="확대"
+                          deleteLabel="삭제"
+                        />
+                      </>
                     )}
                   </div>
                 );
               })}
             </div>
           ) : pattern.behavior ? (
-            <p className="text-sm text-slate-800 whitespace-pre-wrap">
-              {pattern.behavior}
-            </p>
+            <>
+              <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                {pattern.behavior}
+              </p>
+              <PatternContentActions
+                tone="blue"
+                onCopy={() => handleCopy(pattern.behavior || "-")}
+                onExpand={() =>
+                  setPreviewContent({
+                    title: "행동 반응",
+                    content: pattern.behavior || "-",
+                    tone: "blue",
+                  })
+                }
+                copyLabel="복사"
+                expandLabel="확대"
+              />
+            </>
           ) : (
-            <p className="text-sm text-blue-800 whitespace-pre-wrap">
+            <p className="text-sm text-blue-800 whitespace-pre-wrap leading-relaxed">
               아직 행동 반응이 저장되지 않았습니다.
             </p>
           )}
         </div>
       </div>
+
+      {previewContent ? (
+        <PatternPreviewDialog
+          open={Boolean(previewContent)}
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) {
+              setPreviewContent(null);
+            }
+          }}
+          tone={previewContent.tone ?? "slate"}
+          title={previewContent.title}
+          label={previewContent.label}
+          trigger={pattern.trigger || "-"}
+          content={previewContent.content}
+        />
+      ) : null}
     </Card>
   );
 }

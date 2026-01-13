@@ -15,10 +15,12 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "../../../lib/supabase/client";
 import { EMOTIONS } from "../../../constants/emotions";
+import { validateUserText } from "../../../utils/validation";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
+import { FeatureHeader } from "../common/FeatureHeader";
 
 interface PrayerNote {
   id: string;
@@ -191,8 +193,14 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
   };
 
   const handleCreate = async () => {
-    if (!title.trim() || !content.trim()) {
-      toast.error("제목과 내용을 입력해주세요.");
+    if (!title.trim()) {
+      toast.error("제목을 입력해주세요.");
+      return;
+    }
+
+    const validation = validateUserText(content);
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
 
@@ -553,23 +561,23 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
 
   return (
     <div className="max-w-[1400px] mx-auto px-8 py-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
-            <BookOpen className="size-8 text-purple-600" />
-            기도 노트
-          </h1>
-          <p className="text-slate-600">기도와 응답을 기록하세요.</p>
-        </div>
-        {!isCreating && (
-          <Button
-            onClick={() => setIsCreating(true)}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-          >
-            <Plus className="size-5 mr-2" />새 기도 노트
-          </Button>
-        )}
-      </div>
+      <FeatureHeader
+        overline="Prayer Notes"
+        title="기도 노트"
+        subtitle="기도와 응답을 기록하세요."
+        icon={BookOpen}
+        iconClassName="text-purple-600"
+        action={
+          !isCreating ? (
+            <Button
+              onClick={() => setIsCreating(true)}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              <Plus className="size-5 mr-2" />새 기도 노트
+            </Button>
+          ) : null
+        }
+      />
 
       {/* 작성/수정 폼 */}
       {isCreating && (

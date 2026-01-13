@@ -4,19 +4,38 @@ export type ValidationResult =
 
 export type ValidationCode =
   | "empty"
+  | "min-length"
   | "url"
   | "ad"
   | "repeat"
   | "hangul-ratio-poor"
   | "vowel-poor";
 
+interface ValidationOptions {
+  minLength?: number;
+  minLengthMessage?: string;
+}
+
 // Lightweight, local-only validation to catch noisy inputs without calling AI.
 // This is intentionally heuristic and conservative to avoid blocking real content.
-export function validateUserText(input: string): ValidationResult {
+export function validateUserText(
+  input: string,
+  options?: ValidationOptions
+): ValidationResult {
   const text = input.trim();
 
   if (!text) {
     return { ok: false, code: "empty", message: "내용을 입력해주세요." };
+  }
+
+  if (options?.minLength && text.length < options.minLength) {
+    return {
+      ok: false,
+      code: "min-length",
+      message:
+        options.minLengthMessage ??
+        `${options.minLength}자 이상 입력해주세요.`,
+    };
   }
 
   // 1) URL or obvious link-like patterns are treated as advertising.

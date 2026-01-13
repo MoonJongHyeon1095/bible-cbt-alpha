@@ -54,9 +54,6 @@ export function WebCompactNav({
               <div className="text-sm text-slate-900 truncate">
                 마음생각 다시 쓰기
               </div>
-              <div className="text-[11px] text-slate-500 truncate">
-                by 617ALLIANCE
-              </div>
             </div>
           </button>
 
@@ -73,7 +70,6 @@ export function WebCompactNav({
                 className="border-red-200 text-red-600 hover:bg-red-50"
               >
                 <LogOut className="size-4 mr-1.5" />
-                로그아웃
               </Button>
             ) : (
               <Button

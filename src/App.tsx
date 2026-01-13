@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
 import { DashboardPage } from "./components/feature/dashboard/DashboardPage";
-import { PatternsPage } from "./components/feature/emotion-note/PatternsPage";
+import { PatternsPage } from "./components/feature/emotion-note/components/PatternsPage";
 import { HelplinePage } from "./components/feature/HelplinePage";
 import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPage";
 import { ScriptureNotesPage } from "./components/feature/scripture-note/ScriptureNotesPage";
@@ -20,7 +20,7 @@ import type { User } from "@supabase/supabase-js";
 import type { CbtMode } from "./components/header/navigation/ModePicker";
 
 const CBT_MODE_STORAGE_KEY = "cbt-mode";
-const DEFAULT_MODE: CbtMode = { detailMode: "lite", toneMode: "christian" };
+const DEFAULT_MODE: CbtMode = { detailMode: "deep", toneMode: "christian" };
 
 const getIsDesktop = () =>
   typeof window !== "undefined" &&
@@ -134,7 +134,7 @@ export default function App() {
         return <PatternsPage user={user} />;
 
       case "helpline":
-        return <HelplinePage />;
+        return <HelplinePage mode={mode} />;
 
       default:
         return <CBTSessionPage mode={mode} user={user} />;

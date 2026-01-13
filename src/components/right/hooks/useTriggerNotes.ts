@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 import { formatAutoTitle } from "../../../utils/formatAutoTitle";
+import { validateUserText } from "../../../utils/validation";
 import type { Pattern } from "../../feature/emotion-note/types";
 import {
   createAlternativeAPI,
@@ -20,8 +21,6 @@ type TriggerNoteSummary = {
   title: string;
   trigger: string;
 };
-
-const MIN_TRIGGER_LENGTH = 10;
 
 type UseTriggerNotesParams = {
   user: User | null;
@@ -293,8 +292,12 @@ export function useTriggerNotes({
       toast.error("먼저 상황을 입력해주세요.");
       return;
     }
-    if (triggerText.length < MIN_TRIGGER_LENGTH) {
-      toast.error("상황을 10자 이상 입력해주세요.");
+    const validation = validateUserText(triggerText, {
+      minLength: 10,
+      minLengthMessage: "상황을 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
 
@@ -404,8 +407,12 @@ export function useTriggerNotes({
       toast.error("먼저 상황을 입력해주세요.");
       return;
     }
-    if (triggerText.length < MIN_TRIGGER_LENGTH) {
-      toast.error("상황을 10자 이상 입력해주세요.");
+    const validation = validateUserText(triggerText, {
+      minLength: 10,
+      minLengthMessage: "상황을 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
 

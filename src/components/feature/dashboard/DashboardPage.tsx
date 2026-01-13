@@ -27,6 +27,7 @@ import { normalizeSelectedCognitiveErrors } from "../../../lib/normalizeSelected
 import { supabase } from "../../../lib/supabase/client";
 import type { SessionHistory } from "../../../types/sessionHistory";
 import { Card } from "../../ui/card";
+import { FeatureHeader } from "../common/FeatureHeader";
 import { HistoryModal } from "./HistoryModal";
 
 export function DashboardPage({ user }: { user: User | null }) {
@@ -184,17 +185,13 @@ export function DashboardPage({ user }: { user: User | null }) {
 
   return (
     <div className="max-w-[1800px] mx-auto px-8 py-8">
-      <div className="mb-8">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
-              <LayoutDashboard className="size-8 text-purple-600" />
-              나의 감정 대시보드
-            </h1>
-            <p className="text-slate-600">
-              당신의 감정 여정을 한눈에 확인하세요.
-            </p>
-          </div>
+      <FeatureHeader
+        overline="Dashboard"
+        title="나의 감정 대시보드"
+        subtitle="당신의 감정 여정을 한눈에 확인하세요."
+        icon={LayoutDashboard}
+        iconClassName="text-purple-600"
+        action={
           <button
             type="button"
             onClick={() => setShowHistoryModal(true)}
@@ -203,8 +200,8 @@ export function DashboardPage({ user }: { user: User | null }) {
             <History className="mr-2 size-4" />
             세션 기록 보기
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* 통계 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

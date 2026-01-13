@@ -36,8 +36,6 @@ interface CenterPanelProps {
   onResumeCenterViewHandled?: () => void;
 }
 
-const MIN_TRIGGER_LENGTH = 10;
-
 function scrollToTop(containerRef: React.RefObject<HTMLDivElement | null>) {
   if (containerRef.current) containerRef.current.scrollTop = 0;
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -173,11 +171,10 @@ export function CenterPanel({
   };
 
   const handleStepOneNext = () => {
-    if (userInput.trim().length < MIN_TRIGGER_LENGTH) {
-      toast.error("상황을 10자 이상 입력해주세요.");
-      return;
-    }
-    const validation = validateUserText(userInput);
+    const validation = validateUserText(userInput, {
+      minLength: 10,
+      minLengthMessage: "상황을 10자 이상 입력해주세요.",
+    });
     if (!validation.ok) {
       toast.error(validation.message);
       return;
@@ -186,11 +183,10 @@ export function CenterPanel({
   };
 
   const handleTriggerPick = (note: EmotionNote) => {
-    if (note.trigger.trim().length < MIN_TRIGGER_LENGTH) {
-      toast.error("상황을 10자 이상 입력해주세요.");
-      return;
-    }
-    const validation = validateUserText(note.trigger);
+    const validation = validateUserText(note.trigger, {
+      minLength: 10,
+      minLengthMessage: "상황을 10자 이상 입력해주세요.",
+    });
     if (!validation.ok) {
       toast.error(validation.message);
       return;

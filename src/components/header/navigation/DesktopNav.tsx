@@ -43,7 +43,6 @@ export function DesktopNav({
           </div>
           <div>
             <h1 className="text-lg text-slate-900">마음생각 다시 쓰기</h1>
-            <p className="text-xs text-slate-500">by 617ALLIANCE</p>
           </div>
         </button>
 
@@ -92,7 +91,6 @@ export function DesktopNav({
                 className="border-red-200 text-red-600 hover:bg-red-50"
               >
                 <LogOut className="size-4 mr-1.5" />
-                로그아웃
               </Button>
             </>
           ) : (
