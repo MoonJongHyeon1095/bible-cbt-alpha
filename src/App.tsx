@@ -20,7 +20,7 @@ import type { User } from "@supabase/supabase-js";
 import type { CbtMode } from "./components/header/navigation/ModePicker";
 
 const CBT_MODE_STORAGE_KEY = "cbt-mode";
-const DEFAULT_MODE: CbtMode = { detailMode: "lite", toneMode: "christian" };
+const DEFAULT_MODE: CbtMode = { detailMode: "deep", toneMode: "christian" };
 
 const getIsDesktop = () =>
   typeof window !== "undefined" &&

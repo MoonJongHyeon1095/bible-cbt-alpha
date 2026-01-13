@@ -236,16 +236,30 @@ export function AuthModal({ open, onClose, onSuccess }: AuthModalProps) {
             Google로 계속하기
           </Button>
 
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="text-sm text-purple-600 hover:text-purple-700 underline"
-            >
-              {mode === "signin"
-                ? "계정이 없으신가요? 회원가입"
-                : "이미 계정이 있으신가요? 로그인"}
-            </button>
+          <div className="text-center text-sm text-slate-600">
+            {mode === "signin" ? (
+              <span>
+                계정이 없으신가요?{" "}
+                <button
+                  type="button"
+                  onClick={() => setMode("signup")}
+                  className="font-semibold text-purple-700 hover:text-purple-800"
+                >
+                  회원가입
+                </button>
+              </span>
+            ) : (
+              <span>
+                이미 계정이 있으신가요?{" "}
+                <button
+                  type="button"
+                  onClick={() => setMode("signin")}
+                  className="font-semibold text-purple-700 hover:text-purple-800"
+                >
+                  로그인
+                </button>
+              </span>
+            )}
           </div>
         </form>
       </DialogContent>
