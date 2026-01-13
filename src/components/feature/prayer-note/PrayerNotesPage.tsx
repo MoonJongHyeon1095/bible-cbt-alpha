@@ -93,6 +93,9 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
     return `${trimmed.slice(0, 20)}…`;
   };
 
+  const formatNoteTitle = (content: string) => content.trim();
+  const formatNoteSubtitle = (content: string) => content.trim();
+
   const selectedNote = openNoteId
     ? notes.find((note) => note.id === openNoteId) ?? null
     : null;
@@ -713,7 +716,16 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
                     ) : (
                       <ChevronRight className="size-4 text-slate-400" />
                     )}
-                    <h3 className="text-lg text-slate-900">{note.title}</h3>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-lg text-slate-900 truncate">
+                        {formatNoteTitle(note.title)}
+                      </h3>
+                      {!isOpen && (
+                        <p className="text-sm text-slate-500 truncate">
+                          {formatNoteSubtitle(note.content)}
+                        </p>
+                      )}
+                    </div>
                   </button>
                   <div className="flex gap-1">
                     <button
