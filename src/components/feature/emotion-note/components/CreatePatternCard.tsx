@@ -32,9 +32,7 @@ export function CreatePatternCard({
   return (
     <Card className="p-6 mb-6 bg-indigo-50 border-2 border-indigo-200">
       <div className="flex items-start justify-between mb-4 gap-4">
-        <h3 className="text-lg text-slate-900">
-          추가
-        </h3>
+        <h3 className="text-lg text-slate-900">감정노트 추가</h3>
         <div className="flex gap-2">
           <Button
             onClick={onSave}
