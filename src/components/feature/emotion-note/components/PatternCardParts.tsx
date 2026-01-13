@@ -1,4 +1,13 @@
-import { Copy, Edit2, Loader2, Maximize2, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Edit2,
+  Loader2,
+  Maximize2,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { Dialog, DialogContent, DialogTitle } from "../../../ui/dialog";
 
@@ -60,6 +69,9 @@ interface PatternSectionHeaderProps {
   onAdd?: () => void;
   editLabel?: string;
   addLabel?: string;
+  onToggle?: () => void;
+  isExpanded?: boolean;
+  count?: number;
 }
 
 export function PatternSectionHeader({
@@ -70,16 +82,46 @@ export function PatternSectionHeader({
   onAdd,
   editLabel,
   addLabel,
+  onToggle,
+  isExpanded,
+  count,
 }: PatternSectionHeaderProps) {
   const styles = toneStyles[tone];
+  const countLabel = typeof count === "number" ? `${count}개` : null;
   return (
     <div className="flex items-center justify-between">
-      <span
-        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${styles.badge}`}
-      >
-        {icon}
-        {title}
-      </span>
+      {onToggle ? (
+        <button
+          type="button"
+          onClick={onToggle}
+          className="inline-flex items-center gap-2 text-left"
+          aria-label={isExpanded ? `${title} 접기` : `${title} 펼치기`}
+        >
+          {isExpanded ? (
+            <ChevronDown className="size-4 text-slate-400" />
+          ) : (
+            <ChevronRight className="size-4 text-slate-400" />
+          )}
+          <span
+            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${styles.badge}`}
+          >
+            {icon}
+            {title}
+          </span>
+          {countLabel ? (
+            <span className="rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
+              {countLabel}
+            </span>
+          ) : null}
+        </button>
+      ) : (
+        <span
+          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${styles.badge}`}
+        >
+          {icon}
+          {title}
+        </span>
+      )}
       <div className="flex items-center gap-2">
         {onAdd ? (
           <button
@@ -134,29 +176,31 @@ export function PatternContentActions({
   }
 
   return (
-    <div className="mt-3 flex items-center justify-end gap-2">
-      {onCopy ? (
-        <button
-          type="button"
-          onClick={onCopy}
-          className={`inline-flex items-center gap-1 rounded-full border bg-white px-2.5 py-1 text-xs font-semibold ${styles.action}`}
-          aria-label={`${copyLabel} 복사`}
-        >
-          <Copy className="size-3.5" />
-          {copyLabel}
-        </button>
-      ) : null}
-      {onExpand ? (
-        <button
-          type="button"
-          onClick={onExpand}
-          className={`inline-flex items-center gap-1 rounded-full border bg-white px-2.5 py-1 text-xs font-semibold ${styles.action}`}
-          aria-label={`${expandLabel} 확대`}
-        >
-          <Maximize2 className="size-3.5" />
-          {expandLabel}
-        </button>
-      ) : null}
+    <div className="mt-3 flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        {onCopy ? (
+          <button
+            type="button"
+            onClick={onCopy}
+            className={`inline-flex items-center gap-1 rounded-full border bg-white px-2.5 py-1 text-xs font-semibold ${styles.action}`}
+            aria-label={`${copyLabel} 복사`}
+          >
+            <Copy className="size-3.5" />
+            {copyLabel}
+          </button>
+        ) : null}
+        {onExpand ? (
+          <button
+            type="button"
+            onClick={onExpand}
+            className={`inline-flex items-center gap-1 rounded-full border bg-white px-2.5 py-1 text-xs font-semibold ${styles.action}`}
+            aria-label={`${expandLabel} 확대`}
+          >
+            <Maximize2 className="size-3.5" />
+            {expandLabel}
+          </button>
+        ) : null}
+      </div>
       {onDelete ? (
         <button
           type="button"

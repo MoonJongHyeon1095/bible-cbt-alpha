@@ -21,6 +21,9 @@ import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import { FeatureHeader } from "../common/FeatureHeader";
+import { ScrollToTopButton } from "../common/ScrollToTopButton";
+import { SelectedSectionActions } from "../common/SelectedSectionActions";
+import { useAutoCloseOnScroll } from "../common/utils/useAutoCloseOnScroll";
 
 interface PrayerNote {
   id: string;
@@ -62,7 +65,9 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
   const [expandedResponses, setExpandedResponses] = useState<
     Record<string, boolean>
   >({});
+  const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const titleRef = useRef<HTMLInputElement | null>(null);
+  const openNoteRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     loadNotes();
@@ -87,6 +92,17 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
     if (trimmed.length <= 20) return trimmed;
     return `${trimmed.slice(0, 20)}…`;
   };
+
+  const selectedNote = openNoteId
+    ? notes.find((note) => note.id === openNoteId) ?? null
+    : null;
+  const showSelectedActions = Boolean(selectedNote) && !isCreating;
+
+  useAutoCloseOnScroll({
+    isOpen: Boolean(openNoteId),
+    targetRef: openNoteRef,
+    onClose: () => setOpenNoteId(null),
+  });
 
   const normalizeLocalNotes = (rawNotes: unknown[]): PrayerNote[] => {
     return rawNotes.map((note) => {
@@ -322,6 +338,9 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
   };
 
   const handleDelete = async (id: string) => {
+    if (openNoteId === id) {
+      setOpenNoteId(null);
+    }
     if (user) {
       try {
         setLoading(true);
@@ -567,16 +586,6 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
         subtitle="기도와 응답을 기록하세요."
         icon={BookOpen}
         iconClassName="text-purple-600"
-        action={
-          !isCreating ? (
-            <Button
-              onClick={() => setIsCreating(true)}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            >
-              <Plus className="size-5 mr-2" />새 기도 노트
-            </Button>
-          ) : null
-        }
       />
 
       {/* 작성/수정 폼 */}
@@ -676,24 +685,37 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
                 new Date(b.timestamp).getTime() -
                 new Date(a.timestamp).getTime()
             );
+            const isOpen = openNoteId === note.id;
 
             return (
-              <Card
+              <div
                 key={note.id}
-                className="p-5 hover:shadow-lg transition-shadow bg-white border-purple-100"
+                ref={isOpen ? openNoteRef : undefined}
               >
+                <Card
+                  className={`p-5 hover:shadow-lg transition-shadow bg-white border-purple-100 ${
+                    isOpen ? "ring-2 ring-purple-300 shadow-md" : ""
+                  }`}
+                >
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-lg text-slate-900 flex-1 mr-2">
-                    {note.title}
-                  </h3>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenNoteId((prev) =>
+                        prev === note.id ? null : note.id
+                      )
+                    }
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left mr-2"
+                    title={isOpen ? "기도 노트 접기" : "기도 노트 펼치기"}
+                  >
+                    {isOpen ? (
+                      <ChevronDown className="size-4 text-slate-400" />
+                    ) : (
+                      <ChevronRight className="size-4 text-slate-400" />
+                    )}
+                    <h3 className="text-lg text-slate-900">{note.title}</h3>
+                  </button>
                   <div className="flex gap-1">
-                    <button
-                      onClick={() => handleEdit(note)}
-                      className="text-purple-600 hover:text-purple-700 p-1"
-                      title="수정"
-                    >
-                      <Edit2 className="size-4" />
-                    </button>
                     <button
                       onClick={() => handleDelete(note.id)}
                       className="text-red-600 hover:text-red-700 p-1"
@@ -704,178 +726,218 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
                   </div>
                 </div>
 
-                <p className="text-slate-600 text-base mb-3 whitespace-pre-wrap leading-relaxed">
-                  {note.content}
-                </p>
-
-                {note.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {note.tags.map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="bg-slate-50 p-4 rounded-lg mb-3">
-                  <p className="text-sm text-slate-600 mb-3 flex items-center gap-2">
-                    <NotebookPen className="size-4 text-slate-500" />
-                    응답 기록
-                  </p>
-                  {responses.length === 0 ? (
-                    <p className="text-sm text-slate-400">
-                      아직 응답이 없습니다.
+                {isOpen && (
+                  <>
+                    <p className="text-slate-600 text-base mb-3 whitespace-pre-wrap leading-relaxed">
+                      {note.content}
                     </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {responses.map((response) => {
-                        const isEditing =
-                          editingResponseNoteId === note.id &&
-                          editingResponseId === response.id;
-                        const responseKey = `${note.id}-${response.id}`;
-                        const isExpanded = Boolean(
-                          expandedResponses[responseKey]
-                        );
 
-                        return (
-                          <div
-                            key={response.id}
-                            className="rounded-lg border border-slate-200 bg-white p-3"
+                    {note.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {note.tags.map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full"
                           >
-                            {isEditing ? (
-                              <div className="space-y-2">
-                                <Textarea
-                                  value={editingResponseContent}
-                                  onChange={(e) =>
-                                    setEditingResponseContent(
-                                      e.target.value
-                                    )
-                                  }
-                                  className="min-h-[120px] border-slate-200"
-                                />
-                                <div className="flex gap-2">
-                                  <Button
-                                    onClick={() =>
-                                      handleUpdateResponse(
-                                        note.id,
-                                        response.id
-                                      )
-                                    }
-                                    className="bg-purple-600 hover:bg-purple-700"
-                                  >
-                                    <Save className="size-4 mr-2" />
-                                    수정 완료
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    onClick={resetResponseEdit}
-                                  >
-                                    <X className="size-4 mr-2" />
-                                    취소
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div>
-                                <div className="flex items-start justify-between gap-3">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setExpandedResponses((prev) => ({
-                                        ...prev,
-                                        [responseKey]: !isExpanded,
-                                      }))
-                                    }
-                                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                                    title={isExpanded ? "응답 접기" : "응답 펼치기"}
-                                  >
-                                    {isExpanded ? (
-                                      <ChevronDown className="size-4 text-slate-400" />
-                                    ) : (
-                                      <ChevronRight className="size-4 text-slate-400" />
-                                    )}
-                                    <span className="min-w-0 flex-1 text-sm text-slate-500">
-                                      {formatResponseTitle(response.content)}
-                                    </span>
-                                  </button>
-                                  <div className="flex shrink-0 items-center gap-1">
-                                    <button
-                                      onClick={() => {
-                                        setEditingResponseNoteId(note.id);
-                                        setEditingResponseId(response.id);
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="bg-slate-50 p-4 rounded-lg mb-3">
+                      <p className="text-sm text-slate-600 mb-3 flex items-center gap-2">
+                        <NotebookPen className="size-4 text-slate-500" />
+                        응답 기록
+                      </p>
+                      {responses.length === 0 ? (
+                        <p className="text-sm text-slate-400">
+                          아직 응답이 없습니다.
+                        </p>
+                      ) : (
+                        <div className="space-y-3">
+                          {responses.map((response) => {
+                            const isEditing =
+                              editingResponseNoteId === note.id &&
+                              editingResponseId === response.id;
+                            const responseKey = `${note.id}-${response.id}`;
+                            const isExpanded = Boolean(
+                              expandedResponses[responseKey]
+                            );
+
+                            return (
+                              <div
+                                key={response.id}
+                                className="rounded-lg border border-slate-200 bg-white p-3"
+                              >
+                                {isEditing ? (
+                                  <div className="space-y-2">
+                                    <Textarea
+                                      value={editingResponseContent}
+                                      onChange={(e) =>
                                         setEditingResponseContent(
-                                          response.content
-                                        );
-                                      }}
-                                      className="text-purple-600 hover:text-purple-700 p-1"
-                                      title="응답 수정"
-                                    >
-                                      <Edit2 className="size-4" />
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleDeleteResponse(
-                                          note.id,
-                                          response.id
+                                          e.target.value
                                         )
                                       }
-                                      className="text-red-600 hover:text-red-700 p-1"
-                                      title="응답 삭제"
-                                    >
-                                      <Trash2 className="size-4" />
-                                    </button>
+                                      className="min-h-[120px] border-slate-200"
+                                    />
+                                    <div className="flex gap-2">
+                                      <Button
+                                        onClick={() =>
+                                          handleUpdateResponse(
+                                            note.id,
+                                            response.id
+                                          )
+                                        }
+                                        className="bg-purple-600 hover:bg-purple-700"
+                                      >
+                                        <Save className="size-4 mr-2" />
+                                        수정 완료
+                                      </Button>
+                                      <Button
+                                        variant="outline"
+                                        onClick={resetResponseEdit}
+                                      >
+                                        <X className="size-4 mr-2" />
+                                        취소
+                                      </Button>
+                                    </div>
                                   </div>
-                                </div>
-                                {isExpanded && (
-                                  <p className="mt-3 text-slate-700 text-base whitespace-pre-wrap break-words leading-relaxed">
-                                    {response.content}
-                                  </p>
+                                ) : (
+                                  <div>
+                                    <div className="flex items-start justify-between gap-3">
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setExpandedResponses((prev) => ({
+                                            ...prev,
+                                            [responseKey]: !isExpanded,
+                                          }))
+                                        }
+                                        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                                        title={
+                                          isExpanded ? "응답 접기" : "응답 펼치기"
+                                        }
+                                      >
+                                        {isExpanded ? (
+                                          <ChevronDown className="size-4 text-slate-400" />
+                                        ) : (
+                                          <ChevronRight className="size-4 text-slate-400" />
+                                        )}
+                                        <span className="min-w-0 flex-1 text-sm text-slate-500">
+                                          {formatResponseTitle(
+                                            response.content
+                                          )}
+                                        </span>
+                                      </button>
+                                      <div className="flex shrink-0 items-center gap-1">
+                                        <button
+                                          onClick={() => {
+                                            setEditingResponseNoteId(note.id);
+                                            setEditingResponseId(response.id);
+                                            setEditingResponseContent(
+                                              response.content
+                                            );
+                                          }}
+                                          className="text-purple-600 hover:text-purple-700 p-1"
+                                          title="응답 수정"
+                                        >
+                                          <Edit2 className="size-4" />
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            handleDeleteResponse(
+                                              note.id,
+                                              response.id
+                                            )
+                                          }
+                                          className="text-red-600 hover:text-red-700 p-1"
+                                          title="응답 삭제"
+                                        >
+                                          <Trash2 className="size-4" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                    {isExpanded && (
+                                      <p className="mt-3 text-slate-700 text-base whitespace-pre-wrap break-words leading-relaxed">
+                                        {response.content}
+                                      </p>
+                                    )}
+                                    <p className="text-xs text-slate-400 mt-2">
+                                      {formatDate(response.timestamp)}
+                                    </p>
+                                  </div>
                                 )}
-                                <p className="text-xs text-slate-400 mt-2">
-                                  {formatDate(response.timestamp)}
-                                </p>
                               </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      <div className="mt-4 space-y-2">
+                        <Textarea
+                          id={`prayer-response-${note.id}`}
+                          value={responseDrafts[note.id] ?? ""}
+                          onChange={(e) =>
+                            setResponseDrafts((prev) => ({
+                              ...prev,
+                              [note.id]: e.target.value,
+                            }))
+                          }
+                          placeholder="응답을 기록하세요..."
+                          className="min-h-[120px] border-slate-200"
+                        />
+                        <Button
+                          onClick={() => handleCreateResponse(note.id)}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          <Plus className="size-4 mr-2" />
+                          응답 추가
+                        </Button>
+                      </div>
                     </div>
-                  )}
 
-                  <div className="mt-4 space-y-2">
-                    <Textarea
-                      value={responseDrafts[note.id] ?? ""}
-                      onChange={(e) =>
-                        setResponseDrafts((prev) => ({
-                          ...prev,
-                          [note.id]: e.target.value,
-                        }))
-                      }
-                      placeholder="응답을 기록하세요..."
-                      className="min-h-[120px] border-slate-200"
-                    />
-                    <Button
-                      onClick={() => handleCreateResponse(note.id)}
-                      className="bg-purple-600 hover:bg-purple-700"
-                    >
-                      <Plus className="size-4 mr-2" />
-                      응답 추가
-                    </Button>
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-400">
-                  {formatDate(note.timestamp)}
-                </p>
-              </Card>
+                    <p className="text-xs text-slate-400">
+                      {formatDate(note.timestamp)}
+                    </p>
+                  </>
+                )}
+                </Card>
+              </div>
             );
           })}
         </div>
       )}
+      <SelectedSectionActions
+        hidden={!showSelectedActions}
+        theme="prayer"
+        addLabel="응답 추가"
+        onAdd={() => {
+          if (!selectedNote) return;
+          setOpenNoteId(selectedNote.id);
+          requestAnimationFrame(() => {
+            const el = document.getElementById(`prayer-response-${selectedNote.id}`);
+            if (el instanceof HTMLElement) {
+              el.focus();
+            }
+          });
+        }}
+        onEdit={() => {
+          if (!selectedNote) return;
+          setOpenNoteId(selectedNote.id);
+          handleEdit(selectedNote);
+        }}
+        addAriaLabel="선택 기도노트 응답 추가"
+        editAriaLabel="선택 기도노트 편집"
+      />
+
+      <ScrollToTopButton
+        hidden={Boolean(isCreating || openNoteId)}
+        showAction={!isCreating && !openNoteId}
+        actionLabel="새 기도노트 저장"
+        onActionClick={() => setIsCreating(true)}
+        actionClassName="bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
+      />
     </div>
   );
 }

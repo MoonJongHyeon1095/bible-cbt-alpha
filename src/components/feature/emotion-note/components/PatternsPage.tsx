@@ -1,5 +1,5 @@
 import type { User } from "@supabase/supabase-js";
-import { ChevronUp, HeartPulse, Plus, Sparkles } from "lucide-react";
+import { HeartPulse, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../../../ui/button";
@@ -27,6 +27,8 @@ import { PatternErrorAddSection } from "./edit/PatternErrorAddSection";
 import { PatternErrorSection } from "./edit/PatternErrorSection";
 import { PatternTriggerSection } from "./edit/PatternTriggerSection";
 import { FeatureHeader } from "../../common/FeatureHeader";
+import { ScrollToTopButton } from "../../common/ScrollToTopButton";
+import { SelectedSectionActions } from "../../common/SelectedSectionActions";
 
 interface PatternsPageProps {
   user: User | null;
@@ -58,6 +60,10 @@ export function PatternsPage({ user }: PatternsPageProps) {
     incrementFrequency,
     decrementFrequency,
   } = usePatternsData({ user });
+  const [maxTitleLength, setMaxTitleLength] = useState(() => {
+    if (typeof window === "undefined") return 20;
+    return window.matchMedia("(min-width: 768px)").matches ? 20 : 15;
+  });
   const {
     isCreating,
     editingId,
@@ -131,30 +137,60 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const [savingAlternativeAdd, setSavingAlternativeAdd] = useState(false);
   const [savingErrorAdd, setSavingErrorAdd] = useState(false);
   const [savingBehaviorAdd, setSavingBehaviorAdd] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [openOuterSection, setOpenOuterSection] = useState<{
+    patternId: string;
+    section: "details" | "errors" | "alternatives" | "behaviors";
+  } | null>(null);
+  const selectedPattern = openOuterSection
+    ? patterns.find((item) => item.id === openOuterSection.patternId) ?? null
+    : null;
+  const showSelectedActions =
+    Boolean(selectedPattern) && !isCreating && !activeEditor;
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const updateLength = () => {
+      setMaxTitleLength(media.matches ? 20 : 15);
+    };
+
+    updateLength();
+    if (media.addEventListener) {
+      media.addEventListener("change", updateLength);
+    } else {
+      media.addListener(updateLength);
+    }
+
+    return () => {
+      if (media.removeEventListener) {
+        media.removeEventListener("change", updateLength);
+      } else {
+        media.removeListener(updateLength);
+      }
+    };
+  }, []);
 
   const formatThoughtTitle = (content: string) => {
     const trimmed = content.trim();
-    if (trimmed.length <= 20) return trimmed;
-    return `${trimmed.slice(0, 20)}…`;
+    if (trimmed.length <= maxTitleLength) return trimmed;
+    return `${trimmed.slice(0, maxTitleLength)}…`;
   };
 
   const formatAlternativeTitle = (content: string) => {
     const trimmed = content.trim();
-    if (trimmed.length <= 20) return trimmed;
-    return `${trimmed.slice(0, 20)}…`;
+    if (trimmed.length <= maxTitleLength) return trimmed;
+    return `${trimmed.slice(0, maxTitleLength)}…`;
   };
 
   const formatErrorTitle = (content: string) => {
     const trimmed = content.trim();
-    if (trimmed.length <= 20) return trimmed;
-    return `${trimmed.slice(0, 20)}…`;
+    if (trimmed.length <= maxTitleLength) return trimmed;
+    return `${trimmed.slice(0, maxTitleLength)}…`;
   };
 
   const formatBehaviorTitle = (content: string) => {
     const trimmed = content.trim();
-    if (trimmed.length <= 20) return trimmed;
-    return `${trimmed.slice(0, 20)}…`;
+    if (trimmed.length <= maxTitleLength) return trimmed;
+    return `${trimmed.slice(0, maxTitleLength)}…`;
   };
 
   const formatDate = (timestamp: string) => {
@@ -172,6 +208,13 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const mostFrequentPattern = [...patterns].sort(
     (a: Pattern, b: Pattern) => b.frequency - a.frequency
   )[0];
+
+  const handleDeletePattern = (patternId: string) => {
+    if (openOuterSection?.patternId === patternId) {
+      setOpenOuterSection(null);
+    }
+    deletePattern(patternId);
+  };
 
   const handleCreate = async () => {
     if (!title.trim()) {
@@ -485,15 +528,6 @@ export function PatternsPage({ user }: PatternsPageProps) {
     ? patterns.find((pattern) => pattern.id === activeEditor.patternId) ?? null
     : null;
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 400);
-    };
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <div className="max-w-[1400px] mx-auto px-8 py-8">
       <FeatureHeader
@@ -566,18 +600,6 @@ export function PatternsPage({ user }: PatternsPageProps) {
         </Card>
       )}
 
-      {!isCreating && (
-        <div className="flex justify-center mb-6">
-          <Button
-            onClick={startCreate}
-            className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-          >
-            <Plus className="size-5 mr-2" />
-            추가
-          </Button>
-        </div>
-      )}
-
       {loading ? (
         <Card className="p-12 text-center">
           <HeartPulse className="size-16 text-slate-300 mx-auto mb-4 animate-pulse" />
@@ -635,7 +657,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
                 openEditor("behaviors-add", pattern)
               }
               onRequestDelete={requestDelete}
-              onConfirmDelete={deletePattern}
+              onConfirmDelete={handleDeletePattern}
               onCancelDelete={cancelDelete}
               onDeleteDetail={handleDetailDeleteFromCard}
               onDeleteAlternative={handleAlternativeDeleteFromCard}
@@ -645,6 +667,22 @@ export function PatternsPage({ user }: PatternsPageProps) {
               deletingAlternatives={deletingAlternatives}
               deletingErrors={deletingErrors}
               deletingBehaviors={deletingBehaviors}
+              openOuterSection={
+                openOuterSection?.patternId === pattern.id
+                  ? openOuterSection.section
+                  : null
+              }
+              onToggleOuterSection={(section) => {
+                setOpenOuterSection((prev) => {
+                  if (
+                    prev?.patternId === pattern.id &&
+                    prev.section === section
+                  ) {
+                    return null;
+                  }
+                  return { patternId: pattern.id, section };
+                });
+              }}
             />
           ))}
         </div>
@@ -842,22 +880,54 @@ export function PatternsPage({ user }: PatternsPageProps) {
         )}
       </PatternEditModal>
 
-      <Button
-        type="button"
-        size="icon"
-        aria-label="맨 위로 이동"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className={[
-          "fixed z-40 rounded-full bg-indigo-600 text-white shadow-lg",
-          "right-5 md:right-8 bottom-[calc(env(safe-area-inset-bottom)+20px)] md:bottom-8",
-          "transition-all duration-300",
-          showScrollTop
-            ? "opacity-100 translate-y-0"
-            : "pointer-events-none opacity-0 translate-y-4",
-        ].join(" ")}
-      >
-        <ChevronUp className="size-5" />
-      </Button>
+      <SelectedSectionActions
+        hidden={!showSelectedActions}
+        theme={openOuterSection?.section ?? "details"}
+        onAdd={() => {
+          if (!openOuterSection || !selectedPattern) return;
+          switch (openOuterSection.section) {
+            case "details":
+              openEditor("details-add", selectedPattern);
+              return;
+            case "errors":
+              openEditor("errors-add", selectedPattern);
+              return;
+            case "alternatives":
+              openEditor("alternatives-add", selectedPattern);
+              return;
+            case "behaviors":
+              openEditor("behaviors-add", selectedPattern);
+              return;
+          }
+        }}
+        onEdit={() => {
+          if (!openOuterSection || !selectedPattern) return;
+          switch (openOuterSection.section) {
+            case "details":
+              openEditor("details-edit", selectedPattern);
+              return;
+            case "errors":
+              openEditor("errors-edit", selectedPattern);
+              return;
+            case "alternatives":
+              openEditor("alternatives-edit", selectedPattern);
+              return;
+            case "behaviors":
+              openEditor("behaviors-edit", selectedPattern);
+              return;
+          }
+        }}
+        addAriaLabel="선택 섹션 추가"
+        editAriaLabel="선택 섹션 편집"
+      />
+
+      <ScrollToTopButton
+        hidden={Boolean(isCreating || activeEditor || openOuterSection)}
+        showAction={!isCreating && !activeEditor && !openOuterSection}
+        actionLabel="새 감정노트 저장"
+        onActionClick={startCreate}
+        actionClassName="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+      />
     </div>
   );
 }

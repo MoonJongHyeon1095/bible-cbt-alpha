@@ -1,9 +1,9 @@
 import { Brain, Info, Loader2, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { validateUserText } from "../../../../utils/validation";
 import { Button } from "../../../ui/button";
 import { Textarea } from "../../../ui/textarea";
-import { validateUserText } from "../../../../utils/validation";
 import type { PatternDetail } from "../types";
 import { EmotionInfoPopover, getEmotionMeta } from "./info-popovers";
 
@@ -110,7 +110,7 @@ export function PatternDetailsCard({
           배후의 자동 사고
         </div>
         <p className="mt-2 text-sm text-amber-800">
-          아직 배후의 자동 사고가 없습니다.
+          아직 자동 사고가 없습니다.
         </p>
       </div>
     );
