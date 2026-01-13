@@ -1,9 +1,13 @@
-import { AlertCircle, Loader2, Save, Trash2 } from "lucide-react";
+import { AlertCircle, Info, Loader2, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../../ui/button";
-import { Textarea } from "../../ui/textarea";
-import type { PatternErrorDetail } from "./types";
+import { Button } from "../../../ui/button";
+import { Textarea } from "../../../ui/textarea";
+import type { PatternErrorDetail } from "../types";
+import {
+  CognitiveErrorInfoPopover,
+  getCognitiveErrorMeta,
+} from "./info-popovers";
 
 type ErrorEditor = PatternErrorDetail;
 
@@ -23,12 +27,14 @@ export function PatternErrorDetailsCard({
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    setEditing(
-      Object.fromEntries(errorDetails.map((e) => [e.id, { ...e }]))
-    );
+    setEditing(Object.fromEntries(errorDetails.map((e) => [e.id, { ...e }])));
   }, [errorDetails]);
 
-  const handleChange = (id: string, field: keyof ErrorEditor, value: string) => {
+  const handleChange = (
+    id: string,
+    field: keyof ErrorEditor,
+    value: string
+  ) => {
     setEditing((prev) => ({
       ...prev,
       [id]: {
@@ -115,7 +121,7 @@ export function PatternErrorDetailsCard({
             className="rounded-xl border border-rose-200 bg-rose-50 p-4 shadow-sm"
           >
             <div className="flex items-center justify-between mb-2">
-              <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-900">
+              <div className="inline-flex items-center gap-1 text-sm font-semibold text-rose-900">
                 <AlertCircle className="size-3" />
                 인지오류 #{idx + 1}
               </div>
@@ -149,15 +155,31 @@ export function PatternErrorDetailsCard({
             </div>
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold text-rose-900">
-                {current.errorLabel || "인지오류"}
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold text-rose-900">
+                  {current.errorLabel || "인지오류"}
+                </div>
+                {getCognitiveErrorMeta(current.errorLabel) && (
+                  <CognitiveErrorInfoPopover
+                    errorLabel={current.errorLabel}
+                    align="end"
+                  >
+                    <button
+                      type="button"
+                      className="rounded-full p-1 text-rose-500 hover:bg-rose-100"
+                      aria-label={`${current.errorLabel} 설명 보기`}
+                    >
+                      <Info className="size-4" />
+                    </button>
+                  </CognitiveErrorInfoPopover>
+                )}
               </div>
               <Textarea
                 value={current.errorDescription}
                 onChange={(e) =>
                   handleChange(detail.id, "errorDescription", e.target.value)
                 }
-                className="min-h-[80px] border-rose-200 bg-white/90"
+                className="min-h-[120px] border-rose-200 bg-white/95 px-3 py-2 text-[16px] leading-[1.85]"
                 placeholder="인지오류 설명"
               />
             </div>

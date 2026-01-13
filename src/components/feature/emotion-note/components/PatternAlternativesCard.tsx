@@ -1,9 +1,9 @@
 import { Lightbulb, Loader2, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../../ui/button";
-import { Textarea } from "../../ui/textarea";
-import type { PatternAlternative } from "./types";
+import { Button } from "../../../ui/button";
+import { Textarea } from "../../../ui/textarea";
+import type { PatternAlternative } from "../types";
 
 interface PatternAlternativesCardProps {
   alternatives: PatternAlternative[];
@@ -16,24 +16,29 @@ export function PatternAlternativesCard({
   onUpdateAlternative,
   onDeleteAlternative,
 }: PatternAlternativesCardProps) {
-  const [editing, setEditing] = useState<Record<string, PatternAlternative>>({});
+  const [editing, setEditing] = useState<Record<string, PatternAlternative>>(
+    {}
+  );
   const [savingId, setSavingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
-    setEditing(Object.fromEntries(alternatives.map((alt) => [alt.id, { ...alt }])));
+    setEditing(
+      Object.fromEntries(alternatives.map((alt) => [alt.id, { ...alt }]))
+    );
   }, [alternatives]);
 
   const handleChange = (id: string, value: string) => {
     setEditing((prev) => ({
       ...prev,
       [id]: {
-        ...(prev[id] ?? alternatives.find((a) => a.id === id) ?? {
-          id,
-          noteId: "",
-          alternative: "",
-          createdAt: "",
-        }),
+        ...(prev[id] ??
+          alternatives.find((a) => a.id === id) ?? {
+            id,
+            noteId: "",
+            alternative: "",
+            createdAt: "",
+          }),
         alternative: value,
       },
     }));
@@ -102,48 +107,48 @@ export function PatternAlternativesCard({
       {alternatives.map((alt, idx) => {
         const current = editing[alt.id] ?? alt;
         return (
-        <div
-          key={alt.id}
-          className="rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-900">
-              <Lightbulb className="size-3" />
-              저장된 대안사고 #{idx + 1}
-            </div>
-            <div className="flex gap-2">
-              {hasChanges(alt.id) && (
+          <div
+            key={alt.id}
+            className="rounded-xl border border-green-200 bg-green-50 p-4 shadow-sm"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="inline-flex items-center gap-1 text-sm font-semibold text-green-900">
+                <Lightbulb className="size-3" />
+                대안사고 #{idx + 1}
+              </div>
+              <div className="flex gap-2">
+                {hasChanges(alt.id) && (
+                  <Button
+                    size="sm"
+                    onClick={() => handleSave(alt.id)}
+                    disabled={savingId === alt.id}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="size-4 mr-1" />
+                    저장
+                  </Button>
+                )}
                 <Button
                   size="sm"
-                  onClick={() => handleSave(alt.id)}
-                  disabled={savingId === alt.id}
-                  className="bg-green-600 hover:bg-green-700"
+                  variant="outline"
+                  onClick={() => handleDelete(alt.id)}
+                  disabled={deletingId === alt.id}
+                  className="text-red-600 hover:bg-red-50"
                 >
-                  <Save className="size-4 mr-1" />
-                  저장
+                  {deletingId === alt.id ? (
+                    <Loader2 className="size-4 mr-1 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-4 mr-1" />
+                  )}
+                  삭제
                 </Button>
-              )}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleDelete(alt.id)}
-                disabled={deletingId === alt.id}
-                className="text-red-600 hover:bg-red-50"
-              >
-                {deletingId === alt.id ? (
-                  <Loader2 className="size-4 mr-1 animate-spin" />
-                ) : (
-                  <Trash2 className="size-4 mr-1" />
-                )}
-                삭제
-              </Button>
+              </div>
             </div>
-          </div>
 
             <Textarea
               value={current.alternative}
               onChange={(e) => handleChange(alt.id, e.target.value)}
-              className="min-h-[80px] border-green-200"
+              className="min-h-[120px] border-green-200 bg-white/95 px-3 py-2 text-[16px] leading-[1.85]"
               placeholder="대안적 사고"
             />
           </div>

@@ -1,9 +1,15 @@
-import { Footprints, Loader2, Save, Trash2 } from "lucide-react";
+import { Footprints, Info, Loader2, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../../ui/button";
-import { Textarea } from "../../ui/textarea";
-import type { PatternBehaviorDetail } from "./types";
+import { Button } from "../../../ui/button";
+import { Textarea } from "../../../ui/textarea";
+import type { PatternBehaviorDetail } from "../types";
+import {
+  BehaviorInfoPopover,
+  CognitiveErrorInfoPopover,
+  getBehaviorMeta,
+  getCognitiveErrorMeta,
+} from "./info-popovers";
 
 type BehaviorEditor = PatternBehaviorDetail;
 
@@ -24,9 +30,7 @@ export function PatternBehaviorDetailsCard({
 
   useEffect(() => {
     setEditing(
-      Object.fromEntries(
-        behaviorDetails.map((b) => [b.id, { ...b }])
-      )
+      Object.fromEntries(behaviorDetails.map((b) => [b.id, { ...b }]))
     );
   }, [behaviorDetails]);
 
@@ -131,7 +135,7 @@ export function PatternBehaviorDetailsCard({
             className="rounded-xl border border-blue-200 bg-blue-50 p-4 shadow-sm"
           >
             <div className="flex items-center justify-between mb-2">
-              <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-900">
+              <div className="inline-flex items-center gap-1 text-sm font-semibold text-blue-900">
                 <Footprints className="size-3" />
                 행동 반응 #{idx + 1}
               </div>
@@ -165,19 +169,54 @@ export function PatternBehaviorDetailsCard({
             </div>
 
             <div className="space-y-2">
-              <div className="text-[10px] font-semibold text-blue-900">
-                {current.behaviorLabel || "행동 반응"}
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold text-blue-900">
+                  {current.behaviorLabel || "행동 반응"}
+                </div>
+                {getBehaviorMeta(current.behaviorLabel) && (
+                  <BehaviorInfoPopover
+                    behaviorLabel={current.behaviorLabel}
+                    align="end"
+                  >
+                    <button
+                      type="button"
+                      className="rounded-full p-1 text-blue-500 hover:bg-blue-100"
+                      aria-label={`${current.behaviorLabel} 설명 보기`}
+                    >
+                      <Info className="size-4" />
+                    </button>
+                  </BehaviorInfoPopover>
+                )}
               </div>
               {current.errorTags?.length ? (
                 <div className="flex flex-wrap gap-2 text-[11px] text-blue-700">
-                  {current.errorTags.map((tag) => (
-                    <span
-                      key={`${detail.id}-${tag}`}
-                      className="rounded-full bg-blue-100 px-2 py-0.5"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
+                  {current.errorTags.map((tag) => {
+                    const errorMeta = getCognitiveErrorMeta(tag);
+                    return errorMeta ? (
+                      <CognitiveErrorInfoPopover
+                        key={`${detail.id}-${tag}`}
+                        errorLabel={errorMeta.title}
+                        align="start"
+                        caption="태그 설명"
+                        tone="blue"
+                      >
+                        <button
+                          type="button"
+                          className="rounded-full bg-blue-100 px-2 py-0.5 hover:bg-blue-200"
+                          aria-label={`${errorMeta.title} 설명 보기`}
+                        >
+                          #{tag}
+                        </button>
+                      </CognitiveErrorInfoPopover>
+                    ) : (
+                      <span
+                        key={`${detail.id}-${tag}`}
+                        className="rounded-full bg-blue-100 px-2 py-0.5"
+                      >
+                        #{tag}
+                      </span>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-xs text-blue-700">인지오류 태그 없음</p>
@@ -187,7 +226,7 @@ export function PatternBehaviorDetailsCard({
                 onChange={(e) =>
                   handleChange(detail.id, "behaviorDescription", e.target.value)
                 }
-                className="min-h-[80px] border-blue-200 bg-white/90"
+                className="min-h-[120px] border-blue-200 bg-white/95 px-3 py-2 text-[16px] leading-[1.85]"
                 placeholder="행동 반응 설명"
               />
             </div>

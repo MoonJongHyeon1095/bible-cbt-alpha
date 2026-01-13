@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
 import { DashboardPage } from "./components/feature/dashboard/DashboardPage";
-import { PatternsPage } from "./components/feature/emotion-note/PatternsPage";
+import { PatternsPage } from "./components/feature/emotion-note/components/PatternsPage";
 import { HelplinePage } from "./components/feature/HelplinePage";
 import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPage";
 import { ScriptureNotesPage } from "./components/feature/scripture-note/ScriptureNotesPage";

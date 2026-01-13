@@ -1,9 +1,10 @@
-import { Brain, Loader2, Save, Trash2 } from "lucide-react";
+import { Brain, Info, Loader2, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../../ui/button";
-import { Textarea } from "../../ui/textarea";
-import type { PatternDetail } from "./types";
+import { Button } from "../../../ui/button";
+import { Textarea } from "../../../ui/textarea";
+import type { PatternDetail } from "../types";
+import { EmotionInfoPopover, getEmotionMeta } from "./info-popovers";
 
 type DetailEditor = PatternDetail;
 
@@ -116,7 +117,7 @@ export function PatternDetailsCard({
             className="rounded-xl border border-amber-200 bg-amber-50 p-4 shadow-sm"
           >
             <div className="flex items-center justify-between mb-2">
-              <div className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-1 text-[11px] font-semibold text-amber-900">
+              <div className="inline-flex items-center gap-1 text-sm font-semibold text-amber-900">
                 <Brain className="size-3" />
                 배후의 자동 사고 #{idx + 1}
               </div>
@@ -150,10 +151,24 @@ export function PatternDetailsCard({
             </div>
 
             <div className="space-y-2">
-              <div>
+              <div className="flex items-center gap-2">
                 <span className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
                   {current.emotion || "-"}
                 </span>
+                {getEmotionMeta(current.emotion) && (
+                  <EmotionInfoPopover
+                    emotionLabel={current.emotion}
+                    align="start"
+                  >
+                    <button
+                      type="button"
+                      className="rounded-full p-1 text-blue-500 hover:bg-blue-100"
+                      aria-label={`${current.emotion} 설명 보기`}
+                    >
+                      <Info className="size-4" />
+                    </button>
+                  </EmotionInfoPopover>
+                )}
               </div>
 
               <Textarea
@@ -161,7 +176,7 @@ export function PatternDetailsCard({
                 onChange={(e) =>
                   handleChange(detail.id, "automaticThought", e.target.value)
                 }
-                className="min-h-[80px] border-amber-200 bg-white/90"
+                className="min-h-[120px] border-amber-200 bg-white/95 px-3 py-2 text-[16px] leading-[1.85]"
                 placeholder="배후의 자동 사고"
               />
             </div>
