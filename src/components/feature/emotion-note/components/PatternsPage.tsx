@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../../../ui/button";
 import { Card } from "../../../ui/card";
+import { validateUserText } from "../../../../utils/validation";
 import { usePatternForm } from "../hooks/usePatternForm";
 import { usePatternsData } from "../hooks/usePatternsData";
 import type {
@@ -172,6 +173,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
   )[0];
 
   const handleCreate = async () => {
+    if (!title.trim()) {
+      toast.error("감정패턴 제목을 입력해주세요.");
+      return;
+    }
+    const validation = validateUserText(trigger, {
+      minLength: 10,
+      minLengthMessage: "상황을 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
+      return;
+    }
     const ok = await createPattern({ title, trigger, behavior });
     if (ok) resetForm();
   };
@@ -179,6 +192,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const handleAddDetail = async () => {
     if (!editingId) {
       toast.error("먼저 노트를 선택하거나 저장해주세요.");
+      return;
+    }
+    if (!automaticThought.trim()) {
+      toast.error("자동사고를 입력해주세요.");
+      return;
+    }
+    const validation = validateUserText(automaticThought, {
+      minLength: 10,
+      minLengthMessage: "자동사고를 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
     setSavingDetailAdd(true);
@@ -200,6 +225,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const handleAddAlternative = async () => {
     if (!editingId) {
       toast.error("먼저 노트를 선택하거나 저장해주세요.");
+      return;
+    }
+    if (!alternativeText.trim()) {
+      toast.error("대안적 사고를 입력해주세요.");
+      return;
+    }
+    const validation = validateUserText(alternativeText, {
+      minLength: 10,
+      minLengthMessage: "대안적 사고를 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
     setSavingAlternativeAdd(true);
@@ -242,6 +279,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
       toast.error("먼저 노트를 선택하거나 저장해주세요.");
       return;
     }
+    if (!errorDescription.trim()) {
+      toast.error("인지오류 설명을 입력해주세요.");
+      return;
+    }
+    const validation = validateUserText(errorDescription, {
+      minLength: 10,
+      minLengthMessage: "인지오류 설명을 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
+      return;
+    }
     setSavingErrorAdd(true);
     try {
       const ok = await addErrorDetail({
@@ -270,6 +319,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
   const handleAddBehavior = async () => {
     if (!editingId) {
       toast.error("먼저 노트를 선택하거나 저장해주세요.");
+      return;
+    }
+    if (!behaviorDescription.trim()) {
+      toast.error("행동 반응 설명을 입력해주세요.");
+      return;
+    }
+    const validation = validateUserText(behaviorDescription, {
+      minLength: 10,
+      minLengthMessage: "행동 반응 설명을 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
     setSavingBehaviorAdd(true);
@@ -326,6 +387,18 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
   const handleTriggerSave = async () => {
     if (!editingId) return;
+    if (!title.trim()) {
+      toast.error("감정패턴 제목을 입력해주세요.");
+      return;
+    }
+    const validation = validateUserText(trigger, {
+      minLength: 10,
+      minLengthMessage: "상황을 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
+      return;
+    }
     setSavingTrigger(true);
     try {
       const ok = await updatePattern({
@@ -434,17 +507,26 @@ export function PatternsPage({ user }: PatternsPageProps) {
         </div>
       </div>
 
-      <CreatePatternCard
-        isCreating={isCreating}
-        title={title}
-        trigger={trigger}
-        loading={loading}
-        titleRef={titleRef}
-        onChangeTitle={setTitle}
-        onChangeTrigger={setTrigger}
-        onSave={handleCreate}
-        onCancel={resetForm}
-      />
+      <PatternEditModal
+        open={isCreating}
+        title="감정노트 추가"
+        chromeless
+        hideClose
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) resetForm();
+        }}
+      >
+        <CreatePatternCard
+          title={title}
+          trigger={trigger}
+          loading={loading}
+          titleRef={titleRef}
+          onChangeTitle={setTitle}
+          onChangeTrigger={setTrigger}
+          onSave={handleCreate}
+          onCancel={resetForm}
+        />
+      </PatternEditModal>
 
       {patterns.length > 0 && (
         <Card className="p-6 mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">

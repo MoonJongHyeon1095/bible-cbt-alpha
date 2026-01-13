@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../../../ui/button";
 import { Textarea } from "../../../ui/textarea";
+import { validateUserText } from "../../../../utils/validation";
 import type { PatternDetail } from "../types";
 import { EmotionInfoPopover, getEmotionMeta } from "./info-popovers";
 
@@ -52,6 +53,14 @@ export function PatternDetailsCard({
     if (!detail) return;
     if (!detail.automaticThought.trim()) {
       toast.error("자동사고를 입력해주세요.");
+      return;
+    }
+    const validation = validateUserText(detail.automaticThought, {
+      minLength: 10,
+      minLengthMessage: "자동사고를 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
     setSavingId(id);

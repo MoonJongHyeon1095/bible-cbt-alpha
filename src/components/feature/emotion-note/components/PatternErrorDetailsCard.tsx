@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../../../ui/button";
 import { Textarea } from "../../../ui/textarea";
+import { validateUserText } from "../../../../utils/validation";
 import type { PatternErrorDetail } from "../types";
 import {
   CognitiveErrorInfoPopover,
@@ -56,6 +57,18 @@ export function PatternErrorDetailsCard({
     if (!detail) return;
     if (!detail.errorLabel.trim() && !detail.errorDescription.trim()) {
       toast.error("인지오류 내용을 입력해주세요.");
+      return;
+    }
+    if (!detail.errorDescription.trim()) {
+      toast.error("인지오류 설명을 입력해주세요.");
+      return;
+    }
+    const validation = validateUserText(detail.errorDescription, {
+      minLength: 10,
+      minLengthMessage: "인지오류 설명을 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
     setSavingId(id);

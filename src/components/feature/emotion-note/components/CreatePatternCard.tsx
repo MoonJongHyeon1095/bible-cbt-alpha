@@ -1,11 +1,10 @@
 import { AlertCircle, Save, X } from "lucide-react";
 import { Button } from "../../../ui/button";
-import { Card } from "../../../ui/card";
+import { DialogClose } from "../../../ui/dialog";
 import { Input } from "../../../ui/input";
 import { Textarea } from "../../../ui/textarea";
 
 interface CreatePatternCardProps {
-  isCreating: boolean;
   title: string;
   trigger: string;
   loading: boolean;
@@ -17,7 +16,6 @@ interface CreatePatternCardProps {
 }
 
 export function CreatePatternCard({
-  isCreating,
   title,
   trigger,
   loading,
@@ -27,13 +25,26 @@ export function CreatePatternCard({
   onSave,
   onCancel,
 }: CreatePatternCardProps) {
-  if (!isCreating) return null;
-
   return (
-    <Card className="p-6 mb-6 bg-indigo-50 border-2 border-indigo-200">
-      <div className="flex items-start justify-between mb-4 gap-4">
-        <h3 className="text-lg text-slate-900">감정노트 추가</h3>
-        <div className="flex gap-2">
+    <div className="border border-indigo-200 rounded-xl bg-white shadow-sm">
+      <div className="border-b border-indigo-200 px-4 py-3 text-sm font-semibold text-slate-800 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <AlertCircle className="size-4" />
+          감정노트 추가
+        </div>
+        <DialogClose asChild>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-full border border-indigo-200 bg-white p-2 text-indigo-700 transition hover:bg-indigo-50"
+            aria-label="닫기"
+          >
+            <X className="size-4" />
+          </button>
+        </DialogClose>
+      </div>
+      <div className="p-5 space-y-4 bg-indigo-50/70">
+        <div className="flex items-center justify-end">
           <Button
             onClick={onSave}
             disabled={loading}
@@ -42,13 +53,7 @@ export function CreatePatternCard({
             <Save className="size-4 mr-2" />
             저장
           </Button>
-          <Button onClick={onCancel} variant="outline">
-            <X className="size-4 mr-2" />
-            취소
-          </Button>
         </div>
-      </div>
-      <div className="space-y-4">
         <div>
           <label className="text-sm text-slate-700 mb-2 block flex items-center gap-2">
             <AlertCircle className="size-4" />
@@ -76,6 +81,6 @@ export function CreatePatternCard({
           />
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

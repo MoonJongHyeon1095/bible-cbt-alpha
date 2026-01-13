@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../../../ui/button";
 import { Textarea } from "../../../ui/textarea";
+import { validateUserText } from "../../../../utils/validation";
 import type { PatternAlternative } from "../types";
 
 interface PatternAlternativesCardProps {
@@ -49,6 +50,14 @@ export function PatternAlternativesCard({
     if (!current) return;
     if (!current.alternative.trim()) {
       toast.error("대안 사고를 입력해주세요.");
+      return;
+    }
+    const validation = validateUserText(current.alternative, {
+      minLength: 10,
+      minLengthMessage: "대안적 사고를 10자 이상 입력해주세요.",
+    });
+    if (!validation.ok) {
+      toast.error(validation.message);
       return;
     }
     setSavingId(id);
