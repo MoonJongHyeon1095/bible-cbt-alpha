@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { normalizeSelectedCognitiveErrors } from "../../../lib/normalizeSelectedCognitiveErrors";
 import { supabase } from "../../../lib/supabase/client";
 import type { SessionHistory } from "../../../types/sessionHistory";
+import { formatScriptureReference } from "../../../utils/scripture";
 import { Button } from "../../ui/button";
 import {
   Dialog,
@@ -20,6 +21,18 @@ interface HistoryModalProps {
   onUpdated: () => void;
   user: User | null;
 }
+
+const getBibleReferenceLabel = (
+  bibleVerse: SessionHistory["bibleVerse"]
+): string => {
+  if (!bibleVerse) return "";
+  return formatScriptureReference(
+    bibleVerse.book,
+    bibleVerse.chapter,
+    bibleVerse.startVerse,
+    bibleVerse.endVerse
+  );
+};
 
 export function HistoryModal({
   open,
@@ -480,7 +493,8 @@ export function HistoryModal({
                         <p className="text-xs text-amber-400">📖 성경 말씀</p>
                         <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-3 space-y-2">
                           <p className="text-amber-300 text-sm font-semibold">
-                            {history.bibleVerse.reference}
+                            {getBibleReferenceLabel(history.bibleVerse) ||
+                              "말씀"}
                           </p>
                           <p className="text-slate-200 text-sm italic leading-relaxed">
                             "{history.bibleVerse.verse}"

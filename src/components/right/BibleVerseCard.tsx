@@ -1,6 +1,7 @@
 import { BookmarkPlus, BookOpen, Loader2, Sparkles } from "lucide-react";
 import { Button } from "../ui/button";
 import type { BibleVerseResult } from "./types";
+import { formatScriptureReference } from "../../utils/scripture";
 
 interface BibleVerseCardProps {
   bibleVerse: BibleVerseResult;
@@ -23,6 +24,13 @@ export function BibleVerseCard({
     fontFamily:
       '"Nanum Myeongjo", "Noto Serif KR", "Apple SD Gothic Neo", serif',
   };
+  const referenceLabel =
+    formatScriptureReference(
+      bibleVerse.book,
+      bibleVerse.chapter,
+      bibleVerse.startVerse,
+      bibleVerse.endVerse
+    ) || "말씀";
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-amber-200/70 bg-gradient-to-br from-amber-50 via-amber-100/60 to-white p-6 shadow-lg shadow-amber-200/40">
@@ -31,7 +39,7 @@ export function BibleVerseCard({
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-amber-900 text-lg sm:text-xl flex-1 min-w-0 break-words flex items-center gap-2">
             <BookOpen className="size-5 text-amber-700" aria-hidden="true" />
-            {bibleVerse.reference}
+            {referenceLabel}
           </p>
         </div>
 
@@ -93,7 +101,7 @@ export function BibleVerseCard({
           기도의 방법
         </p>
         <ul className="list-disc list-inside space-y-2 leading-relaxed">
-          <li>{bibleVerse.reference} 말씀을 따라 읽습니다.</li>
+          <li>{referenceLabel} 말씀을 따라 읽습니다.</li>
           <li>
             이 말씀을 읽고 "하나님의 뜻을 알려주시기를 바랍니다"라고
             기도하십시오.

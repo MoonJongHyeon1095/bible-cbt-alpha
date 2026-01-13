@@ -27,8 +27,11 @@ export interface SessionHistory {
   } | null;
   positiveReframes: { [emotion: string]: string };
   bibleVerse?: {
+    book: string;
+    chapter: number | null;
+    startVerse: number | null;
+    endVerse: number | null;
     verse: string;
-    reference: string;
     prayer: string;
   } | null;
   detailMode?: "lite" | "deep";

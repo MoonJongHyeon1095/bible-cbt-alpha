@@ -307,7 +307,10 @@ export function RightPanel({
         const existing = existingRaw ? JSON.parse(existingRaw) : [];
         const newNote = {
           id: Date.now().toString(),
-          reference: bibleVerse.reference,
+          book: bibleVerse.book,
+          chapter: bibleVerse.chapter,
+          startVerse: bibleVerse.startVerse,
+          endVerse: bibleVerse.endVerse,
           verse: bibleVerse.verse,
           reflections: [],
           timestamp: now,
@@ -328,7 +331,10 @@ export function RightPanel({
     try {
       const { error } = await supabase.from("scripture_notes").insert({
         user_id: user.id,
-        reference: bibleVerse.reference,
+        book: bibleVerse.book,
+        chapter: bibleVerse.chapter,
+        start_verse: bibleVerse.startVerse,
+        end_verse: bibleVerse.endVerse,
         verse: bibleVerse.verse,
       });
       if (error) throw error;
