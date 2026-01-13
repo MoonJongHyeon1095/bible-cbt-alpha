@@ -1,8 +1,14 @@
 import { Clock, Globe, LifeBuoy, MessageCircle, Phone } from "lucide-react";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
+import type { CbtMode } from "../header/navigation/ModePicker";
+import { FeatureHeader } from "./common/FeatureHeader";
 
-export function HelplinePage() {
+type HelplinePageProps = {
+  mode: CbtMode;
+};
+
+export function HelplinePage({ mode }: HelplinePageProps) {
   const helplines = [
     {
       name: "자살예방상담전화",
@@ -36,15 +42,13 @@ export function HelplinePage() {
 
   return (
     <div className="max-w-[1200px] mx-auto px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
-          <LifeBuoy className="size-8 text-red-600" />
-          긴급 헬프라인
-        </h1>
-        <p className="text-slate-600">
-          위기 상황에서 도움을 받을 수 있는 전화번호와 자원입니다.
-        </p>
-      </div>
+      <FeatureHeader
+        overline="Helpline"
+        title="긴급 헬프라인"
+        subtitle="위기 상황에서 도움을 받을 수 있는 전화번호와 자원입니다."
+        icon={LifeBuoy}
+        iconClassName="text-red-600"
+      />
 
       {/* 상담 전화 목록 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -124,37 +128,39 @@ export function HelplinePage() {
       </Card>
 
       {/* 기독교 상담 자원 */}
-      <Card className="p-6 bg-purple-50 border-purple-200">
-        <h3 className="text-lg text-slate-900 mb-4 flex items-center gap-2">
-          <MessageCircle className="size-6 text-purple-600" />
-          기독교 상담 자원
-        </h3>
-        <div className="space-y-4">
-          <div className="bg-white p-4 rounded-lg border border-purple-200">
-            <h4 className="text-slate-900 mb-1">기독교 상담센터</h4>
-            <p className="text-sm text-slate-600 mb-2">
-              기독교 관점의 전문 심리 상담
-            </p>
-            <p className="text-sm text-slate-500">🔗 준비 중입니다...</p>
-          </div>
+      {mode.toneMode === "christian" && (
+        <Card className="p-6 bg-purple-50 border-purple-200">
+          <h3 className="text-lg text-slate-900 mb-4 flex items-center gap-2">
+            <MessageCircle className="size-6 text-purple-600" />
+            기독교 상담 자원
+          </h3>
+          <div className="space-y-4">
+            <div className="bg-white p-4 rounded-lg border border-purple-200">
+              <h4 className="text-slate-900 mb-1">기독교 상담센터</h4>
+              <p className="text-sm text-slate-600 mb-2">
+                기독교 관점의 전문 심리 상담
+              </p>
+              <p className="text-sm text-slate-500">🔗 준비 중입니다...</p>
+            </div>
 
-          <div className="bg-white p-4 rounded-lg border border-purple-200">
-            <h4 className="text-slate-900 mb-1">교회 내 상담 프로그램</h4>
-            <p className="text-sm text-slate-600 mb-2">
-              소속 교회의 목회 상담 및 치유 사역 연결
-            </p>
-            <p className="text-sm text-slate-500">🔗 준비 중입니다...</p>
-          </div>
+            <div className="bg-white p-4 rounded-lg border border-purple-200">
+              <h4 className="text-slate-900 mb-1">교회 내 상담 프로그램</h4>
+              <p className="text-sm text-slate-600 mb-2">
+                소속 교회의 목회 상담 및 치유 사역 연결
+              </p>
+              <p className="text-sm text-slate-500">🔗 준비 중입니다...</p>
+            </div>
 
-          <div className="bg-white p-4 rounded-lg border border-purple-200">
-            <h4 className="text-slate-900 mb-1">온라인 기도 요청</h4>
-            <p className="text-sm text-slate-600 mb-2">
-              함께 기도해줄 공동체 찾기
-            </p>
-            <p className="text-sm text-slate-500">🔗 준비 중입니다...</p>
+            <div className="bg-white p-4 rounded-lg border border-purple-200">
+              <h4 className="text-slate-900 mb-1">온라인 기도 요청</h4>
+              <p className="text-sm text-slate-600 mb-2">
+                함께 기도해줄 공동체 찾기
+              </p>
+              <p className="text-sm text-slate-500">🔗 준비 중입니다...</p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
       {/* 안내 메시지 */}
       <Card className="p-5 mt-8 bg-blue-50 border-blue-200">

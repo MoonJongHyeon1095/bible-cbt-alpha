@@ -26,6 +26,7 @@ import { PatternEditModal } from "./edit/PatternEditModal";
 import { PatternErrorAddSection } from "./edit/PatternErrorAddSection";
 import { PatternErrorSection } from "./edit/PatternErrorSection";
 import { PatternTriggerSection } from "./edit/PatternTriggerSection";
+import { FeatureHeader } from "../../common/FeatureHeader";
 
 interface PatternsPageProps {
   user: User | null;
@@ -495,17 +496,13 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
   return (
     <div className="max-w-[1400px] mx-auto px-8 py-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
-            <HeartPulse className="size-8 text-indigo-600" />
-            감정 노트
-          </h1>
-          <p className="text-slate-600">
-            AI 제안을 참고해 반복되는 감정 패턴을 기록하세요.
-          </p>
-        </div>
-      </div>
+      <FeatureHeader
+        overline="Emotion Notes"
+        title="감정 노트"
+        subtitle="AI 제안을 참고해 반복되는 감정 패턴을 기록하세요."
+        icon={HeartPulse}
+        iconClassName="text-indigo-600"
+      />
 
       <PatternEditModal
         open={isCreating}

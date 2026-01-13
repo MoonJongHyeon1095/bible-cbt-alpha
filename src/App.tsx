@@ -134,7 +134,7 @@ export default function App() {
         return <PatternsPage user={user} />;
 
       case "helpline":
-        return <HelplinePage />;
+        return <HelplinePage mode={mode} />;
 
       default:
         return <CBTSessionPage mode={mode} user={user} />;
