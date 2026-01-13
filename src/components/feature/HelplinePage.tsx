@@ -3,6 +3,7 @@ import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import type { CbtMode } from "../header/navigation/ModePicker";
 import { FeatureHeader } from "./common/FeatureHeader";
+import { ScrollToTopButton } from "./common/ScrollToTopButton";
 
 type HelplinePageProps = {
   mode: CbtMode;
@@ -172,6 +173,7 @@ export function HelplinePage({ mode }: HelplinePageProps) {
           <li>당신은 혼자가 아닙니다. 함께 이겨낼 수 있습니다.</li>
         </ul>
       </Card>
+      <ScrollToTopButton />
     </div>
   );
 }

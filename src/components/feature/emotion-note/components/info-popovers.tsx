@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { COGNITIVE_BEHAVIORS } from "../../../../constants/behaviors";
 import { EMOTIONS } from "../../../../constants/emotions";
 import { COGNITIVE_ERRORS } from "../../../../constants/errors";
-import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover";
+import { Dialog, DialogContent, DialogTrigger } from "../../../ui/dialog";
 
 const EMOTION_BY_LABEL = new Map<string, (typeof EMOTIONS)[number]>(
   EMOTIONS.map((emotion) => [emotion.label, emotion])
@@ -48,17 +48,16 @@ type EmotionInfoPopoverProps = {
 
 export function EmotionInfoPopover({
   emotionLabel,
-  align = "start",
   children,
 }: EmotionInfoPopoverProps) {
   const emotion = getEmotionMeta(emotionLabel);
   if (!emotion) return <>{children}</>;
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent
-        align={align}
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent
+        hideClose
         className="w-80 rounded-xl border border-blue-100 bg-white shadow-lg shadow-blue-100/60"
       >
         <div className="space-y-3">
@@ -89,8 +88,8 @@ export function EmotionInfoPopover({
             </ul>
           </div>
         </div>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -104,7 +103,6 @@ type CognitiveErrorInfoPopoverProps = {
 
 export function CognitiveErrorInfoPopover({
   errorLabel,
-  align = "end",
   caption = "핵심 설명",
   tone = "rose",
   children,
@@ -124,10 +122,10 @@ export function CognitiveErrorInfoPopover({
         };
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent
-        align={align}
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent
+        hideClose
         className={`w-72 rounded-xl border bg-white shadow-lg ${toneStyles.border}`}
       >
         <div className="space-y-3">
@@ -150,8 +148,8 @@ export function CognitiveErrorInfoPopover({
             </div>
           </div>
         </div>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -163,17 +161,16 @@ type BehaviorInfoPopoverProps = {
 
 export function BehaviorInfoPopover({
   behaviorLabel,
-  align = "end",
   children,
 }: BehaviorInfoPopoverProps) {
   const behavior = getBehaviorMeta(behaviorLabel);
   if (!behavior) return <>{children}</>;
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent
-        align={align}
+    <Dialog>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent
+        hideClose
         className="w-80 rounded-xl border border-blue-100 bg-white shadow-lg shadow-blue-100/60"
       >
         <div className="space-y-3">
@@ -199,7 +196,7 @@ export function BehaviorInfoPopover({
             </p>
           </div>
         </div>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 }

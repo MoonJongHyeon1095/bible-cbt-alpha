@@ -28,6 +28,7 @@ import { supabase } from "../../../lib/supabase/client";
 import type { SessionHistory } from "../../../types/sessionHistory";
 import { Card } from "../../ui/card";
 import { FeatureHeader } from "../common/FeatureHeader";
+import { ScrollToTopButton } from "../common/ScrollToTopButton";
 import { HistoryModal } from "./HistoryModal";
 
 export function DashboardPage({ user }: { user: User | null }) {
@@ -422,6 +423,7 @@ export function DashboardPage({ user }: { user: User | null }) {
         onUpdated={loadData}
         user={user}
       />
+      <ScrollToTopButton />
     </div>
   );
 }
