@@ -84,7 +84,6 @@ export function PatternDetailsAddSection({
       </div>
       <div className="p-5 space-y-4 bg-amber-50/70">
         <div className="flex items-center justify-between gap-2 text-sm text-slate-700">
-          <div className="flex items-center gap-2">💭 자동사고 추가</div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"

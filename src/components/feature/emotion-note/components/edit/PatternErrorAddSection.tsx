@@ -1,12 +1,12 @@
 import { AlertCircle, Loader2, Save, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { analyzeCognitiveErrorDetails } from "../../../../../lib/ai";
 import { COGNITIVE_ERRORS } from "../../../../../constants/errors";
+import { analyzeCognitiveErrorDetails } from "../../../../../lib/ai";
 import { Button } from "../../../../ui/button";
 import { Textarea } from "../../../../ui/textarea";
-import { ErrorSelector } from "./PatternSelectors";
 import type { PatternDetail } from "../../types";
+import { ErrorSelector } from "./PatternSelectors";
 
 interface PatternErrorAddSectionProps {
   triggerText: string;
@@ -32,6 +32,7 @@ export function PatternErrorAddSection({
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSelectingThought, setAiSelectingThought] = useState(false);
   const [selectedDetailId, setSelectedDetailId] = useState("");
+  const [expandedDetailIds, setExpandedDetailIds] = useState<string[]>([]);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -41,9 +42,12 @@ export function PatternErrorAddSection({
     setAiSuggestion(null);
   }, [errorLabel, details]);
 
-  const formatThoughtLabel = (detail: PatternDetail) => {
-    const thought = detail.automaticThought?.trim() || "-";
-    return thought.length > 60 ? `${thought.slice(0, 60)}…` : thought;
+  const toggleDetailExpanded = (detailId: string) => {
+    setExpandedDetailIds((prev) =>
+      prev.includes(detailId)
+        ? prev.filter((id) => id !== detailId)
+        : [...prev, detailId]
+    );
   };
 
   const handleAiSuggest = () => {
@@ -101,7 +105,6 @@ export function PatternErrorAddSection({
   const handleApplySuggestion = () => {
     if (!aiSuggestion) return;
     onChangeErrorDescription(aiSuggestion);
-    setAiSuggestion(null);
     requestAnimationFrame(() => {
       textareaRef.current?.focus();
     });
@@ -115,7 +118,6 @@ export function PatternErrorAddSection({
       </div>
       <div className="p-5 space-y-4 bg-rose-50/70">
         <div className="flex items-center justify-between gap-2 text-sm text-slate-700">
-          <div className="flex items-center gap-2">🧠 인지오류 추가</div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
@@ -165,10 +167,11 @@ export function PatternErrorAddSection({
               {details.map((detail) => {
                 const isSelected = selectedDetailId === detail.id;
                 const emotionLabel = detail.emotion?.trim() || "감정 미선택";
+                const thoughtText = detail.automaticThought?.trim() || "-";
+                const isExpanded = expandedDetailIds.includes(detail.id);
                 return (
-                  <button
+                  <div
                     key={detail.id}
-                    type="button"
                     onClick={() => handleAiGenerate(detail.id)}
                     className={[
                       "group flex w-full items-start gap-3 rounded-lg border px-3 py-2 text-left transition",
@@ -178,14 +181,37 @@ export function PatternErrorAddSection({
                         : "border-rose-100",
                     ].join(" ")}
                     aria-pressed={isSelected}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        handleAiGenerate(detail.id);
+                      }
+                    }}
                   >
                     <div className="flex-1 space-y-1">
                       <span className="inline-flex items-center rounded-full border border-rose-100 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
                         {emotionLabel}
                       </span>
-                      <p className="text-sm text-slate-700 leading-relaxed">
-                        {formatThoughtLabel(detail)}
+                      <p
+                        className={[
+                          "text-sm text-slate-700 leading-relaxed",
+                          isExpanded ? "whitespace-pre-line" : "line-clamp-2",
+                        ].join(" ")}
+                      >
+                        {thoughtText}
                       </p>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          toggleDetailExpanded(detail.id);
+                        }}
+                        className="text-xs font-semibold text-rose-700 hover:underline"
+                      >
+                        {isExpanded ? "접기" : "더보기"}
+                      </button>
                     </div>
                     <span
                       className={[
@@ -197,12 +223,19 @@ export function PatternErrorAddSection({
                     >
                       {isSelected ? "선택됨" : "선택"}
                     </span>
-                  </button>
+                  </div>
                 );
               })}
             </div>
           </div>
         )}
+        <Textarea
+          ref={textareaRef}
+          value={errorDescription}
+          onChange={(e) => onChangeErrorDescription(e.target.value)}
+          placeholder="인지오류 설명"
+          className="min-h-[120px] border-rose-200 bg-white/90 px-3 py-2 text-[16px] leading-[1.85]"
+        />
         {!aiLoading && aiSuggestion && (
           <div className="rounded-2xl border border-rose-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between gap-2">
@@ -211,20 +244,40 @@ export function PatternErrorAddSection({
                   AI 인지오류 제안
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  마음에 들면 적용해서 설명을 채워보세요.
+                  클릭하면 입력창에 바로 적용됩니다.
                 </p>
               </div>
-              <Button
-                size="sm"
-                onClick={handleApplySuggestion}
-                className="bg-rose-500 text-white hover:bg-rose-600"
-              >
-                적용
-              </Button>
             </div>
-            <p className="mt-3 text-sm text-slate-700 leading-relaxed">
-              {aiSuggestion}
-            </p>
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={handleApplySuggestion}
+                className={[
+                  "group flex w-full items-start gap-3 rounded-lg border px-3 py-2 text-left transition",
+                  "bg-white hover:border-rose-300 hover:bg-rose-50/70",
+                  errorDescription.trim() === aiSuggestion.trim()
+                    ? "border-rose-400 bg-rose-50/80"
+                    : "border-rose-100",
+                ].join(" ")}
+                aria-pressed={errorDescription.trim() === aiSuggestion.trim()}
+              >
+                <span className="flex-1 text-sm text-slate-700 leading-relaxed">
+                  {aiSuggestion}
+                </span>
+                <span
+                  className={[
+                    "mt-0.5 inline-flex items-center gap-1 text-xs font-semibold",
+                    errorDescription.trim() === aiSuggestion.trim()
+                      ? "text-rose-700"
+                      : "text-slate-400 group-hover:text-rose-700",
+                  ].join(" ")}
+                >
+                  {errorDescription.trim() === aiSuggestion.trim()
+                    ? "적용됨"
+                    : "적용"}
+                </span>
+              </button>
+            </div>
           </div>
         )}
         {aiLoading && (
@@ -247,13 +300,6 @@ export function PatternErrorAddSection({
             </div>
           </div>
         )}
-        <Textarea
-          ref={textareaRef}
-          value={errorDescription}
-          onChange={(e) => onChangeErrorDescription(e.target.value)}
-          placeholder="인지오류 설명"
-          className="min-h-[120px] border-rose-200 bg-white/90 px-3 py-2 text-[16px] leading-[1.85]"
-        />
       </div>
     </div>
   );

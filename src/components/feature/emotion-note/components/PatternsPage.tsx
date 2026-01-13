@@ -708,6 +708,9 @@ export function PatternsPage({ user }: PatternsPageProps) {
       >
         {activePattern && (
           <PatternAlternativesAddSection
+            triggerText={activePattern.trigger}
+            details={activePattern.details}
+            errorDetails={activePattern.errorDetails ?? []}
             alternativeText={alternativeText}
             loading={savingAlternativeAdd}
             onChangeAlternativeText={setAlternativeText}
@@ -725,6 +728,10 @@ export function PatternsPage({ user }: PatternsPageProps) {
       >
         {activePattern && (
           <PatternBehaviorAddSection
+            triggerText={activePattern.trigger}
+            details={activePattern.details}
+            errorDetails={activePattern.errorDetails ?? []}
+            alternatives={activePattern.alternatives}
             behaviorLabel={behaviorLabel}
             behaviorDescription={behaviorDescription}
             behaviorErrorTags={behaviorErrorTags}
