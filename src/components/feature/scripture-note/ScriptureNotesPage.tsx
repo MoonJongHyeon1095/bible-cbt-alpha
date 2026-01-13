@@ -7,21 +7,48 @@ import {
   NotebookPen,
   Plus,
   Save,
+  Search,
   Trash2,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  BIBLE_BOOKS,
+  getBibleBookByKorean,
+} from "../../../constants/bibleBooks";
+import {
+  fetchGetBibleChapter,
+  fetchGetBibleVerses,
+  type BibleVerseEntry,
+} from "../../../lib/getBible";
 import { supabase } from "../../../lib/supabase/client";
+import { formatScriptureReference } from "../../../utils/scripture";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../../ui/dialog";
 import { Input } from "../../ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/select";
 import { Textarea } from "../../ui/textarea";
 import { FeatureHeader } from "../common/FeatureHeader";
 
 interface ScriptureNote {
   id: string;
-  reference: string;
+  book: string;
+  chapter: number | null;
+  startVerse: number | null;
+  endVerse: number | null;
   verse: string;
   timestamp: string;
   reflections: ScriptureNoteReflection[];
@@ -45,8 +72,26 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   const [notes, setNotes] = useState<ScriptureNote[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [reference, setReference] = useState("");
+  const [book, setBook] = useState("");
+  const [chapterInput, setChapterInput] = useState("");
+  const [startVerseInput, setStartVerseInput] = useState("");
+  const [endVerseInput, setEndVerseInput] = useState("");
   const [verse, setVerse] = useState("");
+  const [verseDirty, setVerseDirty] = useState(false);
+  const [autoFillLoading, setAutoFillLoading] = useState(false);
+  const [autoFillError, setAutoFillError] = useState<string | null>(null);
+  const [chapterPreview, setChapterPreview] = useState<{
+    noteId: string;
+    book: string;
+    chapter: number;
+    startVerse: number | null;
+    endVerse: number | null;
+    verses: BibleVerseEntry[];
+  } | null>(null);
+  const [chapterPreviewLoading, setChapterPreviewLoading] = useState(false);
+  const [chapterPreviewError, setChapterPreviewError] = useState<string | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const [reflectionDrafts, setReflectionDrafts] = useState<
     Record<string, string>
@@ -57,12 +102,17 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   const [editingReflectionId, setEditingReflectionId] = useState<string | null>(
     null
   );
-  const [editingReflectionContent, setEditingReflectionContent] =
-    useState("");
+  const [editingReflectionContent, setEditingReflectionContent] = useState("");
   const [expandedReflections, setExpandedReflections] = useState<
     Record<string, boolean>
   >({});
-  const referenceRef = useRef<HTMLInputElement | null>(null);
+  const bookRef = useRef<HTMLButtonElement | null>(null);
+  const autoFillRequestId = useRef(0);
+  const chapterRequestId = useRef(0);
+  const selectedBook = getBibleBookByKorean(book);
+  const chapterOptions = selectedBook
+    ? Array.from({ length: selectedBook.chapters }, (_, idx) => String(idx + 1))
+    : [];
 
   const formatReflectionTitle = (content: string) => {
     const trimmed = content.trim();
@@ -75,16 +125,82 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   }, [user]);
 
   useEffect(() => {
-    if (isCreating && editingId && referenceRef.current) {
-      referenceRef.current.focus();
+    if (isCreating && bookRef.current) {
+      bookRef.current.focus();
     }
-  }, [isCreating, editingId]);
+  }, [isCreating]);
+
+  useEffect(() => {
+    if (!isCreating || !selectedBook) return;
+    if (verseDirty) return;
+
+    const parsedChapter = Number.parseInt(chapterInput.trim(), 10);
+    const parsedStartVerse = Number.parseInt(startVerseInput.trim(), 10);
+    const parsedEndVerse = Number.parseInt(endVerseInput.trim(), 10);
+
+    if (!Number.isFinite(parsedChapter) || !Number.isFinite(parsedStartVerse)) {
+      return;
+    }
+
+    const safeEndVerse = Number.isFinite(parsedEndVerse)
+      ? parsedEndVerse
+      : parsedStartVerse;
+
+    if (safeEndVerse < parsedStartVerse) {
+      return;
+    }
+
+    const requestId = ++autoFillRequestId.current;
+    setAutoFillLoading(true);
+    setAutoFillError(null);
+
+    fetchGetBibleVerses({
+      englishBook: selectedBook.english,
+      chapter: parsedChapter,
+      startVerse: parsedStartVerse,
+      endVerse: safeEndVerse,
+    })
+      .then((lines) => {
+        if (autoFillRequestId.current !== requestId) return;
+        if (!lines.length) {
+          setAutoFillError("본문을 불러오지 못했습니다.");
+          return;
+        }
+        setVerse(lines.join("\n"));
+        setVerseDirty(false);
+      })
+      .catch((error: unknown) => {
+        if (autoFillRequestId.current !== requestId) return;
+        const message = error instanceof Error ? error.message : "";
+        if (message.includes("Verse") && message.includes("not found")) {
+          setAutoFillError("입력한 절 범위가 이 장을 벗어났습니다.");
+          return;
+        }
+        setAutoFillError("본문을 불러오지 못했습니다.");
+      })
+      .finally(() => {
+        if (autoFillRequestId.current !== requestId) return;
+        setAutoFillLoading(false);
+      });
+  }, [
+    isCreating,
+    selectedBook,
+    chapterInput,
+    startVerseInput,
+    endVerseInput,
+    verseDirty,
+  ]);
 
   const normalizeLocalNotes = (rawNotes: unknown[]): ScriptureNote[] => {
     return rawNotes.map((note) => {
       const rawNote = note as {
         id?: string;
-        reference?: string;
+        book?: string;
+        chapter?: number | string | null;
+        startVerse?: number | string | null;
+        endVerse?: number | string | null;
+        start_verse?: number | string | null;
+        end_verse?: number | string | null;
         verse?: string;
         timestamp?: string;
         reflections?: ScriptureNoteReflection[];
@@ -102,9 +218,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
           }))
         : [];
       const legacyReflection =
-        typeof rawNote.reflection === "string"
-          ? rawNote.reflection.trim()
-          : "";
+        typeof rawNote.reflection === "string" ? rawNote.reflection.trim() : "";
       const normalizedReflections = [...existingReflections];
 
       if (legacyReflection) {
@@ -115,9 +229,50 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
         });
       }
 
+      const parsedChapter =
+        typeof rawNote.chapter === "number"
+          ? rawNote.chapter
+          : typeof rawNote.chapter === "string"
+          ? Number.parseInt(rawNote.chapter, 10)
+          : null;
+      const rawStartVerse =
+        typeof rawNote.startVerse === "number"
+          ? rawNote.startVerse
+          : typeof rawNote.startVerse === "string"
+          ? Number.parseInt(rawNote.startVerse, 10)
+          : typeof rawNote.start_verse === "number"
+          ? rawNote.start_verse
+          : typeof rawNote.start_verse === "string"
+          ? Number.parseInt(rawNote.start_verse, 10)
+          : null;
+      const rawEndVerse =
+        typeof rawNote.endVerse === "number"
+          ? rawNote.endVerse
+          : typeof rawNote.endVerse === "string"
+          ? Number.parseInt(rawNote.endVerse, 10)
+          : typeof rawNote.end_verse === "number"
+          ? rawNote.end_verse
+          : typeof rawNote.end_verse === "string"
+          ? Number.parseInt(rawNote.end_verse, 10)
+          : null;
+      const resolvedStartVerse =
+        Number.isFinite(rawStartVerse ?? NaN) && rawStartVerse !== null
+          ? rawStartVerse
+          : null;
+      const resolvedEndVerse =
+        Number.isFinite(rawEndVerse ?? NaN) && rawEndVerse !== null
+          ? rawEndVerse
+          : resolvedStartVerse ?? null;
+
       return {
         id: rawNote.id ? String(rawNote.id) : Date.now().toString(),
-        reference: rawNote.reference ?? "",
+        book: rawNote.book?.trim() || "",
+        chapter:
+          Number.isFinite(parsedChapter ?? NaN) && parsedChapter !== null
+            ? parsedChapter
+            : null,
+        startVerse: resolvedStartVerse,
+        endVerse: resolvedEndVerse,
         verse: rawNote.verse ?? "",
         timestamp: safeTimestamp,
         reflections: normalizedReflections,
@@ -134,7 +289,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
         const { data, error } = await supabase
           .from("scripture_notes")
           .select(
-            "id, reference, verse, created_at, reflections:scripture_note_reflections ( id, content, created_at )"
+            "id, book, chapter, start_verse, end_verse, verse, created_at, reflections:scripture_note_reflections ( id, content, created_at )"
           )
           .eq("user_id", user.id)
           .order("created_at", { ascending: false });
@@ -144,7 +299,10 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
         const mapped =
           data?.map((row) => ({
             id: String(row.id),
-            reference: row.reference ?? "",
+            book: row.book ?? "",
+            chapter: row.chapter ?? null,
+            startVerse: row.start_verse ?? null,
+            endVerse: row.end_verse ?? null,
             verse: row.verse ?? "",
             timestamp: row.created_at ?? "",
             reflections:
@@ -196,8 +354,28 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   };
 
   const handleCreate = async () => {
-    if (!reference.trim() || !verse.trim()) {
-      toast.error("성경 구절과 말씀을 입력해주세요.");
+    const safeBook = book.trim();
+    const parsedChapter = Number.parseInt(chapterInput.trim(), 10);
+    const safeChapter = Number.isFinite(parsedChapter) ? parsedChapter : null;
+    const parsedStartVerse = Number.parseInt(startVerseInput.trim(), 10);
+    const parsedEndVerse = Number.parseInt(endVerseInput.trim(), 10);
+    const safeStartVerse = Number.isFinite(parsedStartVerse)
+      ? parsedStartVerse
+      : null;
+    const safeEndVerse = Number.isFinite(parsedEndVerse)
+      ? parsedEndVerse
+      : safeStartVerse;
+
+    if (!safeBook || !safeChapter || !safeStartVerse || !verse.trim()) {
+      toast.error("성경 구절(책, 장, 절)과 말씀을 입력해주세요.");
+      return;
+    }
+    if (safeStartVerse && safeEndVerse && safeEndVerse < safeStartVerse) {
+      toast.error("끝 절은 시작 절보다 클 수 없습니다.");
+      return;
+    }
+    if (autoFillError) {
+      toast.error(autoFillError);
       return;
     }
 
@@ -209,17 +387,25 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
           .from("scripture_notes")
           .insert({
             user_id: user.id,
-            reference: reference.trim(),
+            book: safeBook,
+            chapter: safeChapter,
+            start_verse: safeStartVerse,
+            end_verse: safeEndVerse,
             verse: verse.trim(),
           })
-          .select("id, reference, verse, created_at")
+          .select(
+            "id, book, chapter, start_verse, end_verse, verse, created_at"
+          )
           .single();
 
         if (error) throw error;
         if (data) {
           const newNote: ScriptureNote = {
             id: String(data.id),
-            reference: data.reference ?? "",
+            book: data.book ?? safeBook,
+            chapter: data.chapter ?? safeChapter,
+            startVerse: data.start_verse ?? safeStartVerse,
+            endVerse: data.end_verse ?? safeEndVerse,
             verse: data.verse ?? "",
             timestamp: data.created_at ?? new Date().toISOString(),
             reflections: [],
@@ -239,7 +425,10 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
 
     const newNote: ScriptureNote = {
       id: Date.now().toString(),
-      reference: reference.trim(),
+      book: safeBook,
+      chapter: safeChapter,
+      startVerse: safeStartVerse,
+      endVerse: safeEndVerse,
       verse: verse.trim(),
       timestamp: new Date().toISOString(),
       reflections: [],
@@ -251,8 +440,28 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
   };
 
   const handleUpdate = async (id: string) => {
-    if (!reference.trim() || !verse.trim()) {
-      toast.error("성경 구절과 말씀을 입력해주세요.");
+    const safeBook = book.trim();
+    const parsedChapter = Number.parseInt(chapterInput.trim(), 10);
+    const safeChapter = Number.isFinite(parsedChapter) ? parsedChapter : null;
+    const parsedStartVerse = Number.parseInt(startVerseInput.trim(), 10);
+    const parsedEndVerse = Number.parseInt(endVerseInput.trim(), 10);
+    const safeStartVerse = Number.isFinite(parsedStartVerse)
+      ? parsedStartVerse
+      : null;
+    const safeEndVerse = Number.isFinite(parsedEndVerse)
+      ? parsedEndVerse
+      : safeStartVerse;
+
+    if (!safeBook || !safeChapter || !safeStartVerse || !verse.trim()) {
+      toast.error("성경 구절(책, 장, 절)과 말씀을 입력해주세요.");
+      return;
+    }
+    if (safeStartVerse && safeEndVerse && safeEndVerse < safeStartVerse) {
+      toast.error("끝 절은 시작 절보다 클 수 없습니다.");
+      return;
+    }
+    if (autoFillError) {
+      toast.error(autoFillError);
       return;
     }
 
@@ -263,12 +472,17 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
         const { data, error } = await supabase
           .from("scripture_notes")
           .update({
-            reference: reference.trim(),
+            book: safeBook,
+            chapter: safeChapter,
+            start_verse: safeStartVerse,
+            end_verse: safeEndVerse,
             verse: verse.trim(),
           })
           .eq("id", id)
           .eq("user_id", user.id)
-          .select("id, reference, verse, created_at")
+          .select(
+            "id, book, chapter, start_verse, end_verse, verse, created_at"
+          )
           .single();
 
         if (error) throw error;
@@ -277,7 +491,10 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             note.id === id
               ? {
                   id: String(data.id),
-                  reference: data.reference ?? "",
+                  book: data.book ?? safeBook,
+                  chapter: data.chapter ?? safeChapter,
+                  startVerse: data.start_verse ?? safeStartVerse,
+                  endVerse: data.end_verse ?? safeEndVerse,
                   verse: data.verse ?? "",
                   timestamp: data.created_at ?? note.timestamp,
                   reflections: note.reflections ?? [],
@@ -301,7 +518,10 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
       note.id === id
         ? {
             ...note,
-            reference: reference.trim(),
+            book: safeBook,
+            chapter: safeChapter,
+            startVerse: safeStartVerse,
+            endVerse: safeEndVerse,
             verse: verse.trim(),
           }
         : note
@@ -341,16 +561,79 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
 
   const handleEdit = (note: ScriptureNote) => {
     setEditingId(note.id);
-    setReference(note.reference);
+    setBook(note.book);
+    setChapterInput(note.chapter ? String(note.chapter) : "");
+    setStartVerseInput(note.startVerse ? String(note.startVerse) : "");
+    setEndVerseInput(note.endVerse ? String(note.endVerse) : "");
     setVerse(note.verse);
+    setVerseDirty(false);
+    setAutoFillError(null);
+    setAutoFillLoading(false);
     setIsCreating(true);
   };
 
   const resetForm = () => {
     setIsCreating(false);
     setEditingId(null);
-    setReference("");
+    setBook("");
+    setChapterInput("");
+    setStartVerseInput("");
+    setEndVerseInput("");
     setVerse("");
+    setVerseDirty(false);
+    setAutoFillError(null);
+    setAutoFillLoading(false);
+  };
+
+  const handleOpenChapterPreview = async (note: ScriptureNote) => {
+    if (!note.book || !note.chapter) {
+      toast.error("책과 장 정보를 확인해주세요.");
+      return;
+    }
+    const bookMeta = getBibleBookByKorean(note.book);
+    if (!bookMeta) {
+      toast.error("책 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    const requestId = ++chapterRequestId.current;
+    setChapterPreviewLoading(true);
+    setChapterPreviewError(null);
+    setChapterPreview({
+      noteId: note.id,
+      book: note.book,
+      chapter: note.chapter,
+      startVerse: note.startVerse,
+      endVerse: note.endVerse,
+      verses: [],
+    });
+
+    try {
+      const verses = await fetchGetBibleChapter({
+        bookNumber: bookMeta.number,
+        chapter: note.chapter,
+      });
+      if (chapterRequestId.current !== requestId) return;
+      if (!verses.length) {
+        setChapterPreviewError("본문을 불러오지 못했습니다.");
+        return;
+      }
+      setChapterPreview((prev) =>
+        prev
+          ? {
+              ...prev,
+              verses,
+            }
+          : null
+      );
+    } catch (error) {
+      if (chapterRequestId.current !== requestId) return;
+      const message = error instanceof Error ? error.message : "";
+      setChapterPreviewError(message || "본문을 불러오지 못했습니다.");
+    } finally {
+      if (chapterRequestId.current !== requestId) return;
+      setChapterPreviewLoading(false);
+    }
   };
 
   const resetReflectionEdit = () => {
@@ -459,8 +742,7 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                         ? {
                             ...reflection,
                             content: data.content ?? "",
-                            timestamp:
-                              data.created_at ?? reflection.timestamp,
+                            timestamp: data.created_at ?? reflection.timestamp,
                           }
                         : reflection
                     ),
@@ -575,25 +857,109 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
             </h3>
             <div className="space-y-5">
               <div>
-                <label className="text-sm text-slate-700 mb-2 block">
+                <label className="text-sm text-slate-700 mb-2 flex items-center">
                   성경 구절
+                  {(autoFillLoading || autoFillError) && (
+                    <span
+                      className={`ml-2 text-[13px] font-medium ${
+                        autoFillError ? "text-rose-600" : "text-emerald-600"
+                      }`}
+                    >
+                      {autoFillLoading
+                        ? "말씀을 불러오고 있습니다..."
+                        : autoFillError}
+                    </span>
+                  )}
                 </label>
-                <Input
-                  ref={referenceRef}
-                  value={reference}
-                  onChange={(e) => setReference(e.target.value)}
-                  placeholder="예: 요한복음 3:16, 시편 23:1"
-                  className="border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
-                />
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1.4fr_0.8fr_1fr]">
+                  <Select
+                    value={book}
+                    onValueChange={(value: string) => {
+                      setBook(value);
+                      setVerseDirty(false);
+                      setChapterInput("");
+                      setStartVerseInput("");
+                      setEndVerseInput("");
+                    }}
+                  >
+                    <SelectTrigger
+                      ref={bookRef}
+                      className="border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
+                    >
+                      <SelectValue placeholder="책 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BIBLE_BOOKS.map((bookItem) => (
+                        <SelectItem
+                          key={bookItem.number}
+                          value={bookItem.korean}
+                        >
+                          {bookItem.korean}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={chapterInput}
+                    onValueChange={(value: string) => {
+                      setChapterInput(value);
+                      setVerseDirty(false);
+                      setStartVerseInput("");
+                      setEndVerseInput("");
+                    }}
+                    disabled={!selectedBook}
+                  >
+                    <SelectTrigger className="border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200">
+                      <SelectValue placeholder="장 선택" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {chapterOptions.map((chapter) => (
+                        <SelectItem key={chapter} value={chapter}>
+                          {chapter}장
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      value={startVerseInput}
+                      onChange={(e) => {
+                        setStartVerseInput(e.target.value);
+                        setVerseDirty(false);
+                      }}
+                      placeholder="시작 절"
+                      className="border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
+                    />
+                    <span className="text-slate-500">~</span>
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      value={endVerseInput}
+                      onChange={(e) => {
+                        setEndVerseInput(e.target.value);
+                        setVerseDirty(false);
+                      }}
+                      placeholder="끝 절"
+                      className="border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>
                 <label className="text-sm text-slate-700 mb-2 block">
-                  말씀 본문
+                  말씀 본문 (개역한글)
                 </label>
                 <Textarea
                   value={verse}
-                  onChange={(e) => setVerse(e.target.value)}
+                  onChange={(e) => {
+                    setVerse(e.target.value);
+                    setVerseDirty(true);
+                  }}
                   placeholder="성경 말씀 본문을 입력하세요..."
                   className="min-h-[160px] border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
                   style={scriptureFont}
@@ -605,7 +971,9 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                   onClick={() =>
                     editingId ? handleUpdate(editingId) : handleCreate()
                   }
-                  disabled={loading}
+                  disabled={
+                    loading || autoFillLoading || Boolean(autoFillError)
+                  }
                   className="bg-emerald-700 hover:bg-emerald-800"
                 >
                   <Save className="size-4 mr-2" />
@@ -620,47 +988,65 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
           </Card>
         )}
 
-      {/* 노트 목록 */}
-      {loading ? (
-        <Card className="p-12 text-center bg-white/80 border border-emerald-100">
-          <BookMarked className="size-16 text-emerald-200 mx-auto mb-4 animate-pulse" />
-          <p className="text-slate-500 text-lg mb-2">
-            말씀 노트를 불러오는 중입니다...
-          </p>
-        </Card>
-      ) : notes.length === 0 ? (
-        <Card className="p-12 text-center bg-white/80 border border-emerald-100">
-          <BookMarked className="size-16 text-emerald-200 mx-auto mb-4" />
-          <p className="text-slate-500 text-lg mb-2">
-            아직 말씀 노트가 없습니다.
-          </p>
-          <p className="text-slate-400">첫 번째 말씀 노트를 작성해보세요.</p>
-        </Card>
+        {/* 노트 목록 */}
+        {loading ? (
+          <Card className="p-12 text-center bg-white/80 border border-emerald-100">
+            <BookMarked className="size-16 text-emerald-200 mx-auto mb-4 animate-pulse" />
+            <p className="text-slate-500 text-lg mb-2">
+              말씀 노트를 불러오는 중입니다...
+            </p>
+          </Card>
+        ) : notes.length === 0 ? (
+          <Card className="p-12 text-center bg-white/80 border border-emerald-100">
+            <BookMarked className="size-16 text-emerald-200 mx-auto mb-4" />
+            <p className="text-slate-500 text-lg mb-2">
+              아직 말씀 노트가 없습니다.
+            </p>
+            <p className="text-slate-400">첫 번째 말씀 노트를 작성해보세요.</p>
+          </Card>
       ) : (
         <div className="space-y-8">
           {notes.map((note) => {
             const reflections = [...note.reflections].sort(
               (a, b) =>
-                new Date(b.timestamp).getTime() -
-                new Date(a.timestamp).getTime()
-            );
+                  new Date(b.timestamp).getTime() -
+                  new Date(a.timestamp).getTime()
+              );
 
-            return (
-              <Card
-                key={note.id}
-                className="p-8 hover:shadow-[0_24px_60px_-42px_rgba(15,23,42,0.6)] transition-shadow bg-white/95 border border-emerald-100"
-              >
+              return (
+                <Card
+                  key={note.id}
+                  className="p-8 hover:shadow-[0_24px_60px_-42px_rgba(15,23,42,0.6)] transition-shadow bg-white/95 border border-emerald-100"
+                >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6">
                   <div className="flex-1">
                     <div className="text-xs uppercase tracking-[0.2em] text-emerald-600/70 mb-2">
                       Reference
                     </div>
-                    <h3
-                      className="text-2xl sm:text-3xl text-emerald-900 leading-tight"
-                      style={scriptureFont}
-                    >
-                      {note.reference}
-                    </h3>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3
+                        className="text-2xl sm:text-3xl text-emerald-900 leading-tight"
+                        style={scriptureFont}
+                      >
+                        {formatScriptureReference(
+                          note.book,
+                          note.chapter,
+                          note.startVerse,
+                          note.endVerse
+                        )}
+                      </h3>
+                      <button
+                        onClick={() => handleOpenChapterPreview(note)}
+                        className="text-slate-500 hover:text-emerald-700 p-1 disabled:opacity-50"
+                        title="장 보기"
+                        disabled={
+                          chapterPreviewLoading &&
+                          chapterPreview?.noteId === note.id
+                        }
+                      >
+                        <Search className="size-4" />
+                      </button>
+                    </div>
                   </div>
                   <div className="flex gap-1">
                     <button
@@ -668,188 +1054,251 @@ export function ScriptureNotesPage({ user }: ScriptureNotesPageProps) {
                       className="text-emerald-600 hover:text-emerald-700 p-1"
                       title="수정"
                     >
-                      <Edit2 className="size-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(note.id)}
-                      className="text-red-600 hover:text-red-700 p-1"
-                      title="삭제"
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
+                        <Edit2 className="size-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(note.id)}
+                        className="text-red-600 hover:text-red-700 p-1"
+                        title="삭제"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div className="bg-emerald-50/70 border-l-2 border-emerald-400 p-5 rounded-r-2xl mb-6">
-                  <p
-                    className="text-[15px] sm:text-base text-slate-700 leading-7 sm:leading-8 whitespace-pre-wrap"
-                    style={scriptureFont}
-                  >
-                    "{note.verse}"
-                  </p>
-                </div>
-
-                <div className="bg-white border border-slate-100 p-5 rounded-2xl mb-6">
-                  <p className="text-sm text-slate-600 mb-4 flex items-center gap-2">
-                    <NotebookPen className="size-4 text-emerald-600" />
-                    묵상 기록
-                  </p>
-                  {reflections.length === 0 ? (
-                    <p className="text-sm text-slate-400">
-                      아직 묵상이 없습니다.
+                  <div className="bg-emerald-50/70 border-l-2 border-emerald-400 p-5 rounded-r-2xl mb-6">
+                    <p
+                      className="text-[15px] sm:text-base text-slate-700 leading-7 sm:leading-8 whitespace-pre-wrap"
+                      style={scriptureFont}
+                    >
+                      "{note.verse}"
                     </p>
-                  ) : (
-                    <div className="space-y-4">
-                      {reflections.map((reflection) => {
-                        const isEditing =
-                          editingReflectionNoteId === note.id &&
-                          editingReflectionId === reflection.id;
-                        const reflectionKey = `${note.id}-${reflection.id}`;
-                        const isExpanded = Boolean(
-                          expandedReflections[reflectionKey]
-                        );
+                  </div>
 
-                        return (
-                          <div
-                            key={reflection.id}
-                            className="rounded-2xl border border-slate-100 bg-emerald-50/30 p-4"
-                          >
-                            {isEditing ? (
-                              <div className="space-y-2">
-                                <Textarea
-                                  value={editingReflectionContent}
-                                  onChange={(e) =>
-                                    setEditingReflectionContent(
-                                      e.target.value
-                                    )
-                                  }
-                                  className="min-h-[120px] border-slate-200"
-                                />
-                                <div className="flex gap-2">
-                                  <Button
-                                    onClick={() =>
-                                      handleUpdateReflection(
-                                        note.id,
-                                        reflection.id
+                  <div className="bg-white border border-slate-100 p-5 rounded-2xl mb-6">
+                    <p className="text-sm text-slate-600 mb-4 flex items-center gap-2">
+                      <NotebookPen className="size-4 text-emerald-600" />
+                      묵상 기록
+                    </p>
+                    {reflections.length === 0 ? (
+                      <p className="text-sm text-slate-400">
+                        아직 묵상이 없습니다.
+                      </p>
+                    ) : (
+                      <div className="space-y-4">
+                        {reflections.map((reflection) => {
+                          const isEditing =
+                            editingReflectionNoteId === note.id &&
+                            editingReflectionId === reflection.id;
+                          const reflectionKey = `${note.id}-${reflection.id}`;
+                          const isExpanded = Boolean(
+                            expandedReflections[reflectionKey]
+                          );
+
+                          return (
+                            <div
+                              key={reflection.id}
+                              className="rounded-2xl border border-slate-100 bg-emerald-50/30 p-4"
+                            >
+                              {isEditing ? (
+                                <div className="space-y-2">
+                                  <Textarea
+                                    value={editingReflectionContent}
+                                    onChange={(e) =>
+                                      setEditingReflectionContent(
+                                        e.target.value
                                       )
                                     }
-                                    className="bg-amber-600 hover:bg-amber-700"
-                                  >
-                                    <Save className="size-4 mr-2" />
-                                    수정 완료
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    onClick={resetReflectionEdit}
-                                  >
-                                    <X className="size-4 mr-2" />
-                                    취소
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div>
-                                <div className="flex items-start justify-between gap-3">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setExpandedReflections((prev) => ({
-                                        ...prev,
-                                        [reflectionKey]: !isExpanded,
-                                      }))
-                                    }
-                                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
-                                    title={isExpanded ? "묵상 접기" : "묵상 펼치기"}
-                                  >
-                                    {isExpanded ? (
-                                      <ChevronDown className="size-4 text-slate-400" />
-                                    ) : (
-                                      <ChevronRight className="size-4 text-slate-400" />
-                                    )}
-                                    <span className="min-w-0 flex-1 text-sm text-slate-500">
-                                      {formatReflectionTitle(
-                                        reflection.content
-                                      )}
-                                    </span>
-                                  </button>
-                                  <div className="flex shrink-0 items-center gap-1">
-                                    <button
-                                      onClick={() => {
-                                        setEditingReflectionNoteId(note.id);
-                                        setEditingReflectionId(reflection.id);
-                                        setEditingReflectionContent(
-                                          reflection.content
-                                        );
-                                      }}
-                                      className="text-amber-600 hover:text-amber-700 p-1"
-                                      title="묵상 수정"
-                                    >
-                                      <Edit2 className="size-4" />
-                                    </button>
-                                    <button
+                                    className="min-h-[120px] border-slate-200"
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button
                                       onClick={() =>
-                                        handleDeleteReflection(
+                                        handleUpdateReflection(
                                           note.id,
                                           reflection.id
                                         )
                                       }
-                                      className="text-red-600 hover:text-red-700 p-1"
-                                      title="묵상 삭제"
+                                      className="bg-amber-600 hover:bg-amber-700"
                                     >
-                                      <Trash2 className="size-4" />
-                                    </button>
+                                      <Save className="size-4 mr-2" />
+                                      수정 완료
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      onClick={resetReflectionEdit}
+                                    >
+                                      <X className="size-4 mr-2" />
+                                      취소
+                                    </Button>
                                   </div>
                                 </div>
-                                {isExpanded && (
-                                  <p
-                                    className="mt-3 text-[15px] sm:text-base text-slate-700 leading-7 whitespace-pre-wrap break-words"
-                                    style={scriptureFont}
-                                  >
-                                    {reflection.content}
+                              ) : (
+                                <div>
+                                  <div className="flex items-start justify-between gap-3">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setExpandedReflections((prev) => ({
+                                          ...prev,
+                                          [reflectionKey]: !isExpanded,
+                                        }))
+                                      }
+                                      className="flex min-w-0 flex-1 items-center gap-2 text-left"
+                                      title={
+                                        isExpanded ? "묵상 접기" : "묵상 펼치기"
+                                      }
+                                    >
+                                      {isExpanded ? (
+                                        <ChevronDown className="size-4 text-slate-400" />
+                                      ) : (
+                                        <ChevronRight className="size-4 text-slate-400" />
+                                      )}
+                                      <span className="min-w-0 flex-1 text-sm text-slate-500">
+                                        {formatReflectionTitle(
+                                          reflection.content
+                                        )}
+                                      </span>
+                                    </button>
+                                    <div className="flex shrink-0 items-center gap-1">
+                                      <button
+                                        onClick={() => {
+                                          setEditingReflectionNoteId(note.id);
+                                          setEditingReflectionId(reflection.id);
+                                          setEditingReflectionContent(
+                                            reflection.content
+                                          );
+                                        }}
+                                        className="text-amber-600 hover:text-amber-700 p-1"
+                                        title="묵상 수정"
+                                      >
+                                        <Edit2 className="size-4" />
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          handleDeleteReflection(
+                                            note.id,
+                                            reflection.id
+                                          )
+                                        }
+                                        className="text-red-600 hover:text-red-700 p-1"
+                                        title="묵상 삭제"
+                                      >
+                                        <Trash2 className="size-4" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  {isExpanded && (
+                                    <p
+                                      className="mt-3 text-[15px] sm:text-base text-slate-700 leading-7 whitespace-pre-wrap break-words"
+                                      style={scriptureFont}
+                                    >
+                                      {reflection.content}
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-slate-400 mt-3">
+                                    {formatDate(reflection.timestamp)}
                                   </p>
-                                )}
-                                <p className="text-xs text-slate-400 mt-3">
-                                  {formatDate(reflection.timestamp)}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div className="mt-5 space-y-3">
+                      <Textarea
+                        value={reflectionDrafts[note.id] ?? ""}
+                        onChange={(e) =>
+                          setReflectionDrafts((prev) => ({
+                            ...prev,
+                            [note.id]: e.target.value,
+                          }))
+                        }
+                        placeholder="묵상을 기록하세요..."
+                        className="min-h-[140px] border-slate-200"
+                        style={scriptureFont}
+                      />
+                      <Button
+                        onClick={() => handleCreateReflection(note.id)}
+                        className="bg-emerald-700 hover:bg-emerald-800"
+                      >
+                        <Plus className="size-4 mr-2" />
+                        묵상 추가
+                      </Button>
                     </div>
-                  )}
-
-                  <div className="mt-5 space-y-3">
-                    <Textarea
-                      value={reflectionDrafts[note.id] ?? ""}
-                      onChange={(e) =>
-                        setReflectionDrafts((prev) => ({
-                          ...prev,
-                          [note.id]: e.target.value,
-                        }))
-                      }
-                      placeholder="묵상을 기록하세요..."
-                      className="min-h-[140px] border-slate-200"
-                      style={scriptureFont}
-                    />
-                    <Button
-                      onClick={() => handleCreateReflection(note.id)}
-                      className="bg-emerald-700 hover:bg-emerald-800"
-                    >
-                      <Plus className="size-4 mr-2" />
-                      묵상 추가
-                    </Button>
                   </div>
-                </div>
 
-                <p className="text-xs text-slate-400">
-                  {formatDate(note.timestamp)}
-                </p>
-              </Card>
-            );
+                  <p className="text-xs text-slate-400">
+                    {formatDate(note.timestamp)}
+                  </p>
+                </Card>
+              );
           })}
         </div>
       )}
+      <Dialog
+        open={Boolean(chapterPreview)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setChapterPreview(null);
+            setChapterPreviewError(null);
+            setChapterPreviewLoading(false);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {chapterPreview
+                ? `${chapterPreview.book} ${chapterPreview.chapter}장`
+                : "말씀"}
+            </DialogTitle>
+          </DialogHeader>
+          {chapterPreviewLoading && (
+            <p className="text-sm text-slate-500">
+              말씀을 불러오고 있습니다...
+            </p>
+          )}
+          {chapterPreviewError && (
+            <p className="text-sm text-rose-600">{chapterPreviewError}</p>
+          )}
+          {!chapterPreviewLoading &&
+            !chapterPreviewError &&
+            chapterPreview && (
+              <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-2">
+                {chapterPreview.verses.map((verseEntry) => {
+                  const start = chapterPreview.startVerse;
+                  const end =
+                    chapterPreview.endVerse ?? chapterPreview.startVerse;
+                  const isHighlighted =
+                    start !== null &&
+                    end !== null &&
+                    verseEntry.verse >= start &&
+                    verseEntry.verse <= end;
+                  return (
+                    <div
+                      key={`${chapterPreview.noteId}-${verseEntry.verse}`}
+                      className={`flex items-baseline gap-3 rounded-lg px-3 py-2 ${
+                        isHighlighted
+                          ? "bg-amber-100/70 text-amber-900"
+                          : "bg-slate-50 text-slate-700"
+                      }`}
+                    >
+                      <span className="text-xs font-semibold text-slate-500 tabular-nums">
+                        {verseEntry.verse}
+                      </span>
+                      <p className="text-sm leading-relaxed" style={scriptureFont}>
+                        {verseEntry.text}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+        </DialogContent>
+      </Dialog>
       </div>
     </div>
   );

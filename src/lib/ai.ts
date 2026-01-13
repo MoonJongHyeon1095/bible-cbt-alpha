@@ -74,8 +74,11 @@ export type AlternativeThoughtItem = {
 };
 
 export type BibleVerseResult = {
+  book: string;
+  chapter: number | null;
+  startVerse: number | null;
+  endVerse: number | null;
   verse: string;
-  reference: string;
   prayer: string;
 };
 
