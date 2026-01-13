@@ -529,17 +529,17 @@ export function PatternsPage({ user }: PatternsPageProps) {
       </PatternEditModal>
 
       {patterns.length > 0 && (
-        <Card className="p-6 mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
-          <h3 className="text-lg text-slate-900 mb-3 flex items-center gap-2">
-            <Sparkles className="size-5 text-indigo-500" />
+        <Card className="p-6 mb-6 bg-slate-50 border-slate-200">
+          <h3 className="text-lg text-slate-800 mb-3 flex items-center gap-2">
+            <Sparkles className="size-5 text-slate-400" />
             패턴 요약
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg p-4 border border-indigo-200 flex items-center justify-between gap-3">
+            <div className="bg-white rounded-lg p-4 border border-slate-200 flex items-center justify-between gap-3">
               <p className="text-sm text-slate-600">총 패턴 수</p>
-              <p className="text-3xl text-indigo-700">{patterns.length}</p>
+              <p className="text-3xl text-slate-700">{patterns.length}</p>
             </div>
-            <div className="bg-white rounded-lg p-4 border border-purple-200">
+            <div className="bg-white rounded-lg p-4 border border-slate-200">
               <p className="text-sm text-slate-600 mb-1">가장 빈번한 패턴</p>
               {mostFrequentPattern ? (
                 <button
@@ -551,17 +551,17 @@ export function PatternsPage({ user }: PatternsPageProps) {
                       el.scrollIntoView({ behavior: "smooth", block: "start" });
                     }
                   }}
-                  className="block w-full text-left text-base text-purple-700 truncate hover:underline"
+                  className="block w-full text-left text-base text-slate-700 truncate hover:underline"
                 >
                   {mostFrequentPattern.trigger || "-"}
                 </button>
               ) : (
-                <p className="text-base text-purple-700 truncate">-</p>
+                <p className="text-base text-slate-700 truncate">-</p>
               )}
             </div>
-            <div className="bg-white rounded-lg p-4 border border-pink-200 flex items-center justify-between gap-3">
+            <div className="bg-white rounded-lg p-4 border border-slate-200 flex items-center justify-between gap-3">
               <p className="text-sm text-slate-600">총 발생 횟수</p>
-              <p className="text-3xl text-pink-700">
+              <p className="text-3xl text-slate-700">
                 {patterns.reduce((sum, p) => sum + p.frequency, 0)}
               </p>
             </div>
