@@ -1,9 +1,11 @@
 // src/components/CBTSessionPage.tsx
 import type { User } from "@supabase/supabase-js";
+import { History } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { EmotionThoughtPair } from "../types";
 import type { SelectedCognitiveError } from "../types/sessionHistory";
 import { CenterPanel } from "./center/CenterPanel";
+import { SelectedSectionActions } from "./feature/common/SelectedSectionActions";
 import { EmailModal } from "./feature/EmailModal";
 import { HistoryModal } from "./feature/dashboard/HistoryModal";
 import { CbtMode } from "./header/navigation/ModePicker";
@@ -204,6 +206,15 @@ export function CBTSessionPage({
 
       {/* ✅ PWA 단일 화면 */}
       <div className="mb-8">{renderStepScreen()}</div>
+
+      <SelectedSectionActions
+        hidden={step !== 1}
+        theme="behaviors"
+        editLabel="세션 기록 보기"
+        editAriaLabel="세션 기록 보기"
+        onEdit={() => setShowHistoryModal(true)}
+        editIcon={<History className="size-4 mr-1" />}
+      />
 
       {/* 툴 도크 비활성화 */}
       {/* <ToolDock

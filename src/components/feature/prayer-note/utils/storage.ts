@@ -1,31 +1,37 @@
-import type { ScriptureNote, ScriptureNoteReflection } from "../types/scriptureNotes.types";
+import type { PrayerNote, PrayerNoteResponse } from "../types/prayerNotes.types";
 
-const STORAGE_KEY = "scripture_notes";
+const STORAGE_KEY = "prayer_notes";
 
-const normalizeLocalNotes = (rawNotes: unknown[]): ScriptureNote[] => {
+const normalizeLocalNotes = (rawNotes: unknown[]): PrayerNote[] => {
   return rawNotes.map((note) => {
     const rawNote = note as {
       id?: string;
+      title?: string;
+      content?: string;
+      tags?: string[];
+      emotionNoteId?: string | number | null;
       book?: string;
       chapter?: number | string | null;
       startVerse?: number | string | null;
       endVerse?: number | string | null;
-      verse?: string;
       timestamp?: string;
-      reflections?: ScriptureNoteReflection[];
+      responses?: PrayerNoteResponse[];
+      reflections?: PrayerNoteResponse[];
     };
     const safeTimestamp =
       typeof rawNote.timestamp === "string" && rawNote.timestamp
         ? rawNote.timestamp
         : new Date().toISOString();
-    const existingReflections = Array.isArray(rawNote.reflections)
-      ? rawNote.reflections.map((reflection) => ({
-          id: String(reflection.id ?? Date.now().toString()),
-          content: reflection.content ?? "",
-          timestamp: reflection.timestamp ?? safeTimestamp,
-        }))
+    const existingResponses = Array.isArray(rawNote.responses)
+      ? rawNote.responses
+      : Array.isArray(rawNote.reflections)
+      ? rawNote.reflections
       : [];
-    const normalizedReflections = [...existingReflections];
+    const normalizedResponses = existingResponses.map((response) => ({
+      id: String(response.id ?? Date.now().toString()),
+      content: response.content ?? "",
+      timestamp: response.timestamp ?? safeTimestamp,
+    }));
 
     const parsedChapter =
       typeof rawNote.chapter === "number"
@@ -56,6 +62,13 @@ const normalizeLocalNotes = (rawNotes: unknown[]): ScriptureNote[] => {
 
     return {
       id: rawNote.id ? String(rawNote.id) : Date.now().toString(),
+      title: rawNote.title ?? "",
+      content: rawNote.content ?? "",
+      tags: Array.isArray(rawNote.tags) ? rawNote.tags : [],
+      emotionNoteId:
+        rawNote.emotionNoteId != null
+          ? String(rawNote.emotionNoteId)
+          : null,
       book: rawNote.book?.trim() || "",
       chapter:
         Number.isFinite(parsedChapter ?? NaN) && parsedChapter !== null
@@ -63,14 +76,13 @@ const normalizeLocalNotes = (rawNotes: unknown[]): ScriptureNote[] => {
           : null,
       startVerse: resolvedStartVerse,
       endVerse: resolvedEndVerse,
-      verse: rawNote.verse ?? "",
       timestamp: safeTimestamp,
-      reflections: normalizedReflections,
+      responses: normalizedResponses,
     };
   });
 };
 
-export const loadLocalScriptureNotes = (): ScriptureNote[] => {
+export const loadLocalPrayerNotes = (): PrayerNote[] => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     const parsed = saved ? JSON.parse(saved) : [];
@@ -80,11 +92,11 @@ export const loadLocalScriptureNotes = (): ScriptureNote[] => {
     }
     return normalized;
   } catch (error) {
-    console.error("말씀 노트 로드 실패:", error);
+    console.error("기도 노트 로드 실패:", error);
     return [];
   }
 };
 
-export const saveLocalScriptureNotes = (notes: ScriptureNote[]) => {
+export const saveLocalPrayerNotes = (notes: PrayerNote[]) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
 };

@@ -1,20 +1,23 @@
 import type { BibleVerseEntry } from "../../../../lib/getBible";
 
-export interface ScriptureNoteReflection {
+export interface PrayerNoteResponse {
   id: string;
   content: string;
   timestamp: string;
 }
 
-export interface ScriptureNote {
+export interface PrayerNote {
   id: string;
+  title: string;
+  content: string;
+  tags: string[];
+  emotionNoteId?: string | null;
   book: string;
   chapter: number | null;
   startVerse: number | null;
   endVerse: number | null;
-  verse: string;
   timestamp: string;
-  reflections: ScriptureNoteReflection[];
+  responses: PrayerNoteResponse[];
 }
 
 export interface ChapterPreviewState {

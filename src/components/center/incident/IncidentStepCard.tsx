@@ -44,7 +44,7 @@ export function IncidentStepCard({
       />
 
       <p className="text-center text-slate-400 text-xs">
-        이 치료기법은 일반적인 인지행동치료 원리를 기반으로 AI를 활용해
+        이 서비스는 일반적인 인지행동치료 원리를 기반으로 AI를 활용해
         생성되었습니다.
       </p>
     </div>

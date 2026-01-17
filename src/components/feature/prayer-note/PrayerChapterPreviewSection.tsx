@@ -5,9 +5,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../ui/dialog";
-import type { ChapterPreviewState } from "./types/scriptureNotes.types";
+import type { ChapterPreviewState } from "./types/prayerNotes.types";
 
-interface ScriptureChapterPreviewSectionProps {
+interface PrayerChapterPreviewSectionProps {
   chapterPreview: ChapterPreviewState | null;
   chapterPreviewLoading: boolean;
   chapterPreviewError: string | null;
@@ -15,13 +15,13 @@ interface ScriptureChapterPreviewSectionProps {
   scriptureFont: CSSProperties;
 }
 
-export function ScriptureChapterPreviewSection({
+export function PrayerChapterPreviewSection({
   chapterPreview,
   chapterPreviewLoading,
   chapterPreviewError,
   onClose,
   scriptureFont,
-}: ScriptureChapterPreviewSectionProps) {
+}: PrayerChapterPreviewSectionProps) {
   return (
     <Dialog
       open={Boolean(chapterPreview)}

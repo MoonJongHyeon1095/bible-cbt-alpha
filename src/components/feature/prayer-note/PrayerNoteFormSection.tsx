@@ -1,3 +1,5 @@
+import { BookOpenCheck, Save, X } from "lucide-react";
+import type { CSSProperties, RefObject } from "react";
 import { BIBLE_BOOKS } from "../../../constants/bibleBooks";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
@@ -10,17 +12,17 @@ import {
   SelectValue,
 } from "../../ui/select";
 import { Textarea } from "../../ui/textarea";
-import { Save, X } from "lucide-react";
-import type { CSSProperties, RefObject } from "react";
 
-interface ScriptureNoteFormSectionProps {
+interface PrayerNoteFormSectionProps {
   isCreating: boolean;
   editingId: string | null;
+  title: string;
+  content: string;
   book: string;
   chapterInput: string;
   startVerseInput: string;
   endVerseInput: string;
-  verse: string;
+  verseLines: string[];
   chapterOptions: string[];
   canSelectChapter: boolean;
   autoFillLoading: boolean;
@@ -28,23 +30,26 @@ interface ScriptureNoteFormSectionProps {
   loading: boolean;
   scriptureFont: CSSProperties;
   bookRef: RefObject<HTMLButtonElement | null>;
+  onTitleChange: (value: string) => void;
+  onContentChange: (value: string) => void;
   onBookChange: (value: string) => void;
   onChapterChange: (value: string) => void;
   onStartVerseChange: (value: string) => void;
   onEndVerseChange: (value: string) => void;
-  onVerseChange: (value: string) => void;
   onSubmit: () => void;
   onCancel: () => void;
 }
 
-export function ScriptureNoteFormSection({
+export function PrayerNoteFormSection({
   isCreating,
   editingId,
+  title,
+  content,
   book,
   chapterInput,
   startVerseInput,
   endVerseInput,
-  verse,
+  verseLines,
   chapterOptions,
   canSelectChapter,
   autoFillLoading,
@@ -52,22 +57,61 @@ export function ScriptureNoteFormSection({
   loading,
   scriptureFont,
   bookRef,
+  onTitleChange,
+  onContentChange,
   onBookChange,
   onChapterChange,
   onStartVerseChange,
   onEndVerseChange,
-  onVerseChange,
   onSubmit,
   onCancel,
-}: ScriptureNoteFormSectionProps) {
+}: PrayerNoteFormSectionProps) {
   if (!isCreating) return null;
+
+  const parsedStartVerse = Number.parseInt(startVerseInput.trim(), 10);
+  const startVerseNumber = Number.isFinite(parsedStartVerse)
+    ? parsedStartVerse
+    : null;
+  const canSelectVerseRange = Boolean(canSelectChapter && chapterInput.trim());
 
   return (
     <Card className="p-8 mb-8 bg-white/90 border border-emerald-100 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.45)]">
-      <h3 className="text-lg text-slate-900 mb-5">
-        {editingId ? "말씀 노트 수정" : "새 말씀 노트 작성"}
-      </h3>
-      <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-emerald-600/70 mb-2">
+            Prayer Note
+          </p>
+          <h3 className="text-lg text-slate-900">
+            {editingId ? "기도 노트 수정" : "새 기도 노트 작성"}
+          </h3>
+        </div>
+        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/60 px-3 py-1 text-xs font-semibold text-emerald-700">
+          <BookOpenCheck className="size-4" />
+          말씀 기반 기록
+        </span>
+      </div>
+
+      <div className="space-y-6">
+        <div>
+          <label className="text-sm text-slate-700 mb-2 block">기도 제목</label>
+          <Input
+            value={title}
+            onChange={(e) => onTitleChange(e.target.value)}
+            placeholder="말씀에 대한 기도 제목을 입력하세요"
+            className="border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
+          />
+        </div>
+
+        <div>
+          <label className="text-sm text-slate-700 mb-2 block">기도문</label>
+          <Textarea
+            value={content}
+            onChange={(e) => onContentChange(e.target.value)}
+            placeholder="기도문을 기록하세요..."
+            className="min-h-[140px] border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
+          />
+        </div>
+
         <div>
           <label className="text-sm text-slate-700 mb-2 flex items-center">
             성경 구절
@@ -123,33 +167,61 @@ export function ScriptureNoteFormSection({
                 value={startVerseInput}
                 onChange={(e) => onStartVerseChange(e.target.value)}
                 placeholder="시작 절"
+                disabled={!canSelectVerseRange}
                 className="border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
               />
               <span className="text-slate-500">~</span>
               <Input
                 type="number"
                 inputMode="numeric"
-                min={1}
+                min={startVerseNumber ?? 1}
                 value={endVerseInput}
                 onChange={(e) => onEndVerseChange(e.target.value)}
                 placeholder="끝 절"
+                disabled={!canSelectVerseRange}
                 className="border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
               />
             </div>
           </div>
+          {!canSelectVerseRange && (
+            <p className="text-xs text-slate-500 mt-2">
+              장을 선택하면 절 범위를 입력할 수 있습니다.
+            </p>
+          )}
         </div>
 
         <div>
-          <label className="text-sm text-slate-700 mb-2 block">
-            말씀 본문 (개역한글)
+          <label className="text-sm text-slate-700 mb-2 flex items-center gap-2">
+            말씀 본문
+            <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+              개역한글
+            </span>
           </label>
-          <Textarea
-            value={verse}
-            onChange={(e) => onVerseChange(e.target.value)}
-            placeholder="성경 말씀 본문을 입력하세요..."
-            className="min-h-[160px] border-emerald-200 bg-emerald-50/40 focus-visible:ring-emerald-200"
-            style={scriptureFont}
-          />
+          {verseLines.length > 0 ? (
+            <div className="space-y-2 text-sm text-slate-700" style={scriptureFont}>
+              {verseLines.map((line, index) => {
+                const verseNumber =
+                  startVerseNumber !== null ? startVerseNumber + index : null;
+                return (
+                  <div
+                    key={`${startVerseNumber ?? "verse"}-${index}`}
+                    className="flex gap-3 rounded-xl border border-emerald-100 bg-white/80 px-3 py-2 shadow-xs leading-relaxed"
+                  >
+                    {verseNumber !== null && (
+                      <span className="text-xs font-semibold text-slate-500 tabular-nums pt-0.5">
+                        {verseNumber}
+                      </span>
+                    )}
+                    <span className="flex-1">{line}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400">
+              선택한 절의 본문이 여기에 표시됩니다.
+            </p>
+          )}
         </div>
 
         <div className="flex gap-2">

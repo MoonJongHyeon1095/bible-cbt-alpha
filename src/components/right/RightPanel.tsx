@@ -81,7 +81,6 @@ export function RightPanel({
 
   const showBackButton = step > 1 && Boolean(onPrevious);
 
-  const [savingScripture, setSavingScripture] = useState(false);
   const [savingPrayer, setSavingPrayer] = useState(false);
   const [selectedBehavior, setSelectedBehavior] = useState<{
     behaviorId: CognitiveBehaviorId;
@@ -295,58 +294,6 @@ export function RightPanel({
 
   const primaryEmotion = emotionThoughtPairs[0]?.emotion ?? "";
 
-  const handleSaveScripture = async () => {
-    if (!bibleVerse || savingScripture) return;
-
-    const now = new Date().toISOString();
-
-    if (!user) {
-      try {
-        setSavingScripture(true);
-        const existingRaw = localStorage.getItem("scripture_notes");
-        const existing = existingRaw ? JSON.parse(existingRaw) : [];
-        const newNote = {
-          id: Date.now().toString(),
-          book: bibleVerse.book,
-          chapter: bibleVerse.chapter,
-          startVerse: bibleVerse.startVerse,
-          endVerse: bibleVerse.endVerse,
-          verse: bibleVerse.verse,
-          reflections: [],
-          timestamp: now,
-        };
-        const updated = [newNote, ...existing];
-        localStorage.setItem("scripture_notes", JSON.stringify(updated));
-        toast.success("말씀 노트에 저장되었습니다.");
-      } catch (e) {
-        console.error("말씀 노트 로컬 저장 실패:", e);
-        toast.error("말씀을 저장하지 못했습니다.");
-      } finally {
-        setSavingScripture(false);
-      }
-      return;
-    }
-
-    setSavingScripture(true);
-    try {
-      const { error } = await supabase.from("scripture_notes").insert({
-        user_id: user.id,
-        book: bibleVerse.book,
-        chapter: bibleVerse.chapter,
-        start_verse: bibleVerse.startVerse,
-        end_verse: bibleVerse.endVerse,
-        verse: bibleVerse.verse,
-      });
-      if (error) throw error;
-      toast.success("말씀 노트에 저장되었습니다.");
-    } catch (e) {
-      console.error("말씀 노트 저장 실패:", e);
-      toast.error("말씀 노트를 저장하지 못했습니다.");
-    } finally {
-      setSavingScripture(false);
-    }
-  };
-
   const handleSavePrayer = async () => {
     if (!bibleVerse) return;
     if (savingPrayer) return;
@@ -356,6 +303,19 @@ export function RightPanel({
       ? `${primaryEmotion}에 대한 기도`
       : "기도 노트";
     const tags = primaryEmotion ? [primaryEmotion] : [];
+
+    let emotionNoteId: string | null = null;
+    try {
+      const raw = sessionStorage.getItem("cbt_active_note");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.noteId) {
+          emotionNoteId = String(parsed.noteId);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
 
     if (!user) {
       try {
@@ -367,6 +327,12 @@ export function RightPanel({
           title,
           content: bibleVerse.prayer,
           tags,
+          emotionNoteId,
+          book: bibleVerse.book,
+          chapter: bibleVerse.chapter,
+          startVerse: bibleVerse.startVerse,
+          endVerse: bibleVerse.endVerse,
+          responses: [],
           timestamp: now,
         };
         const updated = [newNote, ...existing];
@@ -388,6 +354,11 @@ export function RightPanel({
         title,
         content: bibleVerse.prayer,
         tags,
+        emotion_note_id: emotionNoteId ? Number(emotionNoteId) : null,
+        book: bibleVerse.book,
+        chapter: bibleVerse.chapter,
+        start_verse: bibleVerse.startVerse,
+        end_verse: bibleVerse.endVerse,
       });
       if (error) throw error;
       toast.success("기도 노트에 저장되었습니다.");
@@ -696,9 +667,7 @@ export function RightPanel({
                 <div ref={bibleSectionRef} className="space-y-4">
                   <BibleVerseCard
                     bibleVerse={bibleVerse}
-                    onSaveScripture={handleSaveScripture}
                     onSavePrayer={handleSavePrayer}
-                    savingScripture={savingScripture}
                     savingPrayer={savingPrayer}
                   />
                   <Button

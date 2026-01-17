@@ -4,17 +4,17 @@ import {
   fetchGetBibleVerses,
 } from "../../../../lib/getBible";
 import { supabase } from "../../../../lib/supabase/client";
-import type {
-  ScriptureNote,
-  ScriptureNoteReflection,
-} from "../types/scriptureNotes.types";
+import type { PrayerNote, PrayerNoteResponse } from "../types/prayerNotes.types";
 
-interface ScriptureNotePayload {
+interface PrayerNotePayload {
+  title: string;
+  content: string;
+  tags: string[];
+  emotionNoteId?: string | null;
   book: string;
   chapter: number | null;
   startVerse: number | null;
   endVerse: number | null;
-  verse: string;
 }
 
 export async function fetchBibleVersesRange(params: {
@@ -33,13 +33,13 @@ export async function fetchBibleChapter(params: {
   return fetchGetBibleChapter(params);
 }
 
-export async function fetchScriptureNotes(
+export async function fetchPrayerNotes(
   userId: string
-): Promise<ScriptureNote[]> {
+): Promise<PrayerNote[]> {
   const { data, error } = await supabase
-    .from("scripture_notes")
+    .from("prayer_notes")
     .select(
-      "id, book, chapter, start_verse, end_verse, verse, created_at, reflections:scripture_note_reflections ( id, content, created_at )"
+      "id, title, content, tags, emotion_note_id, book, chapter, start_verse, end_verse, created_at, responses:prayer_note_responses ( id, content, created_at )"
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -49,18 +49,21 @@ export async function fetchScriptureNotes(
   return (
     data?.map((row) => ({
       id: String(row.id),
+      title: row.title ?? "",
+      content: row.content ?? "",
+      tags: Array.isArray(row.tags) ? row.tags : [],
+      emotionNoteId: row.emotion_note_id ? String(row.emotion_note_id) : null,
       book: row.book ?? "",
       chapter: row.chapter ?? null,
       startVerse: row.start_verse ?? null,
       endVerse: row.end_verse ?? null,
-      verse: row.verse ?? "",
       timestamp: row.created_at ?? "",
-      reflections:
-        row.reflections
-          ?.map((reflection) => ({
-            id: String(reflection.id),
-            content: reflection.content ?? "",
-            timestamp: reflection.created_at ?? "",
+      responses:
+        row.responses
+          ?.map((response) => ({
+            id: String(response.id),
+            content: response.content ?? "",
+            timestamp: response.created_at ?? "",
           }))
           .sort(
             (a, b) =>
@@ -71,76 +74,92 @@ export async function fetchScriptureNotes(
   );
 }
 
-export async function createScriptureNote(
+export async function createPrayerNote(
   userId: string,
-  payload: ScriptureNotePayload
-): Promise<ScriptureNote> {
+  payload: PrayerNotePayload
+): Promise<PrayerNote> {
   const { data, error } = await supabase
-    .from("scripture_notes")
+    .from("prayer_notes")
     .insert({
       user_id: userId,
+      title: payload.title,
+      content: payload.content,
+      tags: payload.tags,
+      emotion_note_id: payload.emotionNoteId ?? null,
       book: payload.book,
       chapter: payload.chapter,
       start_verse: payload.startVerse,
       end_verse: payload.endVerse,
-      verse: payload.verse,
     })
-    .select("id, book, chapter, start_verse, end_verse, verse, created_at")
+    .select(
+      "id, title, content, tags, emotion_note_id, book, chapter, start_verse, end_verse, created_at"
+    )
     .single();
 
   if (error) throw error;
 
   return {
     id: String(data.id),
+    title: data.title ?? payload.title,
+    content: data.content ?? payload.content,
+    tags: Array.isArray(data.tags) ? data.tags : payload.tags,
+    emotionNoteId: data.emotion_note_id ? String(data.emotion_note_id) : null,
     book: data.book ?? payload.book,
     chapter: data.chapter ?? payload.chapter,
     startVerse: data.start_verse ?? payload.startVerse,
     endVerse: data.end_verse ?? payload.endVerse,
-    verse: data.verse ?? "",
     timestamp: data.created_at ?? new Date().toISOString(),
-    reflections: [],
+    responses: [],
   };
 }
 
-export async function updateScriptureNote(
+export async function updatePrayerNote(
   userId: string,
   noteId: string,
-  payload: ScriptureNotePayload
-): Promise<ScriptureNote> {
+  payload: PrayerNotePayload
+): Promise<PrayerNote> {
   const { data, error } = await supabase
-    .from("scripture_notes")
+    .from("prayer_notes")
     .update({
+      title: payload.title,
+      content: payload.content,
+      tags: payload.tags,
+      emotion_note_id: payload.emotionNoteId ?? null,
       book: payload.book,
       chapter: payload.chapter,
       start_verse: payload.startVerse,
       end_verse: payload.endVerse,
-      verse: payload.verse,
     })
     .eq("id", noteId)
     .eq("user_id", userId)
-    .select("id, book, chapter, start_verse, end_verse, verse, created_at")
+    .select(
+      "id, title, content, tags, emotion_note_id, book, chapter, start_verse, end_verse, created_at"
+    )
     .single();
 
   if (error) throw error;
 
   return {
     id: String(data.id),
+    title: data.title ?? payload.title,
+    content: data.content ?? payload.content,
+    tags: Array.isArray(data.tags) ? data.tags : payload.tags,
+    emotionNoteId: data.emotion_note_id ? String(data.emotion_note_id) : null,
     book: data.book ?? payload.book,
     chapter: data.chapter ?? payload.chapter,
     startVerse: data.start_verse ?? payload.startVerse,
     endVerse: data.end_verse ?? payload.endVerse,
-    verse: data.verse ?? "",
     timestamp: data.created_at ?? new Date().toISOString(),
-    reflections: [],
+    responses: [],
   };
 }
 
-export async function deleteScriptureNote(
+export async function deletePrayerNote(
   userId: string,
   noteId: string
 ): Promise<void> {
   const { error } = await supabase
-    .from("scripture_notes")
+    .from("prayer_notes")
     .delete()
     .eq("id", noteId)
     .eq("user_id", userId);
@@ -148,16 +167,16 @@ export async function deleteScriptureNote(
   if (error) throw error;
 }
 
-export async function createScriptureNoteReflection(
+export async function createPrayerNoteResponse(
   userId: string,
   noteId: number,
   content: string
-): Promise<ScriptureNoteReflection> {
+): Promise<PrayerNoteResponse> {
   const { data, error } = await supabase
-    .from("scripture_note_reflections")
+    .from("prayer_note_responses")
     .insert({
       user_id: userId,
-      scripture_note_id: noteId,
+      prayer_note_id: noteId,
       content,
     })
     .select("id, content, created_at")
@@ -172,15 +191,15 @@ export async function createScriptureNoteReflection(
   };
 }
 
-export async function updateScriptureNoteReflection(
+export async function updatePrayerNoteResponse(
   userId: string,
-  reflectionId: string,
+  responseId: string,
   content: string
-): Promise<ScriptureNoteReflection> {
+): Promise<PrayerNoteResponse> {
   const { data, error } = await supabase
-    .from("scripture_note_reflections")
+    .from("prayer_note_responses")
     .update({ content })
-    .eq("id", reflectionId)
+    .eq("id", responseId)
     .eq("user_id", userId)
     .select("id, content, created_at")
     .single();
@@ -194,14 +213,14 @@ export async function updateScriptureNoteReflection(
   };
 }
 
-export async function deleteScriptureNoteReflection(
+export async function deletePrayerNoteResponse(
   userId: string,
-  reflectionId: string
+  responseId: string
 ): Promise<void> {
   const { error } = await supabase
-    .from("scripture_note_reflections")
+    .from("prayer_note_responses")
     .delete()
-    .eq("id", reflectionId)
+    .eq("id", responseId)
     .eq("user_id", userId);
 
   if (error) throw error;

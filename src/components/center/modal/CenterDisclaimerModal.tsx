@@ -3,7 +3,6 @@ import { Button } from "../../ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -34,16 +33,16 @@ export function CenterDisclaimerModal({
             <AlertTriangle className="size-5 text-amber-600" />
             중요 안내
           </DialogTitle>
-          <DialogDescription className="text-slate-600">
-            서비스 이용 전 반드시 확인해주세요.
-          </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 text-sm text-slate-700">
           <p className="font-semibold text-amber-900">{DISCLAIMER_TEXT}</p>
           <p className="text-slate-600">{SUPPORT_TEXT}</p>
         </div>
         <DialogFooter>
-          <Button onClick={onConfirm} className="bg-amber-600 hover:bg-amber-700">
+          <Button
+            onClick={onConfirm}
+            className="bg-amber-600 hover:bg-amber-700"
+          >
             확인했습니다
           </Button>
         </DialogFooter>

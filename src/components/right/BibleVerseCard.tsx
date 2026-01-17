@@ -1,22 +1,18 @@
-import { BookmarkPlus, BookOpen, Loader2, Sparkles } from "lucide-react";
+import { BookOpen, Loader2, Sparkles } from "lucide-react";
 import { Button } from "../ui/button";
 import type { BibleVerseResult } from "./types";
 import { formatScriptureReference } from "../../utils/scripture";
 
 interface BibleVerseCardProps {
   bibleVerse: BibleVerseResult;
-  onSaveScripture?: () => void;
   onSavePrayer?: () => void;
-  savingScripture?: boolean;
   savingPrayer?: boolean;
   canSave?: boolean;
 }
 
 export function BibleVerseCard({
   bibleVerse,
-  onSaveScripture,
   onSavePrayer,
-  savingScripture,
   savingPrayer,
   canSave = true,
 }: BibleVerseCardProps) {
@@ -43,24 +39,8 @@ export function BibleVerseCard({
           </p>
         </div>
 
-        {(onSaveScripture || onSavePrayer) && (
+        {onSavePrayer && (
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-end sm:flex-nowrap">
-            {onSaveScripture && (
-              <Button
-                onClick={onSaveScripture}
-                variant="outline"
-                size="sm"
-                className="gap-2 border-amber-300/80 bg-white/70 text-amber-900 hover:bg-amber-100/80 w-auto max-sm:w-full sm:px-3 sm:text-xs"
-                disabled={!canSave || savingScripture}
-              >
-                {savingScripture ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <BookmarkPlus className="size-4" />
-                )}
-                {savingScripture ? "저장 중..." : "말씀 저장"}
-              </Button>
-            )}
             {onSavePrayer && (
               <Button
                 onClick={onSavePrayer}

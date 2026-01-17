@@ -1,12 +1,6 @@
 // src/components/header/Navigation.tsx
 import { Capacitor } from "@capacitor/core";
-import {
-  BookMarked,
-  BookOpen,
-  HeartPulse,
-  LayoutDashboard,
-  LifeBuoy,
-} from "lucide-react";
+import { BookOpen, HeartPulse, LayoutDashboard, LifeBuoy } from "lucide-react";
 import { useMemo } from "react";
 import { DesktopNav } from "./DesktopNav";
 import { MobileTabBar } from "./MobileTabBar";
@@ -55,11 +49,6 @@ export function Navigation({
         id: "prayer-notes",
         label: "기도노트",
         icon: BookOpen,
-      });
-      base.splice(2, 0, {
-        id: "scripture-notes",
-        label: "말씀노트",
-        icon: BookMarked,
       });
     }
 

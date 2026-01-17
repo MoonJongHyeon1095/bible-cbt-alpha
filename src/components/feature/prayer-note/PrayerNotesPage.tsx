@@ -1,153 +1,180 @@
+import type { User } from "@supabase/supabase-js";
 import { BookOpen } from "lucide-react";
-import { useMemo } from "react";
+import { useRef, useState } from "react";
 import { FeatureHeader } from "../common/FeatureHeader";
 import { ScrollToTopButton } from "../common/ScrollToTopButton";
 import { SelectedSectionActions } from "../common/SelectedSectionActions";
-import { PrayerNoteForm } from "./components/PrayerNoteForm";
-import { PrayerNoteList } from "./components/PrayerNoteList";
-import { PrayerNotesEmptyState } from "./components/PrayerNotesEmptyState";
-import { PrayerNotesLoadingState } from "./components/PrayerNotesLoadingState";
-import { usePrayerNoteForm } from "./hooks/usePrayerNoteForm";
-import { usePrayerNoteOpen } from "./hooks/usePrayerNoteOpen";
-import { usePrayerNoteResponses } from "./hooks/usePrayerNoteResponses";
-import { usePrayerNotesData } from "./hooks/usePrayerNotesData";
-import type { PrayerNotesPageProps } from "./types/types";
-import {
-  formatDate,
-  formatNoteSubtitle,
-  formatNoteTitle,
-  formatResponseTitle,
-} from "./utils/utils";
+import { useAutoCloseOnScroll } from "../common/utils/useAutoCloseOnScroll";
+import { PrayerChapterPreviewSection } from "./PrayerChapterPreviewSection";
+import { PrayerNoteFormSection } from "./PrayerNoteFormSection";
+import { PrayerNotesListSection } from "./PrayerNotesListSection";
+import { usePrayerNotes } from "./hooks/usePrayerNotes";
+
+interface PrayerNotesPageProps {
+  user: User | null;
+}
 
 export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
   const {
+    scriptureFont,
     notes,
+    isCreating,
+    editingId,
+    title,
+    content,
+    book,
+    chapterInput,
+    startVerseInput,
+    endVerseInput,
+    verseLines,
+    chapterOptions,
+    canSelectChapter,
+    autoFillLoading,
+    autoFillError,
     loading,
-    createNote,
-    updateNote,
-    deleteNote,
-    createResponse,
-    updateResponse,
-    deleteResponse,
-  } = usePrayerNotesData(user);
+    chapterPreview,
+    chapterPreviewLoading,
+    chapterPreviewError,
+    responseDrafts,
+    editingResponseNoteId,
+    editingResponseId,
+    editingResponseContent,
+    expandedResponses,
+    bookRef,
+    startCreate,
+    setTitle,
+    setContent,
+    handleBookChange,
+    handleChapterChange,
+    handleStartVerseChange,
+    handleEndVerseChange,
+    handleSubmit,
+    resetForm,
+    handleEdit,
+    handleDelete,
+    handleOpenChapterPreview,
+    closeChapterPreview,
+    setEditingResponseContent,
+    startEditResponse,
+    resetResponseEdit,
+    handleCreateResponse,
+    handleUpdateResponse,
+    handleDeleteResponse,
+    toggleExpandedResponse,
+    updateResponseDraft,
+    formatResponseTitle,
+    formatDate,
+  } = usePrayerNotes({ user });
+  const [openNoteId, setOpenNoteId] = useState<string | null>(null);
+  const openNoteRef = useRef<HTMLDivElement | null>(null);
+  const selectedNote = openNoteId
+    ? notes.find((note) => note.id === openNoteId) ?? null
+    : null;
+  const showSelectedActions = Boolean(selectedNote) && !isCreating;
 
-  const form = usePrayerNoteForm({ createNote, updateNote });
-  const responses = usePrayerNoteResponses({
-    createResponse,
-    updateResponse,
-    deleteResponse,
+  useAutoCloseOnScroll({
+    isOpen: Boolean(openNoteId),
+    targetRef: openNoteRef,
+    onClose: () => setOpenNoteId(null),
   });
-  const openState = usePrayerNoteOpen({
-    notes,
-    isCreating: form.isCreating,
-  });
-
-  const formatters = useMemo(
-    () => ({
-      formatNoteTitle,
-      formatNoteSubtitle,
-      formatResponseTitle,
-      formatDate,
-    }),
-    []
-  );
 
   return (
     <div className="max-w-[1400px] mx-auto px-8 py-8">
       <FeatureHeader
         overline="Prayer Notes"
         title="기도 노트"
-        subtitle="기도와 응답을 기록하세요."
+        subtitle="말씀과 기도를 한 권의 책처럼 기록하세요."
         icon={BookOpen}
-        iconClassName="text-purple-600"
+        iconClassName="text-emerald-600"
       />
 
-      {form.isCreating && (
-        <PrayerNoteForm
-          isEditing={form.isEditing}
-          title={form.title}
-          content={form.content}
-          tags={form.tags}
-          emotionTags={form.emotionTags}
+        <PrayerNoteFormSection
+          isCreating={isCreating}
+          editingId={editingId}
+          title={title}
+          content={content}
+          book={book}
+          chapterInput={chapterInput}
+          startVerseInput={startVerseInput}
+          endVerseInput={endVerseInput}
+          verseLines={verseLines}
+          chapterOptions={chapterOptions}
+          canSelectChapter={canSelectChapter}
+          autoFillLoading={autoFillLoading}
+          autoFillError={autoFillError}
           loading={loading}
-          titleRef={form.titleRef}
-          onTitleChange={form.setTitle}
-          onContentChange={form.setContent}
-          onToggleTag={form.toggleTag}
-          onSave={form.saveForm}
-          onCancel={form.resetForm}
+          scriptureFont={scriptureFont}
+          bookRef={bookRef}
+          onTitleChange={setTitle}
+          onContentChange={setContent}
+          onBookChange={handleBookChange}
+          onChapterChange={handleChapterChange}
+          onStartVerseChange={handleStartVerseChange}
+          onEndVerseChange={handleEndVerseChange}
+          onSubmit={handleSubmit}
+          onCancel={resetForm}
         />
-      )}
 
-      {loading ? (
-        <PrayerNotesLoadingState />
-      ) : notes.length === 0 ? (
-        <PrayerNotesEmptyState />
-      ) : (
-        <PrayerNoteList
+        <PrayerNotesListSection
+          loading={loading}
           notes={notes}
-          openNoteId={openState.openNoteId}
-          openNoteRef={openState.openNoteRef}
-          responseDrafts={responses.responseDrafts}
-          expandedResponses={responses.expandedResponses}
-          editingResponseNoteId={responses.editingResponseNoteId}
-          editingResponseId={responses.editingResponseId}
-          editingResponseContent={responses.editingResponseContent}
-          onToggleOpen={openState.toggleOpen}
-          onDeleteNote={async (noteId) => {
-            if (openState.openNoteId === noteId) {
-              openState.setOpenNoteId(null);
+          scriptureFont={scriptureFont}
+          chapterPreviewLoading={chapterPreviewLoading}
+          chapterPreviewNoteId={chapterPreview?.noteId ?? null}
+          onOpenChapterPreview={handleOpenChapterPreview}
+          onDeleteNote={(noteId) => {
+            if (openNoteId === noteId) {
+              setOpenNoteId(null);
             }
-            await deleteNote(noteId);
+            handleDelete(noteId);
           }}
-          onToggleResponseExpand={responses.toggleExpanded}
-          onStartEditResponse={responses.startEditResponse}
-          onChangeEditingResponseContent={responses.updateEditingContent}
-          onUpdateResponse={responses.updateResponseForNote}
-          onCancelEditResponse={responses.resetResponseEdit}
-          onDeleteResponse={responses.deleteResponseForNote}
-          onChangeResponseDraft={responses.changeDraft}
-          onCreateResponse={responses.createResponseForNote}
-          formatNoteTitle={formatters.formatNoteTitle}
-          formatNoteSubtitle={formatters.formatNoteSubtitle}
-          formatResponseTitle={formatters.formatResponseTitle}
-          formatDate={formatters.formatDate}
+          openNoteId={openNoteId}
+          onToggleOpen={(noteId) =>
+            setOpenNoteId((prev) => (prev === noteId ? null : noteId))
+          }
+          openNoteRef={openNoteRef}
+          editingResponseNoteId={editingResponseNoteId}
+          editingResponseId={editingResponseId}
+          editingResponseContent={editingResponseContent}
+          onChangeEditingResponseContent={setEditingResponseContent}
+          onStartEditResponse={startEditResponse}
+          onCancelEditResponse={resetResponseEdit}
+          onUpdateResponse={handleUpdateResponse}
+          onDeleteResponse={handleDeleteResponse}
+          expandedResponses={expandedResponses}
+          onToggleExpanded={toggleExpandedResponse}
+          responseDrafts={responseDrafts}
+          onChangeResponseDraft={updateResponseDraft}
+          onCreateResponse={handleCreateResponse}
+          formatResponseTitle={formatResponseTitle}
+          formatDate={formatDate}
         />
-      )}
 
+        <PrayerChapterPreviewSection
+          chapterPreview={chapterPreview}
+          chapterPreviewLoading={chapterPreviewLoading}
+          chapterPreviewError={chapterPreviewError}
+          onClose={closeChapterPreview}
+          scriptureFont={scriptureFont}
+        />
       <SelectedSectionActions
-        hidden={!openState.showSelectedActions}
+        hidden={!showSelectedActions}
         theme="prayer"
-        addLabel="응답 추가"
-        onAdd={() => {
-          const selectedNote = openState.selectedNote;
-          if (!selectedNote) return;
-          openState.setOpenNoteId(selectedNote.id);
-          requestAnimationFrame(() => {
-            const el = document.getElementById(
-              `prayer-response-${selectedNote.id}`
-            );
-            if (el instanceof HTMLElement) {
-              el.focus();
-            }
-          });
-        }}
         onEdit={() => {
-          const selectedNote = openState.selectedNote;
           if (!selectedNote) return;
-          openState.setOpenNoteId(selectedNote.id);
-          form.startEdit(selectedNote);
+          setOpenNoteId(selectedNote.id);
+          handleEdit(selectedNote);
         }}
-        addAriaLabel="선택 기도노트 응답 추가"
         editAriaLabel="선택 기도노트 편집"
       />
 
       <ScrollToTopButton
-        hidden={Boolean(form.isCreating || openState.openNoteId)}
-        showAction={!form.isCreating && !openState.openNoteId}
+        hidden={Boolean(isCreating || openNoteId)}
+        showAction={!isCreating && !openNoteId}
         actionLabel="새 기도노트 저장"
-        onActionClick={form.startCreate}
-        actionClassName="bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
+        onActionClick={startCreate}
+        actionClassName="bg-emerald-700 text-white hover:bg-emerald-800 shadow-md shadow-emerald-900/10"
+        className="bg-emerald-700 text-white hover:bg-emerald-800"
       />
     </div>
   );

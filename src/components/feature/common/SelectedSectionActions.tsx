@@ -1,7 +1,9 @@
 import { Edit2, Plus } from "lucide-react";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Button } from "../../ui/button";
 import { cn } from "../../ui/utils";
+import { useModalOpen } from "./hooks/useModalOpen";
 
 type SectionTheme =
   | "details"
@@ -9,16 +11,18 @@ type SectionTheme =
   | "alternatives"
   | "behaviors"
   | "prayer"
-  | "scripture";
+  | "scripture"
+  | "history";
 
 interface SelectedSectionActionsProps {
   theme: SectionTheme;
   onEdit: () => void;
-  onAdd: () => void;
+  onAdd?: () => void;
   editLabel?: string;
   addLabel?: string;
   editAriaLabel?: string;
   addAriaLabel?: string;
+  editIcon?: ReactNode;
   hidden?: boolean;
   className?: string;
 }
@@ -31,9 +35,11 @@ export function SelectedSectionActions({
   addLabel = "추가",
   editAriaLabel,
   addAriaLabel,
+  editIcon,
   hidden = false,
   className,
 }: SelectedSectionActionsProps) {
+  const isModalOpen = useModalOpen();
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(min-width: 768px)").matches;
@@ -58,7 +64,7 @@ export function SelectedSectionActions({
     };
   }, []);
 
-  if (hidden) return null;
+  if (hidden || isModalOpen) return null;
 
   const themeStyles =
     theme === "details"
@@ -83,26 +89,29 @@ export function SelectedSectionActions({
         }
       : theme === "prayer"
       ? {
+          action: "bg-emerald-700 text-white hover:bg-emerald-800",
+          left: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-900/10",
+        }
+      : theme === "history"
+      ? {
           action:
-            "bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700",
-          left: "bg-white border border-purple-200 text-purple-700 hover:bg-purple-50",
+            "bg-white border border-slate-200 text-slate-700 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700",
+          left: "bg-white border border-slate-200 text-slate-700 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700",
         }
       : {
           action: "bg-emerald-700 text-white hover:bg-emerald-800",
           left: "bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50",
         };
 
-  const baseStyle = isDesktop
-    ? undefined
-    : {
-        bottom:
-          "calc(env(safe-area-inset-bottom) + var(--mobile-tabbar-height, 96px) + 16px)",
-      };
+  const baseStyle = {
+    bottom:
+      "calc(env(safe-area-inset-bottom) + var(--mobile-tabbar-height, 96px) + 16px)",
+  };
 
   return (
     <div
       style={baseStyle}
-      className={cn("fixed z-[60] right-5 md:right-8 md:bottom-8", className)}
+      className={cn("fixed z-[60] right-5", className)}
     >
       <div className="flex items-center gap-2">
         <Button
@@ -111,18 +120,20 @@ export function SelectedSectionActions({
           onClick={onEdit}
           className={cn("px-3 py-2 rounded-full", themeStyles.left)}
         >
-          <Edit2 className="size-4 mr-1" />
+          {editIcon ?? <Edit2 className="size-4 mr-1" />}
           {editLabel}
         </Button>
-        <Button
-          type="button"
-          aria-label={addAriaLabel ?? addLabel}
-          onClick={onAdd}
-          className={cn("px-4 py-3 rounded-full", themeStyles.action)}
-        >
-          <Plus className="size-5 mr-2" />
-          {addLabel}
-        </Button>
+        {onAdd && (
+          <Button
+            type="button"
+            aria-label={addAriaLabel ?? addLabel}
+            onClick={onAdd}
+            className={cn("px-4 py-3 rounded-full", themeStyles.action)}
+          >
+            <Plus className="size-5 mr-2" />
+            {addLabel}
+          </Button>
+        )}
       </div>
     </div>
   );

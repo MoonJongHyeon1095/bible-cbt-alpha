@@ -1,24 +1,30 @@
+import type { User } from "@supabase/supabase-js";
+import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
-import type { PrayerNoteResponse } from "../types/types";
+import { toast } from "sonner";
+import type { PrayerNote, PrayerNoteResponse } from "../types/prayerNotes.types";
+import {
+  createPrayerNoteResponse,
+  deletePrayerNoteResponse,
+  updatePrayerNoteResponse,
+} from "../utils/api";
 
-type UsePrayerNoteResponsesOptions = {
-  createResponse: (noteId: string, contentValue: string) => Promise<boolean>;
-  updateResponse: (
-    noteId: string,
-    responseId: string,
-    contentValue: string
-  ) => Promise<boolean>;
-  deleteResponse: (noteId: string, responseId: string) => Promise<boolean>;
-};
+interface UsePrayerNoteResponsesParams {
+  user: User | null;
+  notes: PrayerNote[];
+  setNotes: Dispatch<SetStateAction<PrayerNote[]>>;
+  saveNotesLocally: (notes: PrayerNote[]) => void;
+}
 
 export function usePrayerNoteResponses({
-  createResponse,
-  updateResponse,
-  deleteResponse,
-}: UsePrayerNoteResponsesOptions) {
-  const [responseDrafts, setResponseDrafts] = useState<
-    Record<string, string>
-  >({});
+  user,
+  notes,
+  setNotes,
+  saveNotesLocally,
+}: UsePrayerNoteResponsesParams) {
+  const [responseDrafts, setResponseDrafts] = useState<Record<string, string>>(
+    {}
+  );
   const [editingResponseNoteId, setEditingResponseNoteId] = useState<
     string | null
   >(null);
@@ -36,75 +42,188 @@ export function usePrayerNoteResponses({
     setEditingResponseContent("");
   };
 
-  const toggleExpanded = (responseKey: string) => {
-    setExpandedResponses((prev) => ({
-      ...prev,
-      [responseKey]: !prev[responseKey],
-    }));
+  const handleCreateResponse = async (noteId: string) => {
+    const content = (responseDrafts[noteId] ?? "").trim();
+    if (!content) {
+      toast.error("응답-묵상을 입력해주세요.");
+      return;
+    }
+
+    if (user) {
+      try {
+        const noteIdValue = Number(noteId);
+        if (!Number.isFinite(noteIdValue)) {
+          toast.error("응답-묵상을 저장할 수 없습니다.");
+          return;
+        }
+
+        const newResponse = await createPrayerNoteResponse(
+          user.id,
+          noteIdValue,
+          content
+        );
+        setNotes((prev) =>
+          prev.map((note) =>
+            note.id === noteId
+              ? {
+                  ...note,
+                  responses: [newResponse, ...note.responses],
+                }
+              : note
+          )
+        );
+      } catch (error) {
+        console.error("응답-묵상 저장 실패:", error);
+        toast.error("응답-묵상을 저장하지 못했습니다.");
+        return;
+      }
+    } else {
+      const newResponse: PrayerNoteResponse = {
+        id: Date.now().toString(),
+        content,
+        timestamp: new Date().toISOString(),
+      };
+      const updated = notes.map((note) =>
+        note.id === noteId
+          ? {
+              ...note,
+              responses: [newResponse, ...note.responses],
+            }
+          : note
+      );
+      saveNotesLocally(updated);
+    }
+
+    setResponseDrafts((prev) => ({ ...prev, [noteId]: "" }));
   };
 
-  const startEditResponse = (
+  const handleUpdateResponse = async (
     noteId: string,
-    response: PrayerNoteResponse
+    responseId: string
   ) => {
+    const content = editingResponseContent.trim();
+    if (!content) {
+      toast.error("응답-묵상을 입력해주세요.");
+      return;
+    }
+
+    if (user) {
+      try {
+        const updatedResponse = await updatePrayerNoteResponse(
+          user.id,
+          responseId,
+          content
+        );
+        setNotes((prev) =>
+          prev.map((note) =>
+            note.id === noteId
+              ? {
+                  ...note,
+                  responses: note.responses.map((response) =>
+                    response.id === responseId
+                      ? {
+                          ...response,
+                          content: updatedResponse.content,
+                          timestamp:
+                            updatedResponse.timestamp ?? response.timestamp,
+                        }
+                      : response
+                  ),
+                }
+              : note
+          )
+        );
+      } catch (error) {
+        console.error("응답-묵상 수정 실패:", error);
+        toast.error("응답-묵상을 수정하지 못했습니다.");
+        return;
+      }
+    } else {
+      const updated = notes.map((note) =>
+        note.id === noteId
+          ? {
+              ...note,
+              responses: note.responses.map((response) =>
+                response.id === responseId
+                  ? { ...response, content }
+                  : response
+              ),
+            }
+          : note
+      );
+      saveNotesLocally(updated);
+    }
+
+    resetResponseEdit();
+  };
+
+  const handleDeleteResponse = async (
+    noteId: string,
+    responseId: string
+  ) => {
+    if (user) {
+      try {
+        await deletePrayerNoteResponse(user.id, responseId);
+      } catch (error) {
+        console.error("응답-묵상 삭제 실패:", error);
+        toast.error("응답-묵상을 삭제하지 못했습니다.");
+        return;
+      }
+    }
+
+    const updated = notes.map((note) =>
+      note.id === noteId
+        ? {
+            ...note,
+            responses: note.responses.filter(
+              (response) => response.id !== responseId
+            ),
+          }
+        : note
+    );
+
+    if (user) {
+      setNotes(updated);
+    } else {
+      saveNotesLocally(updated);
+    }
+
+    if (editingResponseId === responseId) {
+      resetResponseEdit();
+    }
+    toast.success("응답-묵상을 삭제했습니다.");
+  };
+
+  const startEditResponse = (noteId: string, response: PrayerNoteResponse) => {
     setEditingResponseNoteId(noteId);
     setEditingResponseId(response.id);
     setEditingResponseContent(response.content);
   };
 
-  const updateEditingContent = (value: string) => {
-    setEditingResponseContent(value);
+  const toggleExpandedResponse = (key: string) => {
+    setExpandedResponses((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
   };
 
-  const changeDraft = (noteId: string, value: string) => {
+  const updateResponseDraft = (noteId: string, value: string) => {
     setResponseDrafts((prev) => ({ ...prev, [noteId]: value }));
-  };
-
-  const createResponseForNote = async (noteId: string) => {
-    const contentValue = (responseDrafts[noteId] ?? "").trim();
-    const ok = await createResponse(noteId, contentValue);
-    if (ok) {
-      setResponseDrafts((prev) => ({ ...prev, [noteId]: "" }));
-    }
-  };
-
-  const updateResponseForNote = async (
-    noteId: string,
-    responseId: string
-  ) => {
-    const contentValue = editingResponseContent.trim();
-    const ok = await updateResponse(noteId, responseId, contentValue);
-    if (ok) {
-      resetResponseEdit();
-    }
-  };
-
-  const deleteResponseForNote = async (
-    noteId: string,
-    responseId: string
-  ) => {
-    const ok = await deleteResponse(noteId, responseId);
-    if (ok && editingResponseId === responseId) {
-      resetResponseEdit();
-    }
   };
 
   return {
     responseDrafts,
-    expandedResponses,
     editingResponseNoteId,
     editingResponseId,
     editingResponseContent,
-    setExpandedResponses,
-    setResponseDrafts,
+    expandedResponses,
     setEditingResponseContent,
-    resetResponseEdit,
-    toggleExpanded,
     startEditResponse,
-    updateEditingContent,
-    changeDraft,
-    createResponseForNote,
-    updateResponseForNote,
-    deleteResponseForNote,
+    resetResponseEdit,
+    handleCreateResponse,
+    handleUpdateResponse,
+    handleDeleteResponse,
+    toggleExpandedResponse,
+    updateResponseDraft,
   };
 }

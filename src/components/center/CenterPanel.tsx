@@ -255,7 +255,11 @@ export function CenterPanel({
           </Button>
         </div>
       )}
-      <CenterDisclaimerBanner onOpenDetails={() => setIsDisclaimerOpen(true)} />
+      {step === 1 && (
+        <CenterDisclaimerBanner
+          onOpenDetails={() => setIsDisclaimerOpen(true)}
+        />
+      )}
       <div className="mb-6">
         <CenterHeader
           step={step}

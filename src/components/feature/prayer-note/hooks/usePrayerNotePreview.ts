@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { getBibleBookByKorean } from "../../../../constants/bibleBooks";
-import type { ChapterPreviewState, ScriptureNote } from "../types/scriptureNotes.types";
+import type { ChapterPreviewState, PrayerNote } from "../types/prayerNotes.types";
 import { fetchBibleChapter } from "../utils/api";
 
-export function useScriptureNotePreview() {
+export function usePrayerNotePreview() {
   const [chapterPreview, setChapterPreview] =
     useState<ChapterPreviewState | null>(null);
   const [chapterPreviewLoading, setChapterPreviewLoading] = useState(false);
@@ -13,7 +13,7 @@ export function useScriptureNotePreview() {
   );
   const chapterRequestId = useRef(0);
 
-  const handleOpenChapterPreview = async (note: ScriptureNote) => {
+  const handleOpenChapterPreview = async (note: PrayerNote) => {
     if (!note.book || !note.chapter) {
       toast.error("책과 장 정보를 확인해주세요.");
       return;

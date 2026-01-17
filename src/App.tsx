@@ -9,7 +9,6 @@ import { DashboardPage } from "./components/feature/dashboard/DashboardPage";
 import { PatternsPage } from "./components/feature/emotion-note/components/PatternsPage";
 import { HelplinePage } from "./components/feature/HelplinePage";
 import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPage";
-import { ScriptureNotesPage } from "./components/feature/scripture-note/ScriptureNotesPage";
 import { Navigation } from "./components/header/navigation/Navigation";
 import { Notice } from "./components/Notice";
 import { Toaster } from "./components/ui/sonner";
@@ -125,9 +124,6 @@ export default function App() {
 
       case "prayer-notes":
         return <PrayerNotesPage user={user} />;
-
-      case "scripture-notes":
-        return <ScriptureNotesPage user={user} />;
 
       case "patterns":
         return <PatternsPage user={user} />;

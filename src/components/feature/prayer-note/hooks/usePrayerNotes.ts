@@ -1,31 +1,33 @@
 import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { useScriptureNoteForm } from "./useScriptureNoteForm";
-import { useScriptureNotesData } from "./useScriptureNotesData";
-import { useScriptureNotePreview } from "./useScriptureNotePreview";
-import { useScriptureNoteReflections } from "./useScriptureNoteReflections";
+import { validateUserText } from "../../../../utils/validation";
+import { formatScriptureReference } from "../../../../utils/scripture";
+import { usePrayerNoteForm } from "./usePrayerNoteForm";
+import { usePrayerNotesData } from "./usePrayerNotesData";
+import { usePrayerNotePreview } from "./usePrayerNotePreview";
+import { usePrayerNoteResponses } from "./usePrayerNoteResponses";
 
-interface UseScriptureNotesParams {
+interface UsePrayerNotesParams {
   user: User | null;
 }
 
-export function useScriptureNotes({ user }: UseScriptureNotesParams) {
+export function usePrayerNotes({ user }: UsePrayerNotesParams) {
   const scriptureFont = {
     fontFamily:
       '"Nanum Myeongjo", "Noto Serif KR", "Apple SD Gothic Neo", serif',
   };
 
-  const form = useScriptureNoteForm();
-  const data = useScriptureNotesData({ user });
-  const preview = useScriptureNotePreview();
-  const reflections = useScriptureNoteReflections({
+  const form = usePrayerNoteForm();
+  const data = usePrayerNotesData({ user });
+  const preview = usePrayerNotePreview();
+  const responses = usePrayerNoteResponses({
     user,
     notes: data.notes,
     setNotes: data.setNotes,
     saveNotesLocally: data.saveNotesLocally,
   });
 
-  const formatReflectionTitle = (content: string) => {
+  const formatResponseTitle = (content: string) => {
     const trimmed = content.trim();
     if (trimmed.length <= 20) return trimmed;
     return `${trimmed.slice(0, 20)}…`;
@@ -44,7 +46,7 @@ export function useScriptureNotes({ user }: UseScriptureNotesParams) {
       ? parsedEndVerse
       : safeStartVerse;
 
-    if (!safeBook || !safeChapter || !safeStartVerse || !form.verse.trim()) {
+    if (!safeBook || !safeChapter || !safeStartVerse) {
       toast.error("성경 구절(책, 장, 절)과 말씀을 입력해주세요.");
       return;
     }
@@ -57,12 +59,52 @@ export function useScriptureNotes({ user }: UseScriptureNotesParams) {
       return;
     }
 
+    const referenceLabel = formatScriptureReference(
+      safeBook,
+      safeChapter,
+      safeStartVerse,
+      safeEndVerse
+    );
+
+    const editingNote = form.editingId
+      ? data.notes.find((note) => note.id === form.editingId)
+      : null;
+
+    const titleValue = form.title.trim();
+    const contentValue = form.content.trim();
+
+    const titleValidation = validateUserText(titleValue);
+    if (!titleValidation.ok) {
+      toast.error(
+        titleValidation.code === "empty"
+          ? "기도 제목을 입력해주세요."
+          : titleValidation.message
+      );
+      return;
+    }
+
+    const contentValidation = validateUserText(contentValue);
+    if (!contentValidation.ok) {
+      toast.error(
+        contentValidation.code === "empty"
+          ? "기도문을 입력해주세요."
+          : contentValidation.message
+      );
+      return;
+    }
+
     const payload = {
+      title:
+        titleValue ||
+        editingNote?.title ||
+        (referenceLabel ? `${referenceLabel}에 대한 기도` : "기도 노트"),
+      content: contentValue || editingNote?.content || "",
+      tags: editingNote?.tags ?? [],
+      emotionNoteId: editingNote?.emotionNoteId ?? null,
       book: safeBook,
       chapter: safeChapter,
       startVerse: safeStartVerse,
       endVerse: safeEndVerse,
-      verse: form.verse.trim(),
     };
 
     try {
@@ -73,11 +115,11 @@ export function useScriptureNotes({ user }: UseScriptureNotesParams) {
       }
       form.resetForm();
     } catch (error) {
-      console.error("말씀 노트 저장 실패:", error);
+      console.error("기도 노트 저장 실패:", error);
       toast.error(
         form.editingId
-          ? "말씀 노트를 수정하지 못했습니다."
-          : "말씀 노트를 저장하지 못했습니다."
+          ? "기도 노트를 수정하지 못했습니다."
+          : "기도 노트를 저장하지 못했습니다."
       );
     }
   };
@@ -85,10 +127,10 @@ export function useScriptureNotes({ user }: UseScriptureNotesParams) {
   const handleDelete = async (noteId: string) => {
     try {
       await data.deleteNote(noteId);
-      toast.success("말씀 노트를 삭제했습니다.");
+      toast.success("기도 노트를 삭제했습니다.");
     } catch (error) {
-      console.error("말씀 노트 삭제 실패:", error);
-      toast.error("말씀 노트를 삭제하지 못했습니다.");
+      console.error("기도 노트 삭제 실패:", error);
+      toast.error("기도 노트를 삭제하지 못했습니다.");
     }
   };
 
@@ -108,11 +150,13 @@ export function useScriptureNotes({ user }: UseScriptureNotesParams) {
     notes: data.notes,
     isCreating: form.isCreating,
     editingId: form.editingId,
+    title: form.title,
+    content: form.content,
     book: form.book,
     chapterInput: form.chapterInput,
     startVerseInput: form.startVerseInput,
     endVerseInput: form.endVerseInput,
-    verse: form.verse,
+    verseLines: form.verseLines,
     chapterOptions: form.chapterOptions,
     canSelectChapter: form.canSelectChapter,
     autoFillLoading: form.autoFillLoading,
@@ -121,33 +165,35 @@ export function useScriptureNotes({ user }: UseScriptureNotesParams) {
     chapterPreview: preview.chapterPreview,
     chapterPreviewLoading: preview.chapterPreviewLoading,
     chapterPreviewError: preview.chapterPreviewError,
-    reflectionDrafts: reflections.reflectionDrafts,
-    editingReflectionNoteId: reflections.editingReflectionNoteId,
-    editingReflectionId: reflections.editingReflectionId,
-    editingReflectionContent: reflections.editingReflectionContent,
-    expandedReflections: reflections.expandedReflections,
+    responseDrafts: responses.responseDrafts,
+    editingResponseNoteId: responses.editingResponseNoteId,
+    editingResponseId: responses.editingResponseId,
+    editingResponseContent: responses.editingResponseContent,
+    expandedResponses: responses.expandedResponses,
     bookRef: form.bookRef,
     startCreate: form.startCreate,
     handleBookChange: form.handleBookChange,
     handleChapterChange: form.handleChapterChange,
     handleStartVerseChange: form.handleStartVerseChange,
     handleEndVerseChange: form.handleEndVerseChange,
-    handleVerseChange: form.handleVerseChange,
+    verseLines: form.verseLines,
+    setTitle: form.setTitle,
+    setContent: form.setContent,
     handleSubmit,
     resetForm: form.resetForm,
     handleEdit: form.setFormFromNote,
     handleDelete,
     handleOpenChapterPreview: preview.handleOpenChapterPreview,
     closeChapterPreview: preview.closeChapterPreview,
-    setEditingReflectionContent: reflections.setEditingReflectionContent,
-    startEditReflection: reflections.startEditReflection,
-    resetReflectionEdit: reflections.resetReflectionEdit,
-    handleCreateReflection: reflections.handleCreateReflection,
-    handleUpdateReflection: reflections.handleUpdateReflection,
-    handleDeleteReflection: reflections.handleDeleteReflection,
-    toggleExpandedReflection: reflections.toggleExpandedReflection,
-    updateReflectionDraft: reflections.updateReflectionDraft,
-    formatReflectionTitle,
+    setEditingResponseContent: responses.setEditingResponseContent,
+    startEditResponse: responses.startEditResponse,
+    resetResponseEdit: responses.resetResponseEdit,
+    handleCreateResponse: responses.handleCreateResponse,
+    handleUpdateResponse: responses.handleUpdateResponse,
+    handleDeleteResponse: responses.handleDeleteResponse,
+    toggleExpandedResponse: responses.toggleExpandedResponse,
+    updateResponseDraft: responses.updateResponseDraft,
+    formatResponseTitle,
     formatDate,
   };
 }
