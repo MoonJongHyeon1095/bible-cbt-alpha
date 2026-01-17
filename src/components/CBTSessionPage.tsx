@@ -198,7 +198,7 @@ export function CBTSessionPage({
   };
 
   return (
-    <div className="w-full px-4 sm:px-8 py-6 sm:py-8">
+    <div className="max-w-[1800px] mx-auto px-8 py-8">
       {/* Header (추천 섹션 제거) */}
       <header className="text-center mb-5 sm:mb-8">
         {/* 필요하면 여기 타이틀/서브타이틀만 유지 */}

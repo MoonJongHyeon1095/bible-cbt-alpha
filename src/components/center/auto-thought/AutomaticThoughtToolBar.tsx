@@ -1,7 +1,7 @@
 import { Bookmark, Check, FolderOpen, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "../../ui/button";
 
-export function ActionsSection({
+export function AutomaticThoughtToolBar({
   currentPrefetchKey,
   selectedThought,
   customThoughtTrimmed,
@@ -57,7 +57,7 @@ export function ActionsSection({
             onClick={onRegenerate}
             variant="outline"
             size="sm"
-            className="gap-2 rounded-full border-blue-200 bg-white text-blue-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md"
+            className="gap-2 rounded-full border-indigo-200 bg-white text-indigo-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md"
             title="다시 생성"
           >
             <RefreshCw className="size-4" />

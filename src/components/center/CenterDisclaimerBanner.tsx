@@ -14,7 +14,8 @@ export function CenterDisclaimerBanner({
           <Info className="size-4 text-amber-600" />
           <span>
             이 서비스는 치료/진단용이 아닙니다.
-            <br />
+            <span className="hidden sm:inline"> </span>
+            <br className="sm:hidden" />
             AI가 생성한 참고용 정보를 제공합니다.
           </span>
         </p>

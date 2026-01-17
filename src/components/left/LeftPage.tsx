@@ -120,7 +120,7 @@ export function LeftPage({
   };
 
   return (
-    <div className="relative p-6 min-h-[600px] flex flex-col text-[15px] leading-6">
+    <div className="relative min-h-[600px] flex flex-col text-[15px] leading-6">
       {showBackButton && (
         <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
           <Button

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { validateUserText } from "../../../utils/validation";
 import { Button } from "../../ui/button";
 import type { EmotionData } from "../types";
-import { ActionsSection } from "./ActionsSection";
+import { AutomaticThoughtToolBar } from "./AutomaticThoughtToolBar";
 import { CustomThoughtSection } from "./CustomThoughtSection";
 import { GeneratedThoughtsSection } from "./GeneratedThoughtsSection";
 import { GuidanceSection } from "./GuidanceSection";
@@ -126,7 +126,7 @@ export function ThoughtSelectionCard({
     <>
       <GuidanceSection selectedEmotion={selectedEmotion} />
       <div className="flex justify-end">
-        <ActionsSection
+        <AutomaticThoughtToolBar
           currentPrefetchKey={currentPrefetchKey}
           selectedThought={selectedGeneratedThought}
           customThoughtTrimmed={customThoughtTrimmed}

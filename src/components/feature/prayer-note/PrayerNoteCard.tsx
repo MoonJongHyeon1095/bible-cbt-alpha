@@ -211,7 +211,7 @@ export function PrayerNoteCard({
               <p className="text-sm text-rose-600">{verseError}</p>
             )}
             {!verseLoading && !verseError && verseLines.length > 0 && (
-              <div className="space-y-2" style={scriptureFont}>
+              <div className="space-y-2 mb-8" style={scriptureFont}>
                 {verseLines.map((line, index) => {
                   const verseNumber = note.startVerse
                     ? note.startVerse + index

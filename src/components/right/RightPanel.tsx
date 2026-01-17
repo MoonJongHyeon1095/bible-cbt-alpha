@@ -445,7 +445,7 @@ export function RightPanel({
   };
 
   return (
-    <div className="relative p-6 min-h-[600px] flex flex-col">
+    <div className="relative min-h-[600px] flex flex-col">
       {showBackButton && (
         <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
           <Button
