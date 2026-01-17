@@ -20,6 +20,7 @@ type AutoThoughtCacheEntry = {
 };
 
 const autoThoughtCache = new Map<string, AutoThoughtCacheEntry>();
+const AUTO_THOUGHT_STORAGE_PREFIX = "minimal-auto-thoughts:";
 
 export function MinimalAutoThoughtStep({
   userInput,
@@ -90,6 +91,27 @@ export function MinimalAutoThoughtStep({
       setError(null);
       return;
     }
+    if (typeof window !== "undefined") {
+      try {
+        const raw = sessionStorage.getItem(
+          `${AUTO_THOUGHT_STORAGE_PREFIX}${cacheKey}`
+        );
+        if (raw) {
+          const parsed = JSON.parse(raw) as AutoThoughtCacheEntry;
+          if (parsed?.thoughts?.length) {
+            setThoughts(parsed.thoughts);
+            setCurrentIndex(parsed.index ?? 0);
+            setHasShownCustomPrompt(Boolean(parsed.hasShownCustomPrompt));
+            setLoading(false);
+            setError(null);
+            autoThoughtCache.set(cacheKey, parsed);
+            return;
+          }
+        }
+      } catch {
+        // ignore cache read errors
+      }
+    }
     setHasShownCustomPrompt(false);
     onWantsCustomChange(false);
     void loadThoughts();
@@ -108,11 +130,22 @@ export function MinimalAutoThoughtStep({
 
   useEffect(() => {
     if (!cacheKey || thoughts.length === 0) return;
-    autoThoughtCache.set(cacheKey, {
+    const entry = {
       thoughts,
       index: currentIndex,
       hasShownCustomPrompt,
-    });
+    };
+    autoThoughtCache.set(cacheKey, entry);
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.setItem(
+          `${AUTO_THOUGHT_STORAGE_PREFIX}${cacheKey}`,
+          JSON.stringify(entry)
+        );
+      } catch {
+        // ignore cache write errors
+      }
+    }
   }, [cacheKey, currentIndex, hasShownCustomPrompt, thoughts]);
 
   const handleNextThought = () => {

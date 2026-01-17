@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import type { EmotionThoughtPair } from "../types";
@@ -39,6 +39,8 @@ export function MinimalSessionPage({
     SelectedCognitiveError[]
   >([]);
   const [autoThoughtWantsCustom, setAutoThoughtWantsCustom] = useState(false);
+  const [alternativeSeed, setAlternativeSeed] = useState(0);
+  const lastErrorsKeyRef = useRef<string>("");
   const stepOrder: MinimalStep[] = [
     "incident",
     "emotion",
@@ -68,6 +70,18 @@ export function MinimalSessionPage({
   };
 
   const handleSelectErrors = (errors: SelectedCognitiveError[]) => {
+    const nextKey = JSON.stringify(
+      errors.map((item) => ({
+        id: item.id,
+        index: item.index,
+        title: item.title,
+        detail: item.detail,
+      }))
+    );
+    if (nextKey !== lastErrorsKeyRef.current) {
+      setAlternativeSeed((prev) => prev + 1);
+      lastErrorsKeyRef.current = nextKey;
+    }
     setSelectedCognitiveErrors(errors);
     setStep("alternative");
   };
@@ -178,6 +192,7 @@ export function MinimalSessionPage({
           userInput={userInput}
           emotionThoughtPairs={emotionThoughtPairs}
           selectedCognitiveErrors={selectedCognitiveErrors}
+          seed={alternativeSeed}
           onSelect={handleComplete}
         />
       )}

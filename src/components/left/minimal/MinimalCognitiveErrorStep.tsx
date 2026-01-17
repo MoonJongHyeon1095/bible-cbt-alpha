@@ -23,6 +23,15 @@ type DetailItem = {
 };
 
 const BATCH_SIZE = 3;
+const cognitiveErrorCache = new Map<
+  string,
+  {
+    ranked: Array<{ index: ErrorIndex; reason: string; evidenceQuote?: string }>;
+    detailByIndex: Partial<Record<ErrorIndex, DetailItem>>;
+    pageIndex: number;
+    withinIndex: number;
+  }
+>();
 
 export function MinimalCognitiveErrorStep({
   userInput,
@@ -40,6 +49,10 @@ export function MinimalCognitiveErrorStep({
   const [rankLoading, setRankLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const cacheKey = useMemo(
+    () => `${userInput.trim()}::${thought.trim()}`,
+    [userInput, thought]
+  );
 
   const resetState = () => {
     setRanked([]);
@@ -91,9 +104,20 @@ export function MinimalCognitiveErrorStep({
 
   useEffect(() => {
     if (!userInput.trim() || !thought.trim()) return;
+    const cached = cognitiveErrorCache.get(cacheKey);
+    if (cached) {
+      setRanked(cached.ranked);
+      setDetailByIndex(cached.detailByIndex);
+      setPageIndex(cached.pageIndex);
+      setWithinIndex(cached.withinIndex);
+      setRankLoading(false);
+      setDetailLoading(false);
+      setError(null);
+      return;
+    }
     void loadRanked();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userInput, thought]);
+  }, [cacheKey, userInput, thought]);
 
   const currentIndices = useMemo(() => {
     const start = pageIndex * BATCH_SIZE;
@@ -106,6 +130,16 @@ export function MinimalCognitiveErrorStep({
     void fetchDetails(missing);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndices]);
+
+  useEffect(() => {
+    if (!cacheKey || ranked.length === 0) return;
+    cognitiveErrorCache.set(cacheKey, {
+      ranked,
+      detailByIndex,
+      pageIndex,
+      withinIndex,
+    });
+  }, [cacheKey, detailByIndex, pageIndex, ranked, withinIndex]);
 
   useEffect(() => {
     setWithinIndex(0);

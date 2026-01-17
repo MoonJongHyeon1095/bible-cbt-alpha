@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
-import { useAlternativeThoughts } from "../hooks/useAlternativeThoughts";
+import { useEffect, useState } from "react";
 import type { EmotionThoughtPair } from "../../../types";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
-import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
 import { MinimalLoadingScreen } from "../../center/minimal/MinimalLoadingScreen";
+import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
+import { useAlternativeThoughts } from "../hooks/useAlternativeThoughts";
 
 interface MinimalAlternativeThoughtStepProps {
   userInput: string;
   emotionThoughtPairs: EmotionThoughtPair[];
   selectedCognitiveErrors: SelectedCognitiveError[];
+  seed: number;
   onSelect: (thought: string) => void;
 }
 
@@ -17,6 +18,7 @@ export function MinimalAlternativeThoughtStep({
   userInput,
   emotionThoughtPairs,
   selectedCognitiveErrors,
+  seed,
   onSelect,
 }: MinimalAlternativeThoughtStepProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -32,6 +34,11 @@ export function MinimalAlternativeThoughtStep({
     emotionThoughtPairs,
     selectedCognitiveErrors,
   });
+
+  useEffect(() => {
+    if (seed === 0) return;
+    void generateAlternatives({ force: true });
+  }, [generateAlternatives, seed]);
 
   useEffect(() => {
     setCurrentIndex(0);
@@ -76,17 +83,24 @@ export function MinimalAlternativeThoughtStep({
             어떤 대안사고가 가장 마음에 와닿나요?
           </h1>
           <p className="text-base sm:text-lg text-slate-500 leading-relaxed">
-            가장 힘이 되는 생각을 골라주세요.
+            고르라고 하지말고 매번 새로고침 하는 거 같은 문구
           </p>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white/90 px-6 py-5 text-base sm:text-lg text-slate-800 leading-relaxed">
+        <div className="bg-transparent px-1 py-2 text-base sm:text-lg text-slate-800 font-serif leading-relaxed">
           {currentThought?.thought ?? "대안사고를 불러오는 중입니다."}
         </div>
+        {currentThought?.technique && (
+          <div className="inline-flex items-center rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-xs font-medium text-slate-600">
+            {currentThought.technique}
+          </div>
+        )}
 
         <div className="flex flex-col gap-3">
           <MinimalFloatingNextButton
-            onClick={() => currentThought?.thought && onSelect(currentThought.thought)}
+            onClick={() =>
+              currentThought?.thought && onSelect(currentThought.thought)
+            }
             ariaLabel="이 생각으로 진행"
             disabled={!currentThought?.thought}
           />
