@@ -16,6 +16,7 @@ import type {
   SelectedCognitiveError,
   SessionHistory,
 } from "../../types/sessionHistory";
+import { clearCbtSessionStorage } from "../../utils/cbtSessionStorage";
 import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
 import { AlternativeThoughtCard } from "./AlternativeThoughtCard";
@@ -32,7 +33,6 @@ import { useTriggerNotes } from "./hooks/useTriggerNotes";
 import { ProgressSummaryCard } from "./ProgressSummaryCard";
 import { SelectedThoughtCard } from "./SelectedThoughtCard";
 import { ShalomCard } from "./ShalomCard";
-import { clearCbtSessionStorage } from "../../utils/cbtSessionStorage";
 
 interface RightPanelProps {
   step: number;
@@ -77,7 +77,7 @@ export function RightPanel({
 
   const hasAnyIntensity = useMemo(
     () => emotionThoughtPairs.some((p) => p.intensity != null),
-    [emotionThoughtPairs]
+    [emotionThoughtPairs],
   );
 
   const showBackButton = step > 1 && Boolean(onPrevious);
@@ -104,7 +104,7 @@ export function RightPanel({
         onClick={() => {
           if (
             confirm(
-              "같은 주제로 다시 하시겠습니까? 아직 감정이 남아 있다면 반복하시면 더욱 효과적입니다."
+              "같은 주제로 다시 하시겠습니까? 아직 감정이 남아 있다면 반복하시면 더욱 효과적입니다.",
             )
           ) {
             onRestartWithSameInput();
@@ -416,8 +416,6 @@ export function RightPanel({
 
     return {
       badge: "STEP 5 · 마무리",
-      title: "세션을 마무리하며 구체적인 행동을 고려해볼까요?",
-      desc: "행동의 변화가 마음의 변화를 가져오기 마련입니다.",
     };
   }, [step, hasSelectedThought, wantsBibleVerse]);
 
@@ -745,7 +743,7 @@ export function RightPanel({
                 <>
                   <Button
                     onClick={handleFinalComplete}
-                  className="mb-4 w-full rounded-full bg-indigo-600 transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
+                    className="mb-4 w-full rounded-full bg-indigo-600 transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
                     disabled={isBehaviorGenerating}
                   >
                     {isBehaviorGenerating ? "행동 제안 생성중" : "완료"}

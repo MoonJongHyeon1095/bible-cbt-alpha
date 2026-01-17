@@ -28,7 +28,7 @@ import { PatternErrorSection } from "./edit/PatternErrorSection";
 import { PatternTriggerSection } from "./edit/PatternTriggerSection";
 import { FeatureHeader } from "../../common/FeatureHeader";
 import { ScrollToTopButton } from "../../common/ScrollToTopButton";
-import { SelectedSectionActions } from "../../common/SelectedSectionActions";
+import { SelectedSectionActions } from "../../../common/SelectedSectionActions";
 
 interface PatternsPageProps {
   user: User | null;

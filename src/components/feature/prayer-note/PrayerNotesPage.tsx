@@ -3,7 +3,7 @@ import { BookOpen } from "lucide-react";
 import { useRef, useState } from "react";
 import { FeatureHeader } from "../common/FeatureHeader";
 import { ScrollToTopButton } from "../common/ScrollToTopButton";
-import { SelectedSectionActions } from "../common/SelectedSectionActions";
+import { SelectedSectionActions } from "../../common/SelectedSectionActions";
 import { useAutoCloseOnScroll } from "../common/utils/useAutoCloseOnScroll";
 import { PrayerChapterPreviewSection } from "./PrayerChapterPreviewSection";
 import { PrayerNoteFormSection } from "./PrayerNoteFormSection";

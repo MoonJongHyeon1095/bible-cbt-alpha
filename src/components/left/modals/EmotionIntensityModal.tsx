@@ -97,7 +97,6 @@ export function EmotionIntensityModal({
                 </div>
               </div>
               <span className="inline-flex items-center gap-2 text-xs font-semibold text-indigo-600">
-                {showEmotionControl ? "닫기" : "자세히"}
                 <ChevronDown
                   className={`size-4 text-indigo-500 transition-transform ${
                     showEmotionControl ? "rotate-180" : ""
@@ -163,7 +162,6 @@ export function EmotionIntensityModal({
                 </div>
               </div>
               <span className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-600">
-                {showEmotionValue ? "닫기" : "자세히"}
                 <ChevronDown
                   className={`size-4 text-emerald-500 transition-transform ${
                     showEmotionValue ? "rotate-180" : ""
