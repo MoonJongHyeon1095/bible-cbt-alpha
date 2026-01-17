@@ -25,7 +25,6 @@ export interface SessionHistory {
     behaviorLabel: string;
     behaviorText: string;
   } | null;
-  positiveReframes: { [emotion: string]: string };
   bibleVerse?: {
     book: string;
     chapter: number | null;

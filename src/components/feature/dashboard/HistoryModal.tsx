@@ -72,7 +72,7 @@ export function HistoryModal({
         const { data, error } = await supabase
           .from("session_history")
           .select(
-            "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors, selected_alternative_thought, selected_behavior, positive_reframes, bible_verse"
+            "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors, selected_alternative_thought, selected_behavior, bible_verse"
           )
           .eq("user_id", user.id)
           .is("soft_deleted_at", null)
@@ -94,8 +94,6 @@ export function HistoryModal({
             ),
             selectedAlternativeThought: row.selected_alternative_thought ?? "",
             selectedBehavior: row.selected_behavior ?? null,
-            positiveReframes:
-              (row.positive_reframes as Record<string, string>) ?? {},
             bibleVerse: row.bible_verse as SessionHistory["bibleVerse"],
           })) ?? [];
 

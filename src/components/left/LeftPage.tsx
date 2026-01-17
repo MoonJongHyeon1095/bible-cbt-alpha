@@ -17,8 +17,6 @@ interface LeftPageProps {
   step: number;
   emotionThoughtPairs: EmotionThoughtPair[];
   userInput: string;
-  positiveReframes: { [emotion: string]: string };
-  onSetPositiveReframes: (reframes: { [emotion: string]: string }) => void;
   onSelectCognitiveErrors: (errors: SelectedCognitiveError[]) => void;
   onNext: () => void;
   onPrevious?: () => void;
@@ -32,8 +30,6 @@ export function LeftPage({
   step,
   emotionThoughtPairs,
   userInput,
-  positiveReframes,
-  onSetPositiveReframes,
   onSelectCognitiveErrors,
   onNext,
   onPrevious,

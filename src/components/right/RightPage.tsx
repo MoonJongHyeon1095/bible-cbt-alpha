@@ -32,7 +32,6 @@ interface RightPageProps {
   step: number;
   emotionThoughtPairs: EmotionThoughtPair[];
   userInput: string;
-  positiveReframes: { [emotion: string]: string };
   selectedCognitiveErrors: SelectedCognitiveError[];
   selectedAlternativeThought: string;
   onSetSelectedAlternativeThought: (thought: string) => void;
@@ -49,7 +48,6 @@ export function RightPage({
   step,
   emotionThoughtPairs,
   userInput,
-  positiveReframes,
   selectedCognitiveErrors,
   selectedAlternativeThought,
   onSetSelectedAlternativeThought,
@@ -258,7 +256,6 @@ export function RightPage({
             behaviorText: selectedBehavior.behaviorText,
           }
         : null,
-      positiveReframes,
       bibleVerse: wantsBibleVerse ? bibleVerse : null,
       detailMode: mode.detailMode,
     };
@@ -296,7 +293,6 @@ export function RightPage({
           selected_cognitive_errors: historyItem.selectedCognitiveErrors,
           selected_alternative_thought: historyItem.selectedAlternativeThought,
           selected_behavior: historyItem.selectedBehavior,
-          positive_reframes: historyItem.positiveReframes,
           bible_verse: historyItem.bibleVerse,
         });
         if (error) throw error;

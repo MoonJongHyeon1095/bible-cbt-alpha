@@ -120,7 +120,6 @@ export function MinimalSessionPage({
       selectedCognitiveErrors,
       selectedAlternativeThought: thought,
       selectedBehavior: null,
-      positiveReframes: {},
       bibleVerse: null,
       detailMode: mode.detailMode,
     };
@@ -153,7 +152,6 @@ export function MinimalSessionPage({
           selected_cognitive_errors: historyItem.selectedCognitiveErrors,
           selected_alternative_thought: historyItem.selectedAlternativeThought,
           selected_behavior: historyItem.selectedBehavior,
-          positive_reframes: historyItem.positiveReframes,
           bible_verse: historyItem.bibleVerse,
         });
         if (error) throw error;
