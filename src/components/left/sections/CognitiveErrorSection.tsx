@@ -12,7 +12,7 @@ interface CognitiveErrorSectionProps {
   detailByIndex: Partial<Record<ErrorIndex, DetailItem>>;
   detailLoading: boolean;
   detailError: string | null;
-  uiIndices: number[];
+  uiIndices: ErrorIndex[];
   pinnedSelected: ErrorIndex[];
   pageIndex: number;
   totalPages: number;
