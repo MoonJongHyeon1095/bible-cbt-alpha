@@ -24,9 +24,6 @@ export function BehaviorReviewCard({
   selectedBehaviorId,
   onSelectBehavior,
   onLoadingChange,
-  onSaveBehavior,
-  savingBehavior = false,
-  isBehaviorSaved,
 }: {
   userInput: string;
   emotionThoughtPairs: EmotionThoughtPair[];
@@ -37,9 +34,6 @@ export function BehaviorReviewCard({
     behavior: BehaviorSelection | null
   ) => void;
   onLoadingChange: (isLoading: boolean) => void;
-  onSaveBehavior?: () => void;
-  savingBehavior?: boolean;
-  isBehaviorSaved?: () => boolean;
 }) {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const mappedErrors = selectedCognitiveErrors
@@ -124,9 +118,6 @@ export function BehaviorReviewCard({
             behaviorList={behaviorList}
             selectedBehaviorId={selectedBehaviorId}
             onSelectBehavior={onSelectBehavior}
-            onSaveBehavior={onSaveBehavior}
-            savingBehavior={savingBehavior}
-            isBehaviorSaved={isBehaviorSaved}
             suggestionsById={suggestionsById}
             loadingId={loadingId}
             errorAll={errorAll}

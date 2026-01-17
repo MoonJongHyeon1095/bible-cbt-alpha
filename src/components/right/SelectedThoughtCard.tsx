@@ -1,13 +1,9 @@
-import { ArrowLeft, Bookmark, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface SelectedThoughtCardProps {
   thought: string;
   className?: string;
-  onSave?: () => void;
-  canSave?: boolean;
-  saving?: boolean;
-  saved?: boolean;
   onBackToAlternatives?: () => void;
   backDisabled?: boolean;
 }
@@ -15,14 +11,9 @@ interface SelectedThoughtCardProps {
 export function SelectedThoughtCard({
   thought,
   className = "",
-  onSave,
-  canSave = false,
-  saving = false,
-  saved = false,
   onBackToAlternatives,
   backDisabled = false,
 }: SelectedThoughtCardProps) {
-  const canShowSave = canSave && onSave;
   const canShowBack = Boolean(onBackToAlternatives);
 
   return (
@@ -45,26 +36,6 @@ export function SelectedThoughtCard({
               >
                 <ArrowLeft className="size-4" />
                 다른 대안사고 보기
-              </Button>
-            ) : null}
-            {canShowSave ? (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={onSave}
-                className={`gap-1 border-purple-300 hover:bg-purple-50 whitespace-nowrap w-full sm:w-auto justify-center ${
-                  saved ? "text-purple-700" : "text-purple-700"
-                }`}
-                disabled={saving || saved}
-              >
-                {saving ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : saved ? (
-                  <Bookmark className="size-4 text-purple-600" />
-                ) : (
-                  <Bookmark className="size-4" />
-                )}
-                {saving ? "저장 중..." : saved ? "저장됨" : "감정노트에 저장"}
               </Button>
             ) : null}
           </div>

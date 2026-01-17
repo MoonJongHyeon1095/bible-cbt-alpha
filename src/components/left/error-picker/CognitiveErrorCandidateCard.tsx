@@ -1,7 +1,5 @@
-import { Bookmark, Check, Loader2 } from "lucide-react";
-import type { MouseEvent } from "react";
+import { Check, Loader2 } from "lucide-react";
 import type { ErrorIndex } from "../../../lib/ai";
-import { Button } from "../../ui/button";
 import type { CognitiveErrorMeta, DetailItem, RankItem } from "./types";
 import { splitToSentences } from "./utils";
 
@@ -12,10 +10,7 @@ type Props = {
   rankItem?: RankItem;
   detail?: DetailItem;
   detailLoading: boolean;
-  isSaving: boolean;
-  alreadySaved: boolean;
   onToggleSelect: (idx: ErrorIndex) => void;
-  onSaveError?: (idx: ErrorIndex) => void;
 };
 
 export function CognitiveErrorCandidateCard({
@@ -25,13 +20,8 @@ export function CognitiveErrorCandidateCard({
   rankItem,
   detail,
   detailLoading,
-  isSaving,
-  alreadySaved,
   onToggleSelect,
-  onSaveError,
 }: Props) {
-  const canShowSave = Boolean(selectedOn && onSaveError && detail);
-
   return (
     <div
       role="button"
@@ -63,31 +53,6 @@ export function CognitiveErrorCandidateCard({
             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-2 py-1 text-[11px] font-semibold text-emerald-800">
               <Check className="size-3" />
             </span>
-          )}
-          {canShowSave && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={(event: MouseEvent<HTMLButtonElement>) => {
-                event.stopPropagation();
-                onSaveError?.(idx);
-              }}
-              className="gap-1 border-emerald-200 text-emerald-800"
-              disabled={isSaving || alreadySaved}
-            >
-              {isSaving ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : alreadySaved ? (
-                <Bookmark className="size-4 text-emerald-600" />
-              ) : (
-                <Bookmark className="size-4" />
-              )}
-              {isSaving
-                ? "저장 중..."
-                : alreadySaved
-                ? "저장됨"
-                : "감정노트에 저장"}
-            </Button>
           )}
         </div>
       </div>

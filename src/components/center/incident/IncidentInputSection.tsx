@@ -1,4 +1,4 @@
-import { Bookmark, FolderOpen, Loader2 } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
 import type { CbtMode } from "../../header/navigation/ModePicker";
@@ -9,9 +9,7 @@ interface IncidentInputSectionProps {
   onNext: () => void;
   mode: CbtMode;
   onChangeMode: (next: CbtMode) => void;
-  onSaveTrigger: () => void;
   onOpenSavedTriggers: () => void;
-  savingTrigger?: boolean;
 }
 
 export function IncidentInputSection({
@@ -20,9 +18,7 @@ export function IncidentInputSection({
   onNext,
   mode,
   onChangeMode,
-  onSaveTrigger,
   onOpenSavedTriggers,
-  savingTrigger = false,
 }: IncidentInputSectionProps) {
   const isLite = mode.detailMode === "lite";
   const handleSelectDetailMode = (detailMode: CbtMode["detailMode"]) => {
@@ -81,21 +77,7 @@ export function IncidentInputSection({
           </Button>
         </div>
       ) : (
-        <div className="flex items-center gap-2 flex-nowrap">
-          <button
-            onClick={onSaveTrigger}
-            className="flex flex-none shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-md"
-            disabled={savingTrigger}
-            title="감정노트에 저장"
-          >
-            {savingTrigger ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Bookmark className="size-4" />
-            )}
-            {savingTrigger ? "저장 중..." : "감정노트에 저장"}
-          </button>
-
+        <div className="flex items-center justify-end">
           <button
             onClick={onOpenSavedTriggers}
             className="flex flex-none shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-blue-200/70 bg-blue-50/80 px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-100/80 hover:shadow-md"

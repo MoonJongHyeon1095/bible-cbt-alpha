@@ -320,9 +320,7 @@ export function CenterPanel({
             randomExamples={randomExamples}
             onExampleClick={handleExampleClick}
             onRefreshExamples={refreshExamples}
-            onSaveTrigger={notes.handleSaveTriggerOnly}
             onOpenSavedTriggers={notes.openSavedTriggersModal}
-            savingTrigger={notes.savingTrigger}
             showExamples={mode.detailMode !== "lite"}
           />
         )}
@@ -363,8 +361,6 @@ export function CenterPanel({
             generatedThoughts={flow.generatedThoughts}
             selectedThoughtIndex={flow.selectedThoughtIndex}
             customThought={flow.customThought}
-            currentPrefetchKey={flow.currentPrefetchKey}
-            activeNoteTrigger={notes.activeNoteTrigger}
             onSelectThought={flow.handleThoughtSelect}
             onRegenerate={() => {
               flow.clearPrefetch();
@@ -377,22 +373,12 @@ export function CenterPanel({
               flow.clearPrefetch();
               flow.startPrefetchThoughts();
             }}
-            onAddFavorite={(thought) =>
-              notes.addThoughtToFavorites(
-                thought,
-                flow.selectedEmotion,
-                flow.emotionIntensity
-              )
-            }
             onLoadFavorites={() => void notes.openSavedDetailsModal()}
             onCustomThoughtChange={flow.handleCustomThoughtChange}
             onCustomThoughtSelect={flow.handleCustomThoughtSelect}
             onSubmitCustom={flow.submitCustomThought}
             onSubmit={flow.submitThoughtSelection}
             canSubmit={flow.selectedThoughtIndex !== null}
-            savingDetail={notes.savingDetail}
-            savingDetailId={notes.savingDetailId}
-            isDetailSaved={notes.isDetailSaved}
           />
         )}
 

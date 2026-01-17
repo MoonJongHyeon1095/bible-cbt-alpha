@@ -1,49 +1,25 @@
-import { Bookmark, Check, FolderOpen, Loader2, RefreshCw } from "lucide-react";
+import { FolderOpen, RefreshCw } from "lucide-react";
 import { Button } from "../../ui/button";
 
 export function AutomaticThoughtToolBar({
-  currentPrefetchKey,
   selectedThought,
   customThoughtTrimmed,
   selectedThoughtIndex,
-  savingDetail,
-  savingDetailId,
-  isDetailSaved,
   onRegenerate,
-  onSaveSelectedThought,
   onLoadFavorites,
-  onSaveCustomThought,
   onSelectCustomThought,
   onSubmit,
   canSubmit,
 }: {
-  currentPrefetchKey: string | null;
   selectedThought: string | null;
   customThoughtTrimmed: string;
   selectedThoughtIndex: number | null;
-  savingDetail: boolean;
-  savingDetailId: string | null;
-  isDetailSaved?: (thought: string) => boolean;
   onRegenerate: () => void;
-  onSaveSelectedThought: (thought: string) => void;
   onLoadFavorites: () => void;
-  onSaveCustomThought: () => void;
   onSelectCustomThought: () => void;
   onSubmit: () => void;
   canSubmit: boolean;
 }) {
-  const isSaved = selectedThought
-    ? isDetailSaved?.(selectedThought) ?? false
-    : false;
-  const isCustomSaved = customThoughtTrimmed
-    ? isDetailSaved?.(customThoughtTrimmed) ?? false
-    : false;
-  const isSavingThis =
-    !!selectedThought && savingDetail && savingDetailId === selectedThought;
-  const isSavingCustom =
-    !!customThoughtTrimmed &&
-    savingDetail &&
-    savingDetailId === customThoughtTrimmed;
   const canSubmitSelected =
     !customThoughtTrimmed &&
     selectedThoughtIndex !== null &&
@@ -62,74 +38,14 @@ export function AutomaticThoughtToolBar({
           >
             <RefreshCw className="size-4" />
           </Button>
-          {selectedThought ? (
-            <Button
-              onClick={() => onSaveSelectedThought(selectedThought)}
-              size="sm"
-              disabled={savingDetail || isSaved}
-              className="gap-2 rounded-full border border-blue-600 bg-blue-600 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-700 hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
-              title="선택한 생각을 감정 노트에 저장"
-            >
-              {isSavingThis ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  저장 중...
-                </>
-              ) : isSaved ? (
-                <>
-                  <Check className="size-4" />
-                  저장됨
-                </>
-              ) : (
-                <>
-                  <Bookmark
-                    className={`size-4 ${isSaved ? "text-amber-600" : ""}`}
-                    fill={isSaved ? "currentColor" : "none"}
-                  />
-                  저장하기
-                </>
-              )}
-            </Button>
-          ) : null}
-
-          {customThoughtTrimmed ? (
-            <Button
-              onClick={onSaveCustomThought}
-              size="sm"
-              disabled={savingDetail || isCustomSaved}
-              className="gap-2 rounded-full border border-blue-600 bg-blue-600 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-700 hover:bg-blue-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
-              title="이 생각을 감정 노트에 저장"
-            >
-              {isSavingCustom ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  저장 중...
-                </>
-              ) : isCustomSaved ? (
-                <>
-                  <Check className="size-4" />
-                  저장됨
-                </>
-              ) : (
-                <>
-                  <Bookmark
-                    className={`size-4 ${isCustomSaved ? "text-blue-600" : ""}`}
-                    fill={isCustomSaved ? "currentColor" : "none"}
-                  />
-                  저장하기
-                </>
-              )}
-            </Button>
-          ) : null}
-
           <Button
             onClick={onLoadFavorites}
             variant="outline"
             size="sm"
             className="gap-2 rounded-full border-blue-200 bg-white text-blue-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:shadow-md"
           >
-          <FolderOpen className="size-4" />
-          불러오기
+            <FolderOpen className="size-4" />
+            불러오기
           </Button>
         </div>
         {(canSubmitSelected || customThoughtTrimmed) && (

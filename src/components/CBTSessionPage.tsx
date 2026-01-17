@@ -151,7 +151,6 @@ export function CBTSessionPage({
             step={step}
             emotionThoughtPairs={emotionThoughtPairs}
             userInput={userInput}
-            user={user}
             positiveReframes={positiveReframes}
             onSetPositiveReframes={setPositiveReframes}
             onSelectCognitiveErrors={setSelectedCognitiveErrors}

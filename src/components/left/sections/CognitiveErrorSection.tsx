@@ -21,9 +21,6 @@ interface CognitiveErrorSectionProps {
   onRetryRank: () => void;
   onReroll: () => void;
   onToggleSelect: (index: ErrorIndex) => void;
-  onSaveError: (index: ErrorIndex) => void;
-  savingErrorId: ErrorIndex | null;
-  isErrorSaved: (index: ErrorIndex) => boolean;
   onPrevPage: () => void;
   onNextPage: () => void;
   onConfirm: () => void;
@@ -47,9 +44,6 @@ export function CognitiveErrorSection({
   onRetryRank,
   onReroll,
   onToggleSelect,
-  onSaveError,
-  savingErrorId,
-  isErrorSaved,
   onPrevPage,
   onNextPage,
   onConfirm,
@@ -74,9 +68,6 @@ export function CognitiveErrorSection({
       onRetryRank={onRetryRank}
       onReroll={onReroll}
       onToggleSelect={onToggleSelect}
-      onSaveError={onSaveError}
-      savingErrorId={savingErrorId}
-      isErrorSaved={isErrorSaved}
       onPrevPage={onPrevPage}
       onNextPage={onNextPage}
       onConfirm={onConfirm}

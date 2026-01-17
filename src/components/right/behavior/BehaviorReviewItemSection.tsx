@@ -1,11 +1,10 @@
-import { Bookmark, Check, Loader2, RefreshCw } from "lucide-react";
+import { Check, RefreshCw } from "lucide-react";
 import type { CognitiveBehaviorId } from "../../../constants/behaviors";
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "../../ui/accordion";
-import { Button } from "../../ui/button";
 import type {
   BehaviorErrorMap,
   BehaviorReviewItem,
@@ -17,9 +16,6 @@ export function BehaviorReviewItemSection({
   item,
   selectedBehaviorId,
   onSelectBehavior,
-  onSaveBehavior,
-  savingBehavior,
-  isBehaviorSaved,
   suggestionsById,
   loadingId,
   errorAll,
@@ -30,9 +26,6 @@ export function BehaviorReviewItemSection({
   item: BehaviorReviewItem;
   selectedBehaviorId: CognitiveBehaviorId | null;
   onSelectBehavior: (behavior: BehaviorSelection | null) => void;
-  onSaveBehavior?: () => void;
-  savingBehavior?: boolean;
-  isBehaviorSaved?: () => boolean;
   suggestionsById: BehaviorSuggestionMap;
   loadingId: "all" | CognitiveBehaviorId | null;
   errorAll: string | null;
@@ -41,7 +34,6 @@ export function BehaviorReviewItemSection({
   suggestionsEnabled: boolean;
 }) {
   const suggestion = suggestionsById[item.behavior.id];
-  const hasSuggestion = Boolean(suggestion);
   const isSelected = selectedBehaviorId === item.behavior.id;
 
   return (
@@ -62,58 +54,6 @@ export function BehaviorReviewItemSection({
               <span className="inline-flex h-8 items-center rounded-full bg-indigo-600 px-3 text-xs font-medium uppercase tracking-wide text-white">
                 선택됨
               </span>
-              {onSaveBehavior && hasSuggestion
-                ? (() => {
-                    const behaviorSaved = isBehaviorSaved?.() ?? false;
-                    return (
-                      <Button
-                        asChild
-                        size="default"
-                        variant="outline"
-                        className={`h-8 gap-2 rounded-full border-indigo-300 px-3 text-xs font-medium hover:bg-indigo-50 ${
-                          behaviorSaved ? "text-indigo-700" : "text-indigo-700"
-                        }`}
-                        disabled={savingBehavior || behaviorSaved}
-                      >
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            if (behaviorSaved || savingBehavior) return;
-                            onSaveBehavior();
-                          }}
-                          onPointerDown={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                          }}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              if (behaviorSaved || savingBehavior) return;
-                              onSaveBehavior();
-                            }
-                          }}
-                        >
-                          {savingBehavior ? (
-                            <Loader2 className="size-4 animate-spin" />
-                          ) : behaviorSaved ? (
-                            <Bookmark className="size-4 text-indigo-600" />
-                          ) : (
-                            <Bookmark className="size-4" />
-                          )}
-                          {savingBehavior
-                            ? "저장 중..."
-                            : behaviorSaved
-                            ? "저장됨"
-                            : "감정노트에 저장"}
-                        </span>
-                      </Button>
-                    );
-                  })()
-                : null}
             </div>
           )}
 

@@ -30,13 +30,10 @@ type Props = {
   totalPages: number;
   selected: ErrorIndex[];
   canConfirm: boolean;
-  savingErrorId?: ErrorIndex | null;
-  isErrorSaved?: (idx: ErrorIndex) => boolean;
 
   onRetryRank: () => void;
   onReroll: () => void;
   onToggleSelect: (idx: ErrorIndex) => void;
-  onSaveError?: (idx: ErrorIndex) => void;
   onPrevPage: () => void;
   onNextPage: () => void;
   onConfirm: () => void;
@@ -58,12 +55,9 @@ export function CognitiveErrorPickerCard({
   totalPages,
   selected,
   canConfirm,
-  savingErrorId,
-  isErrorSaved,
   onRetryRank,
   onReroll,
   onToggleSelect,
-  onSaveError,
   onPrevPage,
   onNextPage,
   onConfirm,
@@ -102,10 +96,7 @@ export function CognitiveErrorPickerCard({
         rankItem={rankItem}
         detail={detail}
         detailLoading={detailLoading}
-        isSaving={savingErrorId === idx}
-        alreadySaved={isErrorSaved?.(idx) ?? false}
         onToggleSelect={onToggleSelect}
-        onSaveError={onSaveError}
       />
     );
   };
@@ -173,10 +164,6 @@ export function CognitiveErrorPickerCard({
           <FloatingErrorPickerToolbar
             isVisible={hasRerolled || selectedCount > 0}
             selectedCount={selectedCount}
-            selectedIndices={selected}
-            savingErrorId={savingErrorId}
-            isErrorSaved={isErrorSaved}
-            onSaveError={onSaveError}
             pageIndex={pageIndex}
             totalPages={totalPages}
             canPrev={canPrev}

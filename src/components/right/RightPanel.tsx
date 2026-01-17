@@ -17,10 +17,10 @@ import type {
   SessionHistory,
 } from "../../types/sessionHistory";
 import { clearCbtSessionStorage } from "../../utils/cbtSessionStorage";
+import { formatAutoTitle } from "../../utils/formatAutoTitle";
 import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
 import { AlternativeThoughtCard } from "./AlternativeThoughtCard";
-import { AlternativeThoughtIntroCard } from "./AlternativeThoughtIntroCard";
 import { AlternativeThoughtQuoteCard } from "./AlternativeThoughtQuoteCard";
 import { BehaviorReviewCard } from "./behavior/BehaviorReviewCard";
 import { BibleOfferCard } from "./BibleOfferCard";
@@ -29,10 +29,11 @@ import { FinalIntensityCard } from "./FinalIntensityCard";
 import { useAlternativeThoughts } from "./hooks/useAlternativeThoughts";
 import { useBibleVerse } from "./hooks/useBibleVerse";
 import { useFinalIntensity } from "./hooks/useFinalIntensity";
-import { useTriggerNotes } from "./hooks/useTriggerNotes";
 import { ProgressSummaryCard } from "./ProgressSummaryCard";
 import { SelectedThoughtCard } from "./SelectedThoughtCard";
 import { ShalomCard } from "./ShalomCard";
+import { saveSessionPatternAPI } from "./utils/api";
+import { saveSessionPatternLocal } from "./utils/storage";
 
 interface RightPanelProps {
   step: number;
@@ -91,6 +92,21 @@ export function RightPanel({
   const [isBehaviorGenerating, setIsBehaviorGenerating] = useState(false);
 
   const autoAdvancedRef = useRef(false);
+
+  const readActiveNote = () => {
+    try {
+      const raw = sessionStorage.getItem("cbt_active_note");
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return {
+        noteId: parsed?.noteId ? String(parsed.noteId) : null,
+        title: parsed?.title ? String(parsed.title) : "",
+        trigger: parsed?.trigger ? String(parsed.trigger) : "",
+      };
+    } catch {
+      return null;
+    }
+  };
 
   const goNextIfNeeded = () => {
     if (step < 5) onNext();
@@ -154,20 +170,6 @@ export function RightPanel({
     hasSelectedThought,
     onAdvance: goNextIfNeeded,
   });
-  const {
-    savingAlternative,
-    handleSaveAlternative,
-    savingBehavior,
-    handleSaveBehavior,
-    isAlternativeSaved,
-    isBehaviorSaved,
-  } = useTriggerNotes({
-    user,
-    userInput,
-    selectedAlternativeThought,
-    selectedCognitiveErrors,
-    selectedBehavior,
-  });
 
   useEffect(() => {
     if (!hasSelectedThought || step < 4) {
@@ -230,6 +232,9 @@ export function RightPanel({
         ? finalIntensities[pair.emotion] ?? pair.intensity ?? null
         : null,
     }));
+    const primaryPair = emotionThoughtPairs[0];
+    const activeNote = readActiveNote();
+    const title = activeNote?.title?.trim() || formatAutoTitle(new Date());
 
     const historyItem: SessionHistory = {
       id: Date.now().toString(),
@@ -251,6 +256,29 @@ export function RightPanel({
 
     if (user) {
       try {
+        const { ok: saveOk, payload: savePayload } =
+          await saveSessionPatternAPI({
+            noteId: activeNote?.noteId ?? null,
+            title,
+            triggerText: userInput,
+            emotion: primaryPair?.emotion ?? "",
+            automaticThought: primaryPair?.thought ?? "",
+            alternativeThought: selectedAlternativeThought,
+            errors: selectedCognitiveErrors.map((error) => ({
+              errorLabel: error.title ?? "",
+              errorDescription: error.detail ?? "",
+            })),
+            behavior: selectedBehavior
+              ? {
+                  behaviorLabel: selectedBehavior.behaviorLabel,
+                  behaviorText: selectedBehavior.behaviorText,
+                }
+              : null,
+          });
+        if (!saveOk) {
+          throw new Error(savePayload?.error || "감정노트 저장 실패");
+        }
+
         const { error } = await supabase.from("session_history").insert({
           user_id: user.id,
           timestamp: historyItem.timestamp,
@@ -270,6 +298,22 @@ export function RightPanel({
       }
     } else {
       try {
+        saveSessionPatternLocal({
+          noteId: activeNote?.noteId ?? null,
+          title,
+          triggerText: userInput,
+          emotion: primaryPair?.emotion ?? "",
+          automaticThought: primaryPair?.thought ?? "",
+          alternativeThought: selectedAlternativeThought,
+          errors: selectedCognitiveErrors,
+          behavior: selectedBehavior
+            ? {
+                behaviorLabel: selectedBehavior.behaviorLabel,
+                behaviorText: selectedBehavior.behaviorText,
+              }
+            : null,
+        });
+
         const existing = localStorage.getItem("cbt_history");
         const histories = existing ? JSON.parse(existing) : [];
         histories.unshift(historyItem);
@@ -476,8 +520,6 @@ export function RightPanel({
 
         {showAlternativesPicker && (
           <div className="space-y-4">
-            <AlternativeThoughtIntroCard />
-
             {thoughtsLoading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="size-10 animate-spin text-purple-600 mb-4" />
@@ -535,12 +577,7 @@ export function RightPanel({
             />
             <SelectedThoughtCard
               thought={selectedAlternativeThought}
-              canSave={Boolean(userInput.trim())}
-              saving={savingAlternative}
-              saved={isAlternativeSaved(selectedAlternativeThought)}
               onBackToAlternatives={handleBackToAlternatives}
-              backDisabled={savingAlternative}
-              onSave={handleSaveAlternative}
             />
             <BehaviorReviewCard
               userInput={userInput}
@@ -550,9 +587,6 @@ export function RightPanel({
               selectedBehaviorId={selectedBehavior?.behaviorId ?? null}
               onSelectBehavior={setSelectedBehavior}
               onLoadingChange={setIsBehaviorGenerating}
-              onSaveBehavior={handleSaveBehavior}
-              savingBehavior={savingBehavior}
-              isBehaviorSaved={isBehaviorSaved}
             />
 
             {isChristian ? (
@@ -636,12 +670,7 @@ export function RightPanel({
                 />
                 <SelectedThoughtCard
                   thought={selectedAlternativeThought}
-                  canSave={Boolean(userInput.trim())}
-                  saving={savingAlternative}
-                  saved={isAlternativeSaved(selectedAlternativeThought)}
                   onBackToAlternatives={handleBackToAlternatives}
-                  backDisabled={savingAlternative}
-                  onSave={handleSaveAlternative}
                 />
                 <BehaviorReviewCard
                   userInput={userInput}
@@ -651,9 +680,6 @@ export function RightPanel({
                   selectedBehaviorId={selectedBehavior?.behaviorId ?? null}
                   onSelectBehavior={setSelectedBehavior}
                   onLoadingChange={setIsBehaviorGenerating}
-                  onSaveBehavior={handleSaveBehavior}
-                  savingBehavior={savingBehavior}
-                  isBehaviorSaved={isBehaviorSaved}
                 />
                 <div ref={bibleSectionRef} className="space-y-4">
                   <BibleVerseCard
@@ -684,12 +710,7 @@ export function RightPanel({
             />
             <SelectedThoughtCard
               thought={selectedAlternativeThought}
-              canSave={Boolean(userInput.trim())}
-              saving={savingAlternative}
-              saved={isAlternativeSaved(selectedAlternativeThought)}
               onBackToAlternatives={handleBackToAlternatives}
-              backDisabled={savingAlternative}
-              onSave={handleSaveAlternative}
             />
             <BehaviorReviewCard
               userInput={userInput}
@@ -699,9 +720,6 @@ export function RightPanel({
               selectedBehaviorId={selectedBehavior?.behaviorId ?? null}
               onSelectBehavior={setSelectedBehavior}
               onLoadingChange={setIsBehaviorGenerating}
-              onSaveBehavior={handleSaveBehavior}
-              savingBehavior={savingBehavior}
-              isBehaviorSaved={isBehaviorSaved}
             />
             {showBibleOfferInFinalArea && (
               <BibleOfferCard

@@ -12,9 +12,6 @@ export function BehaviorReviewListSection({
   behaviorList,
   selectedBehaviorId,
   onSelectBehavior,
-  onSaveBehavior,
-  savingBehavior,
-  isBehaviorSaved,
   suggestionsById,
   loadingId,
   errorAll,
@@ -25,9 +22,6 @@ export function BehaviorReviewListSection({
   behaviorList: BehaviorReviewItem[];
   selectedBehaviorId: CognitiveBehaviorId | null;
   onSelectBehavior: (behavior: BehaviorSelection | null) => void;
-  onSaveBehavior?: () => void;
-  savingBehavior?: boolean;
-  isBehaviorSaved?: () => boolean;
   suggestionsById: BehaviorSuggestionMap;
   loadingId: "all" | CognitiveBehaviorId | null;
   errorAll: string | null;
@@ -43,9 +37,6 @@ export function BehaviorReviewListSection({
           item={item}
           selectedBehaviorId={selectedBehaviorId}
           onSelectBehavior={onSelectBehavior}
-          onSaveBehavior={onSaveBehavior}
-          savingBehavior={savingBehavior}
-          isBehaviorSaved={isBehaviorSaved}
           suggestionsById={suggestionsById}
           loadingId={loadingId}
           errorAll={errorAll}

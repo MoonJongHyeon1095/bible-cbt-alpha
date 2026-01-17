@@ -11,9 +11,7 @@ interface IncidentStepCardProps {
   randomExamples: { emoji: string; text: string }[];
   onExampleClick: (text: string) => void;
   onRefreshExamples: () => void;
-  onSaveTrigger: () => void;
   onOpenSavedTriggers: () => void;
-  savingTrigger?: boolean;
   showExamples?: boolean;
 }
 
@@ -26,9 +24,7 @@ export function IncidentStepCard({
   randomExamples,
   onExampleClick,
   onRefreshExamples,
-  onSaveTrigger,
   onOpenSavedTriggers,
-  savingTrigger = false,
   showExamples = true,
 }: IncidentStepCardProps) {
   return (
@@ -40,9 +36,7 @@ export function IncidentStepCard({
           onNext={onNext}
           mode={mode}
           onChangeMode={onChangeMode}
-          onSaveTrigger={onSaveTrigger}
           onOpenSavedTriggers={onOpenSavedTriggers}
-          savingTrigger={savingTrigger}
         />
       </div>
 
