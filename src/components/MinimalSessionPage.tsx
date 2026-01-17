@@ -9,12 +9,12 @@ import type {
 import { supabase } from "../lib/supabase/client";
 import { clearCbtSessionStorage } from "../utils/cbtSessionStorage";
 import type { CbtMode } from "./header/navigation/ModePicker";
-import { MinimalAutoThoughtStep } from "./center/minimal/MinimalAutoThoughtStep";
-import { MinimalEmotionStep } from "./center/minimal/MinimalEmotionStep";
-import { MinimalIncidentStep } from "./center/minimal/MinimalIncidentStep";
+import { MinimalAutoThoughtSection } from "./center/minimal/MinimalAutoThoughtSection";
+import { MinimalEmotionSection } from "./center/minimal/MinimalEmotionSection";
+import { MinimalIncidentSection } from "./center/minimal/MinimalIncidentSection";
 import { MinimalFloatingBackButton } from "./common/MinimalFloatingBackButton";
-import { MinimalCognitiveErrorStep } from "./left/minimal/MinimalCognitiveErrorStep";
-import { MinimalAlternativeThoughtStep } from "./right/minimal/MinimalAlternativeThoughtStep";
+import { MinimalCognitiveErrorSection } from "./left/minimal/MinimalCognitiveErrorSection";
+import { MinimalAlternativeThoughtSection } from "./right/minimal/MinimalAlternativeThoughtSection";
 
 type MinimalStep = "incident" | "emotion" | "thought" | "errors" | "alternative";
 
@@ -151,7 +151,7 @@ export function MinimalSessionPage({
         </div>
       )}
       {step === "incident" && (
-        <MinimalIncidentStep
+        <MinimalIncidentSection
           userInput={userInput}
           onInputChange={setUserInput}
           onNext={() => setStep("emotion")}
@@ -159,7 +159,7 @@ export function MinimalSessionPage({
       )}
 
       {step === "emotion" && (
-        <MinimalEmotionStep
+        <MinimalEmotionSection
           selectedEmotion={selectedEmotion}
           onSelectEmotion={setSelectedEmotion}
           onNext={() => {
@@ -170,7 +170,7 @@ export function MinimalSessionPage({
       )}
 
       {step === "thought" && (
-        <MinimalAutoThoughtStep
+        <MinimalAutoThoughtSection
           userInput={userInput}
           emotion={selectedEmotion}
           wantsCustom={autoThoughtWantsCustom}
@@ -180,7 +180,7 @@ export function MinimalSessionPage({
       )}
 
       {step === "errors" && (
-        <MinimalCognitiveErrorStep
+        <MinimalCognitiveErrorSection
           userInput={userInput}
           thought={emotionThoughtPairs[0]?.thought ?? ""}
           onSelect={handleSelectErrors}
@@ -188,7 +188,7 @@ export function MinimalSessionPage({
       )}
 
       {step === "alternative" && (
-        <MinimalAlternativeThoughtStep
+        <MinimalAlternativeThoughtSection
           userInput={userInput}
           emotionThoughtPairs={emotionThoughtPairs}
           selectedCognitiveErrors={selectedCognitiveErrors}

@@ -39,12 +39,12 @@ export function DesktopNav({
           <div className="shrink-0">
             <img
               src="/logo.png"
-              alt="마음생각 다시 쓰기 로고"
+              alt="로고"
               className="size-12 object-contain"
             />
           </div>
           <div>
-            <h1 className="text-lg text-slate-900">마음생각 다시 쓰기</h1>
+            <h1 className="text-lg text-slate-900">마인드 렌즈</h1>
           </div>
         </button>
 
