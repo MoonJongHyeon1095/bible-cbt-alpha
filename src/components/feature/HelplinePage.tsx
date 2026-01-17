@@ -1,7 +1,7 @@
-import { Clock, Globe, LifeBuoy, MessageCircle, Phone } from "lucide-react";
+import { Clock, LifeBuoy, MessageCircle, Phone } from "lucide-react";
+import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
-import type { CbtMode } from "../header/navigation/ModePicker";
 import { FeatureHeader } from "./common/FeatureHeader";
 import { ScrollToTopButton } from "./common/ScrollToTopButton";
 
@@ -92,41 +92,6 @@ export function HelplinePage({ mode }: HelplinePageProps) {
           );
         })}
       </div>
-
-      {/* 온라인 자원 */}
-      <Card className="p-6 mb-8">
-        <h3 className="text-lg text-slate-900 mb-4 flex items-center gap-2">
-          <Globe className="size-6 text-purple-600" />
-          온라인 자원
-        </h3>
-        <div className="space-y-4">
-          <div className="bg-slate-50 p-4 rounded-lg">
-            <h4 className="text-slate-900 mb-1">마음의 온도 체크</h4>
-            <p className="text-sm text-slate-600 mb-2">
-              정신건강 자가진단 및 관리 서비스
-            </p>
-            <p className="text-sm text-slate-500">🔗 준비 중입니다...</p>
-          </div>
-
-          <div className="bg-slate-50 p-4 rounded-lg">
-            <h4 className="text-slate-900 mb-1">온라인 상담 채팅</h4>
-            <p className="text-sm text-slate-600 mb-2">
-              전문 상담사와 1:1 채팅 상담
-            </p>
-            <p className="text-sm text-slate-500">🔗 준비 중입니다...</p>
-          </div>
-
-          <div className="bg-slate-50 p-4 rounded-lg">
-            <h4 className="text-slate-900 mb-1">
-              가까운 정신건강복지센터 찾기
-            </h4>
-            <p className="text-sm text-slate-600 mb-2">
-              내 지역의 정신건강 지원 기관
-            </p>
-            <p className="text-sm text-slate-500">🔗 준비 중입니다...</p>
-          </div>
-        </div>
-      </Card>
 
       {/* 기독교 상담 자원 */}
       {mode.toneMode === "christian" && (

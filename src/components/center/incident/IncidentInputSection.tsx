@@ -49,13 +49,10 @@ export function IncidentInputSection({
 
       <div className="space-y-2">
         <p className="text-base font-semibold text-slate-700">
-          작성한 글을 토대로 세션을 진행합니다.
+          세션당 소요시간은 약 5분입니다.
         </p>
         <p className="text-sm text-slate-500">
-          세션당 소요시간은 <strong>약 5분</strong>입니다.
-        </p>
-        <p className="text-sm text-blue-700">
-          💡 자세한 설명일수록 더욱 효과적입니다.
+          자세한 설명일수록 더욱 효과적입니다.
         </p>
       </div>
 

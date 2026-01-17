@@ -13,12 +13,6 @@ export function EmotionGridCard({
 }: EmotionGridProps) {
   return (
     <div className="space-y-4">
-      {/* <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border-2 border-blue-200">
-        <h3 className="text-blue-900 mb-2 text-lg">
-          당신이 느낀 감정을 <strong>1가지</strong> 선택해주세요.
-        </h3>
-      </div> */}
-
       <div className="grid grid-cols-2 gap-3">
         {EMOTIONS.map((emotion) => {
           const isSelected = selectedEmotion === emotion.label;

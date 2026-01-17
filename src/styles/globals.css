@@ -197,3 +197,37 @@
 html {
   font-size: var(--font-size);
 }
+
+@layer utilities {
+  @keyframes minimal-idle-caret-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .minimal-idle-caret-wrap {
+    position: relative;
+  }
+
+  .minimal-idle-caret-wrap::after {
+    content: "";
+    position: absolute;
+    left: 0.25rem;
+    top: 0.45rem;
+    width: 2px;
+    height: 1.2em;
+    background: #1f2937;
+    animation: minimal-idle-caret-blink 1.1s steps(1, end) infinite;
+    pointer-events: none;
+  }
+
+  .minimal-idle-caret-wrap:focus-within::after,
+  .minimal-idle-caret-wrap.is-filled::after {
+    animation: none;
+    opacity: 0;
+  }
+}

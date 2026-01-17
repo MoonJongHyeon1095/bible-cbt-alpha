@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
+import { MinimalSessionPage } from "./components/MinimalSessionPage";
 import { DashboardPage } from "./components/feature/dashboard/DashboardPage";
 import { PatternsPage } from "./components/feature/emotion-note/components/PatternsPage";
 import { HelplinePage } from "./components/feature/HelplinePage";
@@ -29,6 +30,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState("cbt");
   const [cbtStep, setCbtStep] = useState(1);
   const [cbtResetKey, setCbtResetKey] = useState(0);
+  const [showMinimalCbt, setShowMinimalCbt] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -120,6 +122,7 @@ export default function App() {
     }
     setCbtStep(1);
     setCbtResetKey((prev) => prev + 1);
+    setShowMinimalCbt(true);
     clearCbtSessionStorage();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -127,7 +130,13 @@ export default function App() {
   const renderPage = () => {
     switch (currentPage) {
       case "cbt":
-        return (
+        return showMinimalCbt ? (
+          <MinimalSessionPage
+            mode={mode}
+            user={user}
+            onComplete={() => setShowMinimalCbt(false)}
+          />
+        ) : (
           <CBTSessionPage
             key={cbtResetKey}
             mode={mode}
@@ -164,34 +173,46 @@ export default function App() {
     );
   }
 
+  const hideChrome = currentPage === "cbt" && showMinimalCbt;
+  const mainClassName = hideChrome
+    ? undefined
+    : isNativeMobile
+      ? undefined
+      : "pb-8";
+  const mainStyle =
+    hideChrome || !isNativeMobile
+      ? undefined
+      : { paddingBottom: "var(--mobile-tabbar-height, 96px)" };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <Navigation
-        currentPage={currentPage}
-        onNavigate={setCurrentPage}
-        onHomeRefresh={handleHomeRefresh}
-        user={user}
-        onLogout={handleLogout}
-        onShowAuth={() => setShowAuthModal(true)}
-        mode={mode}
-        onChangeMode={(next) => setMode(next)}
-      />
+    <div
+      className={
+        hideChrome
+          ? "min-h-screen bg-white"
+          : "min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50"
+      }
+    >
+      {!hideChrome && (
+        <Navigation
+          currentPage={currentPage}
+          onNavigate={setCurrentPage}
+          onHomeRefresh={handleHomeRefresh}
+          user={user}
+          onLogout={handleLogout}
+          onShowAuth={() => setShowAuthModal(true)}
+          mode={mode}
+          onChangeMode={(next) => setMode(next)}
+        />
+      )}
 
-      <Notice />
+      {!hideChrome && <Notice />}
 
-      <main
-        className={isNativeMobile ? undefined : "pb-8"}
-        style={
-          isNativeMobile
-            ? { paddingBottom: "var(--mobile-tabbar-height, 96px)" }
-            : undefined
-        }
-      >
+      <main className={mainClassName} style={mainStyle}>
         {renderPage()}
       </main>
 
       {/* Footer: 모바일에서는 숨김 */}
-      {isDesktop && (currentPage !== "cbt" || cbtStep === 1) && (
+      {!hideChrome && isDesktop && (currentPage !== "cbt" || cbtStep === 1) && (
         <footer className="border-t border-slate-200 bg-white/80 backdrop-blur-md py-6 mt-4">
           <div className="max-w-[1800px] mx-auto px-8">
             <div className="text-center mb-8">
