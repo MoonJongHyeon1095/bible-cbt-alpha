@@ -6,7 +6,6 @@ import type { EmotionData } from "../types";
 import { AutomaticThoughtToolBar } from "./AutomaticThoughtToolBar";
 import { CustomThoughtSection } from "./CustomThoughtSection";
 import { GeneratedThoughtsSection } from "./GeneratedThoughtsSection";
-import { GuidanceSection } from "./GuidanceSection";
 import { LoadingInsightCard } from "./LoadingInsightCard";
 
 interface ThoughtSelectionCardProps {
@@ -100,7 +99,6 @@ export function ThoughtSelectionCard({
 
   return (
     <>
-      <GuidanceSection selectedEmotion={selectedEmotion} />
       <div className="flex justify-end">
         <AutomaticThoughtToolBar
           selectedThought={selectedGeneratedThought}

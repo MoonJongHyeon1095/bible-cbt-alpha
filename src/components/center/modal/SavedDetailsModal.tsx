@@ -56,7 +56,7 @@ export function SavedDetailsModal({
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
               <DialogTitle className="flex items-center gap-2 text-lg pr-14">
-                <span className="flex size-9 items-center justify-center rounded-xl bg-yellow-100 text-blue-600 shadow-sm">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
                   <Bookmark className="size-4" />
                 </span>
                 감정노트에서 불러오기
@@ -68,7 +68,7 @@ export function SavedDetailsModal({
           </div>
 
           <div className="flex flex-col gap-3 flex-1 min-h-0">
-            <div className="flex-1 min-h-0 border border-slate-200 rounded-xl p-3 bg-slate-50/80 overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               {loading ? (
                 <div className="flex items-center gap-2 text-slate-500 text-sm">
                   <Loader2 className="size-4 animate-spin" />
@@ -76,18 +76,19 @@ export function SavedDetailsModal({
                 </div>
               ) : details.length === 0 ? (
                 <p className="text-sm text-slate-500">
-                  저장된 배후의 자동 사고가 없습니다.
+                  저장된 자동 사고가 없습니다.
                 </p>
               ) : (
                 <div className="space-y-2">
                   {paged.map((fav) => (
-                    <div
+                    <button
                       key={fav.id}
-                      className="bg-white p-4 rounded-xl border border-yellow-200 hover:border-yellow-300 hover:bg-yellow-50/60 transition-colors shadow-sm"
+                      onClick={() => onSelect(fav)}
+                      className="group w-full text-left bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition-colors shadow-sm"
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                          <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
                             {fav.emotion || "감정"}
                           </span>
                           <span className="text-xs text-slate-500">
@@ -105,14 +106,10 @@ export function SavedDetailsModal({
                       ) : null}
                       <div className="flex justify-end mt-3 gap-2">
                         <Button
-                          size="sm"
-                          onClick={() => onSelect(fav)}
-                          className="bg-blue-600 hover:bg-indigo-700"
-                        >
-                          이 생각으로 진행
-                        </Button>
-                        <Button
-                          onClick={() => onDelete(fav.id)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onDelete(fav.id);
+                          }}
                           variant="outline"
                           size="sm"
                           className="text-indigo-600 hover:bg-indigo-50"
@@ -121,7 +118,7 @@ export function SavedDetailsModal({
                           삭제
                         </Button>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}

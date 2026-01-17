@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 
 type Props = {
   isVisible: boolean;
@@ -9,6 +9,8 @@ type Props = {
   canNext: boolean;
   onPrevPage: () => void;
   onNextPage: () => void;
+  onReroll: () => void;
+  isRerollDisabled: boolean;
   canConfirm?: boolean;
   onConfirm?: () => void;
 };
@@ -22,6 +24,8 @@ export function FloatingErrorPickerToolbar({
   canNext,
   onPrevPage,
   onNextPage,
+  onReroll,
+  isRerollDisabled,
   canConfirm,
   onConfirm,
 }: Props) {
@@ -36,6 +40,15 @@ export function FloatingErrorPickerToolbar({
           <span className={selectedCount === 0 ? "opacity-60" : "opacity-100"}>
             {selectedCount} / 2개 선택됨
           </span>
+          <button
+            type="button"
+            onClick={onReroll}
+            disabled={isRerollDisabled}
+            className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-100 disabled:opacity-60"
+          >
+            <RefreshCw className="size-3" />
+            다른 인지오류 검토
+          </button>
         </div>
         <div className="pointer-events-auto mt-2 flex items-center justify-center">
           <div className="flex items-center gap-2">

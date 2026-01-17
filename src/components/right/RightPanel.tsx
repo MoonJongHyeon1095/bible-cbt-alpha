@@ -450,14 +450,6 @@ export function RightPanel({
       };
     }
 
-    if (wantsBibleVerse === true) {
-      return {
-        badge: "STEP 5 · 말씀",
-        title: "위로가 될 말씀과 기도문을 살펴볼까요?",
-        desc: "말씀을 읽고 마음에 와닿는 부분을 기억해두세요.",
-      };
-    }
-
     return {
       badge: "STEP 5 · 마무리",
     };

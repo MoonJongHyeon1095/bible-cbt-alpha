@@ -153,11 +153,6 @@ export function CognitiveErrorPickerCard({
             <RecommendationSection
               uiIndices={uiIndices}
               renderCard={renderCard}
-              onReroll={() => {
-                setHasRerolled(true);
-                onReroll();
-              }}
-              isRerollDisabled={detailLoading || rankLoading}
             />
           </div>
 
@@ -170,6 +165,11 @@ export function CognitiveErrorPickerCard({
             canNext={canNext}
             onPrevPage={onPrevPage}
             onNextPage={onNextPage}
+            onReroll={() => {
+              setHasRerolled(true);
+              onReroll();
+            }}
+            isRerollDisabled={detailLoading || rankLoading}
             canConfirm={canConfirm}
             onConfirm={onConfirm}
           />

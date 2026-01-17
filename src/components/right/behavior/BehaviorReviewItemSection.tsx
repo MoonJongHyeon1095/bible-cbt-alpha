@@ -1,4 +1,4 @@
-import { Check, RefreshCw } from "lucide-react";
+import { Check, Loader2, RefreshCw } from "lucide-react";
 import type { CognitiveBehaviorId } from "../../../constants/behaviors";
 import {
   AccordionContent,
