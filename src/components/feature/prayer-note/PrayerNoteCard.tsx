@@ -9,7 +9,6 @@ import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 import { getBibleBookByKorean } from "../../../constants/bibleBooks";
 import { formatScriptureReference } from "../../../utils/scripture";
-import { Card } from "../../ui/card";
 import { PrayerNoteResponseSection } from "./PrayerNoteResponseSection";
 import type { PrayerNote, PrayerNoteResponse } from "./types/prayerNotes.types";
 import { fetchBibleVersesRange } from "./utils/api";
@@ -138,11 +137,7 @@ export function PrayerNoteCard({
 
   return (
     <div ref={containerRef}>
-      <Card
-        className={`p-8 hover:shadow-[0_24px_60px_-42px_rgba(15,23,42,0.6)] transition-shadow bg-white/95 border border-emerald-100 ${
-          isOpen ? "ring-2 ring-emerald-300 shadow-md" : ""
-        }`}
-      >
+      <div className="w-full p-8">
         <div
           ref={headerRef}
           className="flex items-start justify-between gap-3 mb-6"
@@ -282,7 +277,7 @@ export function PrayerNoteCard({
             </p>
           </>
         )}
-      </Card>
+      </div>
     </div>
   );
 }
