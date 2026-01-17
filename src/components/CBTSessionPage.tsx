@@ -9,7 +9,7 @@ import { SelectedSectionActions } from "./feature/common/SelectedSectionActions"
 import { EmailModal } from "./feature/EmailModal";
 import { HistoryModal } from "./feature/dashboard/HistoryModal";
 import { CbtMode } from "./header/navigation/ModePicker";
-import { LeftPanel } from "./left/LeftPanel";
+import { LeftPage } from "./left/LeftPage";
 import { RightPanel } from "./right/RightPanel";
 
 export function CBTSessionPage({
@@ -156,7 +156,7 @@ export function CBTSessionPage({
     if (step === 3) {
       return (
         <div className="w-full">
-          <LeftPanel
+          <LeftPage
             step={step}
             emotionThoughtPairs={emotionThoughtPairs}
             userInput={userInput}

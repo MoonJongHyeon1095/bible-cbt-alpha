@@ -2,9 +2,9 @@
 import { Capacitor } from "@capacitor/core";
 import { BookOpen, HeartPulse, LayoutDashboard, LifeBuoy } from "lucide-react";
 import { useMemo } from "react";
+import { MobileTabBar } from "../mobile/MobileTabBar";
+import { MobileTopBar } from "../mobile/MobileTopBar";
 import { DesktopNav } from "./DesktopNav";
-import { MobileTabBar } from "./MobileTabBar";
-import { MobileTopBar } from "./MobileTopBar";
 import type { CbtMode } from "./ModePicker";
 import type { NavItem } from "./types";
 import { useIsDesktop } from "./useIsDesktop";

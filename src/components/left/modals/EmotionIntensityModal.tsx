@@ -1,14 +1,14 @@
-// src/components/left/EmotionIntensityModal.tsx
+// src/components/left/modals/EmotionIntensityModal.tsx
 import { ChevronDown, Heart, Info } from "lucide-react";
 import { useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "../ui/dialog";
-import { Slider } from "../ui/slider";
+} from "../../ui/dialog";
+import { Slider } from "../../ui/slider";
 
 interface EmotionIntensityModalProps {
   open: boolean;

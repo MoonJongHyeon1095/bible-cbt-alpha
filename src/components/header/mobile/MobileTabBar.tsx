@@ -1,7 +1,7 @@
 import { Home } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import type { NavSharedProps } from "./types";
+import type { NavSharedProps } from "../navigation/types";
 
 type MobileTabBarProps = Pick<
   NavSharedProps,
@@ -24,7 +24,7 @@ export function MobileTabBar({
       const height = barRef.current.getBoundingClientRect().height;
       document.documentElement.style.setProperty(
         "--mobile-tabbar-height",
-        `${height}px`,
+        `${height}px`
       );
     };
 

@@ -1,7 +1,7 @@
 import { LogIn, LogOut } from "lucide-react";
 import { Button } from "../../ui/button";
-import { ModePicker } from "./ModePicker";
-import type { NavSharedProps } from "./types";
+import { ModePicker } from "../navigation/ModePicker";
+import type { NavSharedProps } from "../navigation/types";
 
 type MobileTopBarProps = Pick<
   NavSharedProps,

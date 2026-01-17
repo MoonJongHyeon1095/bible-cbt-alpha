@@ -8,7 +8,7 @@ import { useCognitiveErrorStorage } from "./useCognitiveErrorStorage";
 import { useEmpathyState } from "./useEmpathyState";
 import { useIntensityState } from "./useIntensityState";
 
-type UseLeftPanelStateParams = {
+type UseLeftPageStateParams = {
   step: number;
   emotionThoughtPairs: EmotionThoughtPair[];
   userInput: string;
@@ -18,7 +18,7 @@ type UseLeftPanelStateParams = {
   mode: CbtMode;
 };
 
-export function useLeftPanelState({
+export function useLeftPageState({
   step,
   emotionThoughtPairs,
   userInput,
@@ -26,7 +26,7 @@ export function useLeftPanelState({
   onSelectCognitiveErrors,
   onNext,
   mode,
-}: UseLeftPanelStateParams) {
+}: UseLeftPageStateParams) {
   const currentPair =
     emotionThoughtPairs.length > 0
       ? emotionThoughtPairs[emotionThoughtPairs.length - 1]

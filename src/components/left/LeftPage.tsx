@@ -1,18 +1,20 @@
-// src/components/left/LeftPanel.tsx
+// src/components/left/LeftPage.tsx
 import type { User } from "@supabase/supabase-js";
 import { useEffect } from "react";
-import { COGNITIVE_ERRORS } from "../../lib/ai";
 import type { EmotionThoughtPair } from "../../types";
 import type { SelectedCognitiveError } from "../../types/sessionHistory";
 import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
 import { ArrowLeft, DoorOpen } from "lucide-react";
-import { CognitiveErrorPickerCard } from "./error-picker/CognitiveErrorPickerCard";
-import { EmotionIntensityModal } from "./EmotionIntensityModal";
-import { EmpathyCard } from "./empathy/EmpathyCard";
-import { useLeftPanelState } from "./hooks/useLeftPanelState";
+import { useLeftPageState } from "./hooks/useLeftPageState";
+import { EmotionIntensityModal } from "./modals/EmotionIntensityModal";
+import { CognitiveErrorSection } from "./sections/CognitiveErrorSection";
+import { EmpathySection } from "./sections/EmpathySection";
+import { LeftCompletionSection } from "./sections/LeftCompletionSection";
+import { LeftEmptyStateSection } from "./sections/LeftEmptyStateSection";
+import { LeftHeaderSection } from "./sections/LeftHeaderSection";
 
-interface LeftPanelProps {
+interface LeftPageProps {
   step: number;
   emotionThoughtPairs: EmotionThoughtPair[];
   userInput: string;
@@ -28,7 +30,7 @@ interface LeftPanelProps {
   onResumeLeftViewHandled?: () => void;
 }
 
-export function LeftPanel({
+export function LeftPage({
   step,
   emotionThoughtPairs,
   userInput,
@@ -42,7 +44,7 @@ export function LeftPanel({
   mode,
   resumeLeftView,
   onResumeLeftViewHandled,
-}: LeftPanelProps) {
+}: LeftPageProps) {
   const showBackButton = step > 1 && Boolean(onPrevious);
   const {
     burnsEmpathy,
@@ -80,7 +82,7 @@ export function LeftPanel({
     targetIntensity,
     toggleSelect,
     resetIntensitySet,
-  } = useLeftPanelState({
+  } = useLeftPageState({
     step,
     emotionThoughtPairs,
     userInput,
@@ -141,13 +143,7 @@ export function LeftPanel({
           </Button>
         </div>
       )}
-      <div className="mb-4 space-y-2">
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
-          {header.badge}
-        </div>
-        <h2 className="text-slate-800 text-xl">{header.title}</h2>
-        <p className="text-slate-600 text-sm mt-1">{header.desc}</p>
-      </div>
+      <LeftHeaderSection header={header} />
 
       <div
         className={`flex-1 space-y-6 ${
@@ -157,13 +153,11 @@ export function LeftPanel({
         }`}
       >
         {step < 3 && (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-slate-500">감정과 자동사고를 선택해주세요.</p>
-          </div>
+          <LeftEmptyStateSection message="감정과 자동사고를 선택해주세요." />
         )}
 
         {step === 3 && currentPair && !intensitySet && (
-          <EmpathyCard
+          <EmpathySection
             currentPair={currentPair}
             mode={mode}
             burnsEmpathy={burnsEmpathy}
@@ -177,10 +171,9 @@ export function LeftPanel({
         )}
 
         {step === 3 && intensitySet && currentPair && (
-          <CognitiveErrorPickerCard
+          <CognitiveErrorSection
             emotionLabel={currentPair.emotion}
             thoughtText={currentPair.thought}
-            COGNITIVE_ERRORS={COGNITIVE_ERRORS}
             ranked={ranked}
             rankLoading={rankLoading}
             rankError={rankError}
@@ -205,12 +198,7 @@ export function LeftPanel({
           />
         )}
 
-        {step >= 4 && (
-          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-            <p className="text-green-800 mb-2">✓ 인지오류 검토 완료</p>
-            <p className="text-emerald-600">대안사고를 구성해주세요.</p>
-          </div>
-        )}
+        {step >= 4 && <LeftCompletionSection />}
       </div>
 
       {currentPair && !isLite && (
