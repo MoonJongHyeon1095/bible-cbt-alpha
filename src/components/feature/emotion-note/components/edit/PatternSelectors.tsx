@@ -2,12 +2,12 @@ import { Info } from "lucide-react";
 import { COGNITIVE_BEHAVIORS } from "../../../../../constants/behaviors";
 import { EMOTIONS } from "../../../../../constants/emotions";
 import { COGNITIVE_ERRORS } from "../../../../../constants/errors";
+import { BehaviorInfoPopover } from "../pop-over/BehaviorInfoPopover";
+import { CognitiveErrorInfoPopover } from "../pop-over/CognitiveErrorInfoPopover";
 import {
-  BehaviorInfoPopover,
-  CognitiveErrorInfoPopover,
   getBehaviorMeta,
   getCognitiveErrorMeta,
-} from "../info-popovers";
+} from "../pop-over/InfoPopoverMeta";
 
 interface EmotionSelectorProps {
   value: string;

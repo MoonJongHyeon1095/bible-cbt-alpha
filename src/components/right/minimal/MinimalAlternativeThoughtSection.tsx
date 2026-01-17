@@ -17,8 +17,8 @@ interface MinimalAlternativeThoughtSectionProps {
   onSelect: (thought: string) => void;
 }
 
-const TITLE = "어떤 대안사고가 가장 마음에 와닿나요?";
-const DESCRIPTION = "고르라고 하지말고 매번 새로고침 하는 거 같은 문구";
+const TITLE = "어떤 생각이 가장 마음에 와닿나요?";
+const DESCRIPTION = "가장 힘이 되는 생각을 골라주세요.";
 
 export function MinimalAlternativeThoughtSection({
   userInput,

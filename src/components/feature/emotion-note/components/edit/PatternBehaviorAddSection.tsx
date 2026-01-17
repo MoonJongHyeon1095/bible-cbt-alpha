@@ -22,10 +22,9 @@ import type {
   PatternDetail,
   PatternErrorDetail,
 } from "../../types";
-import {
-  CognitiveErrorInfoPopover,
-  getCognitiveErrorMeta,
-} from "../info-popovers";
+
+import { CognitiveErrorInfoPopover } from "../pop-over/CognitiveErrorInfoPopover";
+import { getCognitiveErrorMeta } from "../pop-over/InfoPopoverMeta";
 import { BehaviorSelector } from "./PatternSelectors";
 import { AiCandidatesPanel } from "./common/AiCandidatesPanel";
 import { AiLoadingCard } from "./common/AiLoadingCard";
@@ -88,14 +87,14 @@ export function PatternBehaviorAddSection({
 
   const selectedDetail = useMemo(
     () => details.find((detail) => detail.id === selectedDetailId) ?? null,
-    [details, selectedDetailId]
+    [details, selectedDetailId],
   );
   const selectedErrors = useMemo(
     () =>
       selectedErrorIds
         .map((id) => errorDetails.find((error) => error.id === id))
         .filter((error): error is PatternErrorDetail => Boolean(error)),
-    [errorDetails, selectedErrorIds]
+    [errorDetails, selectedErrorIds],
   );
 
   const behaviorCandidates = useMemo(() => {
@@ -105,7 +104,7 @@ export function PatternBehaviorAddSection({
     >();
     selectedErrors.forEach((error) => {
       const meta = COGNITIVE_ERRORS.find(
-        (item) => item.title === error.errorLabel
+        (item) => item.title === error.errorLabel,
       );
       if (!meta) return;
       const behaviors = getRecommendedBehaviors(meta.id);
@@ -176,17 +175,17 @@ export function PatternBehaviorAddSection({
 
   const toggleExpanded = (
     setter: Dispatch<SetStateAction<string[]>>,
-    id: string
+    id: string,
   ) => {
     setter((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
   };
 
   const handleGenerateSuggestions = async (
     detail: PatternDetail,
     errors: PatternErrorDetail[],
-    alternative: PatternAlternative
+    alternative: PatternAlternative,
   ) => {
     if (!triggerText.trim()) return;
     if (!detail) return;
@@ -215,7 +214,7 @@ export function PatternBehaviorAddSection({
           title: error.errorLabel,
           detail: error.errorDescription,
         })),
-        behaviorCandidates.map((item) => item.behavior)
+        behaviorCandidates.map((item) => item.behavior),
       );
       const next: Record<string, string> = {};
       suggestions.forEach((item) => {
@@ -238,7 +237,7 @@ export function PatternBehaviorAddSection({
 
   const applySuggestion = (behaviorId: string, suggestion: string) => {
     const behavior = behaviorCandidates.find(
-      (item) => item.behavior.id === behaviorId
+      (item) => item.behavior.id === behaviorId,
     );
     if (!behavior) return;
     onChangeBehaviorLabel(behavior.behavior.replacement_title);
@@ -410,7 +409,8 @@ export function PatternBehaviorAddSection({
               >
                 {errorDetails.map((error) => {
                   const isSelected = selectedErrorIds.includes(error.id);
-                  const description = error.errorDescription || "설명이 없습니다.";
+                  const description =
+                    error.errorDescription || "설명이 없습니다.";
                   const isExpanded = expandedErrorIds.includes(error.id);
                   return (
                     <SelectionCard
@@ -450,15 +450,13 @@ export function PatternBehaviorAddSection({
                   const isSelected = selectedAlternativeId === alternative.id;
                   const text = alternative.alternative?.trim() || "-";
                   const isExpanded = expandedAlternativeIds.includes(
-                    alternative.id
+                    alternative.id,
                   );
                   return (
                     <SelectionCard
                       key={alternative.id}
                       selected={isSelected}
-                      onSelect={() =>
-                        handleSelectAlternative(alternative.id)
-                      }
+                      onSelect={() => handleSelectAlternative(alternative.id)}
                       contentClassName="space-y-1"
                     >
                       <ExpandableText
@@ -467,7 +465,7 @@ export function PatternBehaviorAddSection({
                         onToggle={() =>
                           toggleExpanded(
                             setExpandedAlternativeIds,
-                            alternative.id
+                            alternative.id,
                           )
                         }
                       />
@@ -519,7 +517,9 @@ export function PatternBehaviorAddSection({
                     onClick={() => {
                       if (selected) {
                         onChangeBehaviorErrorTags(
-                          behaviorErrorTags.filter((tag) => tag !== error.title)
+                          behaviorErrorTags.filter(
+                            (tag) => tag !== error.title,
+                          ),
                         );
                         return;
                       }

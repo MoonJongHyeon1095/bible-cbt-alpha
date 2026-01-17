@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import { CognitiveErrorInfoPopover } from "../../../feature/emotion-note/components/info-popovers";
+import { CognitiveErrorInfoPopover } from "../../../feature/emotion-note/components/pop-over/CognitiveErrorInfoPopover";
 
 interface MinimalCognitiveErrorCardProps {
   title: string;

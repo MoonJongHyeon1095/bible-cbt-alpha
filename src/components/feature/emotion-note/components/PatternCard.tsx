@@ -9,22 +9,23 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useAutoCloseOnScroll } from "../../common/utils/useAutoCloseOnScroll";
 import { Button } from "../../../ui/button";
+import { useAutoCloseOnScroll } from "../../common/utils/useAutoCloseOnScroll";
 import type { Pattern } from "../types";
-import {
-  BehaviorInfoPopover,
-  CognitiveErrorInfoPopover,
-  EmotionInfoPopover,
-  getBehaviorMeta,
-  getCognitiveErrorMeta,
-  getEmotionMeta,
-} from "./info-popovers";
+
 import {
   PatternContentActions,
   PatternPreviewDialog,
   PatternSectionHeader,
 } from "./PatternCardParts";
+import { BehaviorInfoPopover } from "./pop-over/BehaviorInfoPopover";
+import { CognitiveErrorInfoPopover } from "./pop-over/CognitiveErrorInfoPopover";
+import { EmotionInfoPopover } from "./pop-over/EmotionInfoPopover";
+import {
+  getBehaviorMeta,
+  getCognitiveErrorMeta,
+  getEmotionMeta,
+} from "./pop-over/InfoPopoverMeta";
 
 type OuterSection = "details" | "errors" | "alternatives" | "behaviors";
 
@@ -138,26 +139,28 @@ export function PatternCard({
   const isAlternativesOpen = openOuterSection === "alternatives";
   const isBehaviorsOpen = openOuterSection === "behaviors";
   const detailCount = pattern.details.filter(
-    (detail) =>
-      detail.automaticThought?.trim() || detail.emotion?.trim()
+    (detail) => detail.automaticThought?.trim() || detail.emotion?.trim(),
   ).length;
   const errorCount = (pattern.errorDetails ?? []).filter(
-    (detail) => detail.errorLabel?.trim() || detail.errorDescription?.trim()
+    (detail) => detail.errorLabel?.trim() || detail.errorDescription?.trim(),
   ).length;
   const alternativeCount = pattern.alternatives.filter((alt) =>
-    alt.alternative?.trim()
+    alt.alternative?.trim(),
   ).length;
   const behaviorCount = Math.max(
     (pattern.behaviorDetails ?? []).filter(
       (detail) =>
-        detail.behaviorLabel?.trim() || detail.behaviorDescription?.trim()
+        detail.behaviorLabel?.trim() || detail.behaviorDescription?.trim(),
     ).length,
-    pattern.behavior?.trim() ? 1 : 0
+    pattern.behavior?.trim() ? 1 : 0,
   );
 
   useEffect(() => {
     if (!openOuterSection) return;
-    const refMap: Record<OuterSection, React.RefObject<HTMLDivElement | null>> = {
+    const refMap: Record<
+      OuterSection,
+      React.RefObject<HTMLDivElement | null>
+    > = {
       details: detailsRef,
       errors: errorsRef,
       alternatives: alternativesRef,
@@ -225,10 +228,7 @@ export function PatternCard({
   };
 
   return (
-    <div
-      id={`pattern-${pattern.id}`}
-      className="w-full"
-    >
+    <div id={`pattern-${pattern.id}`} className="w-full">
       <div className="mb-6 space-y-3">
         <div className="flex items-center justify-between">
           <span
@@ -388,9 +388,7 @@ export function PatternCard({
                             <ChevronRight className="size-4 text-slate-400" />
                           )}
                           <span className="min-w-0 flex-1 text-sm text-slate-600">
-                            {formatThoughtTitle(
-                              detail.automaticThought || "-"
-                            )}
+                            {formatThoughtTitle(detail.automaticThought || "-")}
                           </span>
                         </button>
                       </div>
@@ -492,9 +490,7 @@ export function PatternCard({
                                   <span
                                     role="button"
                                     tabIndex={0}
-                                    onClick={(event) =>
-                                      event.stopPropagation()
-                                    }
+                                    onClick={(event) => event.stopPropagation()}
                                     onKeyDown={(event) =>
                                       event.stopPropagation()
                                     }
@@ -522,7 +518,7 @@ export function PatternCard({
                               handleCopy(
                                 detail.errorDescription ||
                                   detail.errorLabel ||
-                                  "-"
+                                  "-",
                               )
                             }
                             onExpand={() =>
@@ -595,7 +591,9 @@ export function PatternCard({
                           }
                           className="flex min-w-0 flex-1 items-center gap-2 text-left"
                           title={
-                            isExpanded ? "대안적 접근 접기" : "대안적 접근 펼치기"
+                            isExpanded
+                              ? "대안적 접근 접기"
+                              : "대안적 접근 펼치기"
                           }
                         >
                           {isExpanded ? (
@@ -704,9 +702,7 @@ export function PatternCard({
                                   <span
                                     role="button"
                                     tabIndex={0}
-                                    onClick={(event) =>
-                                      event.stopPropagation()
-                                    }
+                                    onClick={(event) => event.stopPropagation()}
                                     onKeyDown={(event) =>
                                       event.stopPropagation()
                                     }
@@ -765,7 +761,7 @@ export function PatternCard({
                               handleCopy(
                                 detail.behaviorDescription ||
                                   detail.behaviorLabel ||
-                                  "-"
+                                  "-",
                               )
                             }
                             onExpand={() =>

@@ -5,7 +5,7 @@ import { validateUserText } from "../../../../utils/validation";
 import { Button } from "../../../ui/button";
 import { Textarea } from "../../../ui/textarea";
 import type { PatternDetail } from "../types";
-import { EmotionInfoPopover, getEmotionMeta } from "./info-popovers";
+import { EmotionInfoPopover, getEmotionMeta } from "./pop-over/InfoPopovers";
 
 type DetailEditor = PatternDetail;
 
@@ -31,7 +31,7 @@ export function PatternDetailsCard({
   const handleChange = (
     id: string,
     field: keyof DetailEditor,
-    value: string
+    value: string,
   ) => {
     setEditing((prev) => ({
       ...prev,
