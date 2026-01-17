@@ -4,14 +4,14 @@ import { History } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { EmotionThoughtPair } from "../types";
 import type { SelectedCognitiveError } from "../types/sessionHistory";
+import { clearCbtSessionStorage } from "../utils/cbtSessionStorage";
 import { CenterPanel } from "./center/CenterPanel";
-import { SelectedSectionActions } from "./feature/common/SelectedSectionActions";
-import { EmailModal } from "./feature/EmailModal";
+import { SelectedSectionActions } from "./common/SelectedSectionActions";
 import { HistoryModal } from "./feature/dashboard/HistoryModal";
+import { EmailModal } from "./feature/EmailModal";
 import { CbtMode } from "./header/navigation/ModePicker";
 import { LeftPage } from "./left/LeftPage";
 import { RightPanel } from "./right/RightPanel";
-import { clearCbtSessionStorage } from "../utils/cbtSessionStorage";
 
 export function CBTSessionPage({
   mode,
@@ -25,7 +25,7 @@ export function CBTSessionPage({
   const [step, setStep] = useState<number>(1);
   const [userInput, setUserInput] = useState<string>("");
   const [resumeCenterView, setResumeCenterView] = useState<"thoughts" | null>(
-    null
+    null,
   );
   const [resumeLeftView, setResumeLeftView] = useState<"errors" | null>(null);
 
@@ -59,7 +59,7 @@ export function CBTSessionPage({
       selectedCognitiveErrors,
       selectedAlternativeThought,
       positiveReframes,
-    ]
+    ],
   );
 
   // ✅ 음성 입력에서 가져온 텍스트 확인
@@ -195,10 +195,11 @@ export function CBTSessionPage({
       <SelectedSectionActions
         hidden={step !== 1}
         theme="behaviors"
-        editLabel="세션 기록 보기"
-        editAriaLabel="세션 기록 보기"
+        editLabel="이전 세션"
+        editAriaLabel="이전 세션"
         onEdit={() => setShowHistoryModal(true)}
         editIcon={<History className="size-4 mr-1" />}
+        editClassName="border-0 shadow-sm shadow-slate-200/80 hover:shadow-md"
       />
 
       {/* 툴 도크 비활성화 */}

@@ -1,9 +1,9 @@
 import { Edit2, Plus } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
-import { Button } from "../../ui/button";
-import { cn } from "../../ui/utils";
-import { useModalOpen } from "./hooks/useModalOpen";
+import { Button } from "../ui/button";
+import { cn } from "../ui/utils";
+import { useModalOpen } from "../feature/common/hooks/useModalOpen";
 
 type SectionTheme =
   | "details"
@@ -23,6 +23,7 @@ interface SelectedSectionActionsProps {
   editAriaLabel?: string;
   addAriaLabel?: string;
   editIcon?: ReactNode;
+  editClassName?: string;
   hidden?: boolean;
   className?: string;
 }
@@ -36,6 +37,7 @@ export function SelectedSectionActions({
   editAriaLabel,
   addAriaLabel,
   editIcon,
+  editClassName,
   hidden = false,
   className,
 }: SelectedSectionActionsProps) {
@@ -143,7 +145,11 @@ export function SelectedSectionActions({
           type="button"
           aria-label={editAriaLabel ?? editLabel}
           onClick={onEdit}
-          className={cn("px-3 py-2 rounded-full", themeStyles.left)}
+          className={cn(
+            "px-3 py-2 rounded-full",
+            themeStyles.left,
+            editClassName
+          )}
         >
           {editIcon ?? <Edit2 className="size-4 mr-1" />}
           {editLabel}

@@ -6,7 +6,7 @@ import {
   pickActiveNotice,
   type NoticeItem,
 } from "../lib/notice/notice";
-import "./Notice.css";
+import "../styles/Notice.css";
 
 export function Notice() {
   const [notice, setNotice] = useState<NoticeItem | null>(null);
