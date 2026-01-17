@@ -137,14 +137,14 @@ export function PrayerNoteCard({
 
   return (
     <div ref={containerRef}>
-      <div className="w-full p-8">
+      <div className="w-full">
         <div
           ref={headerRef}
           className="flex items-start justify-between gap-3 mb-6"
         >
           <div className="min-w-0 flex-1">
             <div className="text-xs uppercase tracking-[0.2em] text-emerald-600/70 mb-2">
-              Prayer
+              {formatDate(note.timestamp)}
             </div>
             <button
               type="button"

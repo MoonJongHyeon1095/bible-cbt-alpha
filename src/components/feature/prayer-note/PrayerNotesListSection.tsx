@@ -86,7 +86,7 @@ export function PrayerNotesListSection({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {notes.map((note) => (
         <PrayerNoteCard
           key={note.id}

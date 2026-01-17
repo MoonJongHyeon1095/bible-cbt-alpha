@@ -529,7 +529,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
     : null;
 
   return (
-    <div className="max-w-[1400px] mx-auto px-8 py-8">
+    <div className="max-w-[1800px] mx-auto px-8 py-8">
       <FeatureHeader
         overline="Emotion Notes"
         title="감정 노트"
@@ -616,7 +616,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
           <p className="text-slate-400">반복되는 감정 패턴을 기록해보세요.</p>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-12">
           {latestSortedPatterns.map((pattern) => (
             <PatternCard
               key={pattern.id}

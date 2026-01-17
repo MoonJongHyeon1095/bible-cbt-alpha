@@ -79,7 +79,7 @@ export function PrayerNotesPage({ user }: PrayerNotesPageProps) {
   });
 
   return (
-    <div className="max-w-[1400px] mx-auto px-8 py-8">
+    <div className="max-w-[1800px] mx-auto px-8 py-8">
       <FeatureHeader
         overline="Prayer Notes"
         title="기도 노트"

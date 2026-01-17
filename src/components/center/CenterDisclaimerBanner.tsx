@@ -1,8 +1,5 @@
 import { Info } from "lucide-react";
 
-const DISCLAIMER_TEXT =
-  "이 서비스는 의료/치료/진단용이 아닙니다. AI가 생성한 참고용 정보를 제공합니다.";
-
 type CenterDisclaimerBannerProps = {
   onOpenDetails: () => void;
 };
@@ -16,7 +13,7 @@ export function CenterDisclaimerBanner({
         <p className="min-w-0 text-sm text-amber-900 flex items-center gap-2">
           <Info className="size-4 text-amber-600" />
           <span>
-            이 서비스는 의료/치료/진단용이 아닙니다.
+            이 서비스는 치료/진단용이 아닙니다.
             <br />
             AI가 생성한 참고용 정보를 제공합니다.
           </span>

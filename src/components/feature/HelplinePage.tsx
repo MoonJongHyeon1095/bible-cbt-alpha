@@ -42,7 +42,7 @@ export function HelplinePage({ mode }: HelplinePageProps) {
   ];
 
   return (
-    <div className="max-w-[1200px] mx-auto px-8 py-8">
+    <div className="max-w-[1800px] mx-auto px-8 py-8">
       <FeatureHeader
         overline="Helpline"
         title="긴급 헬프라인"

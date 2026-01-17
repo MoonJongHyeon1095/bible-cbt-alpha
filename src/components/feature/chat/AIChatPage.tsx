@@ -100,7 +100,7 @@ ${conversationHistory}
   };
 
   return (
-    <div className="max-w-[1000px] mx-auto px-8 py-8 h-[calc(100vh-200px)] flex flex-col">
+    <div className="max-w-[1800px] mx-auto px-8 py-8 h-[calc(100vh-200px)] flex flex-col">
       <div className="mb-6">
         <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">
           <MessageSquare className="size-8 text-blue-600" />

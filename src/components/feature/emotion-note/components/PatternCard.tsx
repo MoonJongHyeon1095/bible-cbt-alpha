@@ -227,7 +227,7 @@ export function PatternCard({
   return (
     <div
       id={`pattern-${pattern.id}`}
-      className="w-full p-6"
+      className="w-full"
     >
       <div className="mb-6 space-y-3">
         <div className="flex items-center justify-between">
