@@ -32,6 +32,7 @@ import { useTriggerNotes } from "./hooks/useTriggerNotes";
 import { ProgressSummaryCard } from "./ProgressSummaryCard";
 import { SelectedThoughtCard } from "./SelectedThoughtCard";
 import { ShalomCard } from "./ShalomCard";
+import { clearCbtSessionStorage } from "../../utils/cbtSessionStorage";
 
 interface RightPanelProps {
   step: number;
@@ -280,15 +281,7 @@ export function RightPanel({
     }
 
     toast.success("세션 기록이 저장되었습니다. 평안을 기원합니다.");
-    try {
-      sessionStorage.removeItem("cbt_saved_error_keys");
-      sessionStorage.removeItem("cbt_saved_alternative_keys");
-      sessionStorage.removeItem("cbt_saved_behavior_keys");
-      sessionStorage.removeItem("cbt_saved_detail_keys");
-      sessionStorage.removeItem("cbt_active_note");
-    } catch {
-      /* ignore */
-    }
+    clearCbtSessionStorage();
     onComplete();
   };
 

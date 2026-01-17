@@ -13,6 +13,7 @@ import { Navigation } from "./components/header/navigation/Navigation";
 import { Notice } from "./components/Notice";
 import { Toaster } from "./components/ui/sonner";
 import { authHelpers } from "./lib/supabase/auth";
+import { clearCbtSessionStorage } from "./utils/cbtSessionStorage";
 
 import type { User } from "@supabase/supabase-js";
 import type { CbtMode } from "./components/header/navigation/ModePicker";
@@ -119,6 +120,7 @@ export default function App() {
     }
     setCbtStep(1);
     setCbtResetKey((prev) => prev + 1);
+    clearCbtSessionStorage();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

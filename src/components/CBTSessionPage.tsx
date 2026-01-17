@@ -11,6 +11,7 @@ import { HistoryModal } from "./feature/dashboard/HistoryModal";
 import { CbtMode } from "./header/navigation/ModePicker";
 import { LeftPage } from "./left/LeftPage";
 import { RightPanel } from "./right/RightPanel";
+import { clearCbtSessionStorage } from "../utils/cbtSessionStorage";
 
 export function CBTSessionPage({
   mode,
@@ -99,15 +100,7 @@ export function CBTSessionPage({
     setSelectedCognitiveErrors([]);
     setSelectedAlternativeThought("");
     setPositiveReframes({});
-    try {
-      sessionStorage.removeItem("cbt_saved_error_keys");
-      sessionStorage.removeItem("cbt_saved_alternative_keys");
-      sessionStorage.removeItem("cbt_saved_behavior_keys");
-      sessionStorage.removeItem("cbt_saved_detail_keys");
-      sessionStorage.removeItem("cbt_active_note");
-    } catch {
-      /* ignore */
-    }
+    clearCbtSessionStorage();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -117,15 +110,7 @@ export function CBTSessionPage({
     setSelectedCognitiveErrors([]);
     setSelectedAlternativeThought("");
     setPositiveReframes({});
-    try {
-      sessionStorage.removeItem("cbt_saved_error_keys");
-      sessionStorage.removeItem("cbt_saved_alternative_keys");
-      sessionStorage.removeItem("cbt_saved_behavior_keys");
-      sessionStorage.removeItem("cbt_saved_detail_keys");
-      sessionStorage.removeItem("cbt_active_note");
-    } catch {
-      /* ignore */
-    }
+    clearCbtSessionStorage();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
