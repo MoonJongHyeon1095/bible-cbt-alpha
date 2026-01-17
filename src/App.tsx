@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
+import { EnterancePage } from "./components/enterance/EnterancePage";
 import { MinimalSessionPage } from "./components/MinimalSessionPage";
 import { DashboardPage } from "./components/feature/dashboard/DashboardPage";
 import { PatternsPage } from "./components/feature/emotion-note/components/PatternsPage";
@@ -21,6 +22,8 @@ import type { CbtMode } from "./components/header/navigation/ModePicker";
 
 const CBT_MODE_STORAGE_KEY = "cbt-mode";
 const DEFAULT_MODE: CbtMode = { detailMode: "deep", toneMode: "christian" };
+const ENTERANCE_SEEN_KEY = "enterance_seen";
+const MINIMAL_SEEN_KEY = "minimal_session_seen";
 
 const getIsDesktop = () =>
   typeof window !== "undefined" &&
@@ -30,7 +33,9 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState("cbt");
   const [cbtStep, setCbtStep] = useState(1);
   const [cbtResetKey, setCbtResetKey] = useState(0);
+  const [showEnterance, setShowEnterance] = useState(false);
   const [showMinimalCbt, setShowMinimalCbt] = useState(true);
+  const [isMinimalExiting, setIsMinimalExiting] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -94,13 +99,36 @@ export default function App() {
     applyStatusBarStyle();
   }, [isNativeMobile]);
 
+  const shouldShowEnterance = (currentUser: User | null) => {
+    if (currentUser) return false;
+    try {
+      return localStorage.getItem(ENTERANCE_SEEN_KEY) !== "true";
+    } catch {
+      return true;
+    }
+  };
+
+  const shouldShowMinimal = (currentUser: User | null) => {
+    if (currentUser) return false;
+    try {
+      if (shouldShowEnterance(currentUser)) return false;
+      return localStorage.getItem(MINIMAL_SEEN_KEY) !== "true";
+    } catch {
+      return true;
+    }
+  };
+
   const checkUser = async () => {
     try {
       const { user: currentUser } = await authHelpers.getCurrentUser();
       setUser(currentUser);
+      setShowEnterance(shouldShowEnterance(currentUser));
+      setShowMinimalCbt(shouldShowMinimal(currentUser));
     } catch (error) {
       console.error("사용자 확인 오류:", error);
       setUser(null);
+      setShowEnterance(shouldShowEnterance(null));
+      setShowMinimalCbt(shouldShowMinimal(null));
     } finally {
       setLoading(false);
     }
@@ -122,27 +150,86 @@ export default function App() {
     }
     setCbtStep(1);
     setCbtResetKey((prev) => prev + 1);
-    setShowMinimalCbt(true);
+    setShowEnterance(shouldShowEnterance(user));
+    setShowMinimalCbt(shouldShowMinimal(user));
+    setIsMinimalExiting(false);
     clearCbtSessionStorage();
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleEnteranceComplete = () => {
+    try {
+      localStorage.setItem(ENTERANCE_SEEN_KEY, "true");
+    } catch {
+      // ignore
+    }
+    setShowEnterance(false);
+    setShowMinimalCbt(true);
+  };
+
+  const handleEnteranceLater = () => {
+    try {
+      localStorage.setItem(ENTERANCE_SEEN_KEY, "true");
+    } catch {
+      // ignore
+    }
+    setShowEnterance(false);
+    setShowMinimalCbt(false);
+  };
+
+  const handleStartMinimalFromLite = () => {
+    setShowEnterance(false);
+    setIsMinimalExiting(false);
+    setShowMinimalCbt(true);
+  };
+
+  const handleMinimalComplete = () => {
+    try {
+      localStorage.setItem(MINIMAL_SEEN_KEY, "true");
+    } catch {
+      // ignore
+    }
+    setIsMinimalExiting(true);
+    window.setTimeout(() => {
+      setShowMinimalCbt(false);
+      setIsMinimalExiting(false);
+    }, 320);
   };
 
   const renderPage = () => {
     switch (currentPage) {
       case "cbt":
-        return showMinimalCbt ? (
-          <MinimalSessionPage
-            mode={mode}
-            user={user}
-            onComplete={() => setShowMinimalCbt(false)}
-          />
+        return showEnterance ? (
+          <div className="animate-in fade-in-0 duration-300">
+            <EnterancePage
+              onStartSession={handleEnteranceComplete}
+              onExplore={handleEnteranceComplete}
+              onLater={handleEnteranceLater}
+            />
+          </div>
+        ) : showMinimalCbt ? (
+          <div
+            className={`animate-in fade-in-0 duration-300 ${
+              isMinimalExiting ? "animate-out fade-out-0 duration-300" : ""
+            }`}
+          >
+            <MinimalSessionPage
+              mode={mode}
+              user={user}
+              onComplete={handleMinimalComplete}
+            />
+          </div>
         ) : (
-          <CBTSessionPage
-            key={cbtResetKey}
-            mode={mode}
-            user={user}
-            onStepChange={setCbtStep}
-          />
+          <div className="animate-in fade-in-0 duration-300">
+            <CBTSessionPage
+              key={cbtResetKey}
+              mode={mode}
+              onChangeMode={(next) => setMode(next)}
+              onStartMinimal={handleStartMinimalFromLite}
+              user={user}
+              onStepChange={setCbtStep}
+            />
+          </div>
         );
 
       case "dashboard":
@@ -158,7 +245,14 @@ export default function App() {
         return <HelplinePage mode={mode} />;
 
       default:
-        return <CBTSessionPage mode={mode} user={user} />;
+        return (
+          <CBTSessionPage
+            mode={mode}
+            onChangeMode={(next) => setMode(next)}
+            onStartMinimal={handleStartMinimalFromLite}
+            user={user}
+          />
+        );
     }
   };
 
@@ -173,7 +267,7 @@ export default function App() {
     );
   }
 
-  const hideChrome = currentPage === "cbt" && showMinimalCbt;
+  const hideChrome = currentPage === "cbt" && (showEnterance || showMinimalCbt);
   const mainClassName = hideChrome
     ? undefined
     : isNativeMobile
@@ -184,12 +278,20 @@ export default function App() {
       ? undefined
       : { paddingBottom: "var(--mobile-tabbar-height, 96px)" };
 
+  const showLiteGradient =
+    currentPage === "cbt" &&
+    mode.detailMode === "lite" &&
+    !showEnterance &&
+    !showMinimalCbt;
+
   return (
     <div
       className={
         hideChrome
           ? "min-h-screen bg-white"
-          : "min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50"
+          : showLiteGradient
+            ? "min-h-screen bg-gradient-to-br from-[#efe9df] via-[#f7f3ee] to-[#dfe8e6]"
+            : "min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50"
       }
     >
       {!hideChrome && (

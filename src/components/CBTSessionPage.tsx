@@ -15,10 +15,14 @@ import { RightPanel } from "./right/RightPanel";
 
 export function CBTSessionPage({
   mode,
+  onChangeMode,
+  onStartMinimal,
   user,
   onStepChange,
 }: {
   mode: CbtMode;
+  onChangeMode: (next: CbtMode) => void;
+  onStartMinimal?: () => void;
   user: User | null;
   onStepChange?: (step: number) => void;
 }) {
@@ -130,6 +134,8 @@ export function CBTSessionPage({
             onPrevious={handlePrevious}
             onExit={resetAll}
             mode={mode}
+            onChangeMode={onChangeMode}
+            onStartMinimal={onStartMinimal}
             user={user}
             resumeCenterView={resumeCenterView}
             onResumeCenterViewHandled={() => setResumeCenterView(null)}

@@ -13,8 +13,11 @@ import { MinimalAutoThoughtSection } from "./center/minimal/MinimalAutoThoughtSe
 import { MinimalEmotionSection } from "./center/minimal/MinimalEmotionSection";
 import { MinimalIncidentSection } from "./center/minimal/MinimalIncidentSection";
 import { MinimalFloatingBackButton } from "./common/MinimalFloatingBackButton";
+import { MinimalSavingModal } from "./common/MinimalSavingModal";
 import { MinimalCognitiveErrorSection } from "./left/minimal/MinimalCognitiveErrorSection";
 import { MinimalAlternativeThoughtSection } from "./right/minimal/MinimalAlternativeThoughtSection";
+import { saveMinimalPatternAPI } from "./right/minimal/utils/api";
+import { saveMinimalPatternLocal } from "./right/minimal/utils/storage";
 
 type MinimalStep = "incident" | "emotion" | "thought" | "errors" | "alternative";
 
@@ -40,6 +43,7 @@ export function MinimalSessionPage({
   >([]);
   const [autoThoughtWantsCustom, setAutoThoughtWantsCustom] = useState(false);
   const [alternativeSeed, setAlternativeSeed] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
   const lastErrorsKeyRef = useRef<string>("");
   const stepOrder: MinimalStep[] = [
     "incident",
@@ -87,6 +91,22 @@ export function MinimalSessionPage({
   };
 
   const handleComplete = async (thought: string) => {
+    if (isSaving) return;
+    const totalStartedAt = Date.now();
+    let completed = false;
+    const markMinimalSeen = () => {
+      try {
+        localStorage.setItem("minimal_session_seen", "true");
+      } catch {
+        // ignore
+      }
+    };
+    const transitionAfter = (delayMs: number) => {
+      window.setTimeout(() => {
+        clearCbtSessionStorage();
+        onComplete();
+      }, delayMs);
+    };
     const pairsToSave = emotionThoughtPairs.map((pair) => ({
       ...pair,
       intensity: null,
@@ -105,8 +125,26 @@ export function MinimalSessionPage({
       detailMode: mode.detailMode,
     };
 
-    if (user) {
-      try {
+    const minimalPayload = {
+      triggerText: userInput,
+      emotion: selectedEmotion,
+      automaticThought: emotionThoughtPairs[0]?.thought ?? "",
+      alternativeThought: thought,
+      cognitiveError: selectedCognitiveErrors[0] ?? null,
+    };
+
+    setIsSaving(true);
+    try {
+      if (user) {
+        const { ok } = await saveMinimalPatternAPI(minimalPayload);
+        if (!ok) {
+          throw new Error("save_minimal_note_failed");
+        }
+      } else {
+        saveMinimalPatternLocal(minimalPayload);
+      }
+
+      if (user) {
         const { error } = await supabase.from("session_history").insert({
           user_id: user.id,
           timestamp: historyItem.timestamp,
@@ -119,30 +157,37 @@ export function MinimalSessionPage({
           bible_verse: historyItem.bibleVerse,
         });
         if (error) throw error;
-      } catch (e) {
-        console.error("히스토리 저장 실패:", e);
-        toast.error("세션 기록을 저장하지 못했습니다.");
-        return;
-      }
-    } else {
-      try {
+      } else {
         const existing = localStorage.getItem("cbt_history");
         const histories = existing ? JSON.parse(existing) : [];
         histories.unshift(historyItem);
         if (histories.length > 20) histories.pop();
         localStorage.setItem("cbt_history", JSON.stringify(histories));
-      } catch (e) {
-        console.error("히스토리 저장 실패:", e);
+      }
+
+      toast.success("세션 기록이 저장되었습니다.");
+      markMinimalSeen();
+      transitionAfter(120);
+      completed = true;
+    } catch (e) {
+      console.error("세션 저장 실패:", e);
+      toast.error("세션 기록을 저장하지 못했습니다.");
+      markMinimalSeen();
+      transitionAfter(240);
+      completed = true;
+    } finally {
+      console.info(
+        `[minimal-save] total: ${Date.now() - totalStartedAt}ms`
+      );
+      if (!completed) {
+        setIsSaving(false);
       }
     }
-
-    toast.success("세션 기록이 저장되었습니다.");
-    clearCbtSessionStorage();
-    onComplete();
   };
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#efe9df] via-[#f7f3ee] to-[#dfe8e6] dark:from-[#0f1115] dark:via-[#141824] dark:to-[#0f1a1f]">
+      <MinimalSavingModal open={isSaving} />
       {currentStepIndex > 0 && (
         <div className="absolute inset-x-0 top-6 z-10">
           <div className="mx-auto max-w-xl px-6">

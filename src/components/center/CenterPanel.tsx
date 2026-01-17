@@ -33,6 +33,8 @@ interface CenterPanelProps {
   onPrevious?: () => void;
   onExit?: () => void;
   mode: CbtMode;
+  onChangeMode: (next: CbtMode) => void;
+  onStartMinimal?: () => void;
   user: User | null;
   resumeCenterView?: "thoughts" | null;
   onResumeCenterViewHandled?: () => void;
@@ -55,6 +57,8 @@ export function CenterPanel({
   onPrevious,
   onExit,
   mode,
+  onChangeMode,
+  onStartMinimal,
   user,
   resumeCenterView,
   onResumeCenterViewHandled,
@@ -176,6 +180,10 @@ export function CenterPanel({
   };
 
   const handleStepOneNext = () => {
+    if (mode.detailMode === "lite") {
+      onStartMinimal?.();
+      return;
+    }
     const validation = validateUserText(userInput, {
       minLength: 10,
       minLengthMessage: "상황을 10자 이상 입력해주세요.",
@@ -307,12 +315,15 @@ export function CenterPanel({
             userInput={userInput}
             onInputChange={handleInputChange}
             onNext={handleStepOneNext}
+            mode={mode}
+            onChangeMode={onChangeMode}
             randomExamples={randomExamples}
             onExampleClick={handleExampleClick}
             onRefreshExamples={refreshExamples}
             onSaveTrigger={notes.handleSaveTriggerOnly}
             onOpenSavedTriggers={notes.openSavedTriggersModal}
             savingTrigger={notes.savingTrigger}
+            showExamples={mode.detailMode !== "lite"}
           />
         )}
 
