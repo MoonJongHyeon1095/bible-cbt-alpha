@@ -1,10 +1,8 @@
-import type { User } from "@supabase/supabase-js";
 import { useMemo } from "react";
 import type { EmotionThoughtPair } from "../../../types";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
 import type { CbtMode } from "../../header/navigation/ModePicker";
 import { useCognitiveErrorCandidates } from "./useCognitiveErrorCandidates";
-import { useCognitiveErrorStorage } from "./useCognitiveErrorStorage";
 import { useEmpathyState } from "./useEmpathyState";
 import { useIntensityState } from "./useIntensityState";
 
@@ -12,7 +10,6 @@ type UseLeftPageStateParams = {
   step: number;
   emotionThoughtPairs: EmotionThoughtPair[];
   userInput: string;
-  user: User | null;
   onSelectCognitiveErrors: (errors: SelectedCognitiveError[]) => void;
   onNext: () => void;
   mode: CbtMode;
@@ -22,7 +19,6 @@ export function useLeftPageState({
   step,
   emotionThoughtPairs,
   userInput,
-  user,
   onSelectCognitiveErrors,
   onNext,
   mode,
@@ -96,12 +92,6 @@ export function useLeftPageState({
     onNext,
   });
 
-  const storageState = useCognitiveErrorStorage({
-    user,
-    userInput,
-    detailByIndex: candidateState.detailByIndex,
-  });
-
   return {
     burnsEmpathy,
     canConfirmSelection: candidateState.canConfirmSelection,
@@ -127,9 +117,6 @@ export function useLeftPageState({
     rerollCandidates: candidateState.rerollCandidates,
     runRankThenKickoffTop3Details: candidateState.runRankThenKickoffTop3Details,
     selected: candidateState.selected,
-    handleSaveError: storageState.handleSaveError,
-    savingErrorId: storageState.savingErrorId,
-    isErrorSaved: storageState.isErrorSaved,
     goPrevPage: candidateState.goPrevPage,
     goNextPage: candidateState.goNextPage,
     setShowIntensityModal: intensityState.setShowIntensityModal,

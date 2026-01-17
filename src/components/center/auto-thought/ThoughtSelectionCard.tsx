@@ -6,7 +6,6 @@ import type { EmotionData } from "../types";
 import { AutomaticThoughtToolBar } from "./AutomaticThoughtToolBar";
 import { CustomThoughtSection } from "./CustomThoughtSection";
 import { GeneratedThoughtsSection } from "./GeneratedThoughtsSection";
-import { GuidanceSection } from "./GuidanceSection";
 import { LoadingInsightCard } from "./LoadingInsightCard";
 
 interface ThoughtSelectionCardProps {
@@ -17,21 +16,15 @@ interface ThoughtSelectionCardProps {
   generatedThoughts: string[];
   selectedThoughtIndex: number | null;
   customThought: string;
-  currentPrefetchKey: string | null;
-  activeNoteTrigger?: string | null;
   onSelectThought: (index: number) => void;
   onRegenerate: () => void;
   onRetry: () => void;
-  onAddFavorite: (thought: string) => void;
   onLoadFavorites: () => void;
   onCustomThoughtChange: (value: string) => void;
   onCustomThoughtSelect: () => void;
   onSubmitCustom: (value: string) => void;
   onSubmit: () => void;
   canSubmit: boolean;
-  savingDetail: boolean;
-  savingDetailId: string | null;
-  isDetailSaved?: (thought: string) => boolean;
 }
 
 export function ThoughtSelectionCard({
@@ -42,21 +35,15 @@ export function ThoughtSelectionCard({
   generatedThoughts,
   selectedThoughtIndex,
   customThought,
-  currentPrefetchKey,
-  activeNoteTrigger,
   onSelectThought,
   onRegenerate,
   onRetry,
-  onAddFavorite,
   onLoadFavorites,
   onCustomThoughtChange,
   onCustomThoughtSelect,
   onSubmitCustom,
   onSubmit,
   canSubmit,
-  savingDetail,
-  savingDetailId,
-  isDetailSaved,
 }: ThoughtSelectionCardProps) {
   const customThoughtTrimmed = customThought.trim();
   const selectedGeneratedThought =
@@ -66,18 +53,6 @@ export function ThoughtSelectionCard({
     selectedThoughtIndex < generatedThoughts.length
       ? generatedThoughts[selectedThoughtIndex]
       : null;
-
-  const handleSaveCustomThought = () => {
-    const validation = validateUserText(customThoughtTrimmed, {
-      minLength: 10,
-      minLengthMessage: "직접 입력한 생각을 10자 이상 적어주세요.",
-    });
-    if (!validation.ok) {
-      toast.error(validation.message);
-      return;
-    }
-    onAddFavorite(customThoughtTrimmed);
-  };
 
   const handleSelectCustomThought = () => {
     const validation = validateUserText(customThoughtTrimmed, {
@@ -124,20 +99,13 @@ export function ThoughtSelectionCard({
 
   return (
     <>
-      <GuidanceSection selectedEmotion={selectedEmotion} />
       <div className="flex justify-end">
         <AutomaticThoughtToolBar
-          currentPrefetchKey={currentPrefetchKey}
           selectedThought={selectedGeneratedThought}
           customThoughtTrimmed={customThoughtTrimmed}
           selectedThoughtIndex={selectedThoughtIndex}
-          savingDetail={savingDetail}
-          savingDetailId={savingDetailId}
-          isDetailSaved={isDetailSaved}
           onRegenerate={onRegenerate}
-          onSaveSelectedThought={onAddFavorite}
           onLoadFavorites={onLoadFavorites}
-          onSaveCustomThought={handleSaveCustomThought}
           onSelectCustomThought={handleSelectCustomThought}
           onSubmit={onSubmit}
           canSubmit={canSubmit}

@@ -1,16 +1,16 @@
 import { Footprints, Info, Loader2, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { validateUserText } from "../../../../utils/validation";
 import { Button } from "../../../ui/button";
 import { Textarea } from "../../../ui/textarea";
-import { validateUserText } from "../../../../utils/validation";
 import type { PatternBehaviorDetail } from "../types";
+import { BehaviorInfoPopover } from "./pop-over/BehaviorInfoPopover";
+import { CognitiveErrorInfoPopover } from "./pop-over/CognitiveErrorInfoPopover";
 import {
-  BehaviorInfoPopover,
-  CognitiveErrorInfoPopover,
   getBehaviorMeta,
   getCognitiveErrorMeta,
-} from "./info-popovers";
+} from "./pop-over/InfoPopoverMeta";
 
 type BehaviorEditor = PatternBehaviorDetail;
 
@@ -31,14 +31,14 @@ export function PatternBehaviorDetailsCard({
 
   useEffect(() => {
     setEditing(
-      Object.fromEntries(behaviorDetails.map((b) => [b.id, { ...b }]))
+      Object.fromEntries(behaviorDetails.map((b) => [b.id, { ...b }])),
     );
   }, [behaviorDetails]);
 
   const handleChange = (
     id: string,
     field: keyof BehaviorEditor,
-    value: string
+    value: string,
   ) => {
     setEditing((prev) => ({
       ...prev,

@@ -51,14 +51,12 @@ export function WebCompactNav({
             <div className="shrink-0">
               <img
                 src="/logo.png"
-                alt="마음생각 다시 쓰기 로고"
+                alt="로고"
                 className="size-10 object-contain"
               />
             </div>
             <div className="min-w-0">
-              <div className="text-sm text-slate-900 truncate">
-                마음생각 다시 쓰기
-              </div>
+              <div className="text-sm text-slate-900 truncate">마인드 렌즈</div>
             </div>
           </button>
 

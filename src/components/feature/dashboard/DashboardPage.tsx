@@ -56,14 +56,13 @@ export function DashboardPage({ user }: { user: User | null }) {
         (item: any) => ({
           ...item,
           selectedCognitiveErrors: normalizeSelectedCognitiveErrors(
-            item.selectedCognitiveErrors
+            item.selectedCognitiveErrors,
           ),
           userInput: item.userInput ?? "",
           selectedAlternativeThought: item.selectedAlternativeThought ?? "",
           selectedBehavior: item.selectedBehavior ?? null,
-          positiveReframes: item.positiveReframes ?? {},
           bibleVerse: item.bibleVerse ?? null,
-        })
+        }),
       );
       setHistories(parsed);
       processEmotionTrends(parsed);
@@ -79,7 +78,7 @@ export function DashboardPage({ user }: { user: User | null }) {
       const { data, error } = await supabase
         .from("session_history")
         .select(
-          "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors, selected_alternative_thought, selected_behavior, positive_reframes, bible_verse"
+          "id, timestamp, user_input, emotion_thought_pairs, selected_cognitive_errors, selected_alternative_thought, selected_behavior, bible_verse",
         )
         .eq("user_id", user?.id)
         .is("soft_deleted_at", null)
@@ -100,13 +99,11 @@ export function DashboardPage({ user }: { user: User | null }) {
               }))
             : [],
           selectedCognitiveErrors: normalizeSelectedCognitiveErrors(
-            row.selected_cognitive_errors
+            row.selected_cognitive_errors,
           ),
           userInput: row.user_input ?? "",
           selectedAlternativeThought: row.selected_alternative_thought ?? "",
           selectedBehavior: row.selected_behavior ?? null,
-          positiveReframes:
-            (row.positive_reframes as Record<string, string>) ?? {},
           bibleVerse: row.bible_verse ?? null,
         })) ?? [];
 
@@ -126,14 +123,14 @@ export function DashboardPage({ user }: { user: User | null }) {
 
     recentSessions.forEach((session) => {
       const pairsWithIntensity = session.emotionThoughtPairs.filter(
-        (p) => typeof p.intensity === "number"
+        (p) => typeof p.intensity === "number",
       );
       if (pairsWithIntensity.length === 0) return;
 
       const avgIntensity =
         pairsWithIntensity.reduce(
           (sum, pair) => sum + (pair.intensity as number),
-          0
+          0,
         ) / pairsWithIntensity.length;
 
       const date = new Date(session.timestamp);
@@ -225,7 +222,7 @@ export function DashboardPage({ user }: { user: User | null }) {
               <p className="text-3xl text-pink-900">
                 {histories.reduce(
                   (sum, h) => sum + h.emotionThoughtPairs.length,
-                  0
+                  0,
                 )}
               </p>
             </div>
@@ -242,7 +239,7 @@ export function DashboardPage({ user }: { user: User | null }) {
               <p className="text-3xl text-amber-900">
                 {histories.reduce(
                   (sum, h) => sum + h.selectedCognitiveErrors.length,
-                  0
+                  0,
                 )}
               </p>
             </div>
@@ -259,7 +256,7 @@ export function DashboardPage({ user }: { user: User | null }) {
               <p className="text-3xl text-indigo-900">
                 {
                   new Set(
-                    histories.map((h) => new Date(h.timestamp).toDateString())
+                    histories.map((h) => new Date(h.timestamp).toDateString()),
                   ).size
                 }
               </p>
@@ -274,9 +271,7 @@ export function DashboardPage({ user }: { user: User | null }) {
       {histories.length === 0 ? (
         <Card className="p-12 text-center">
           <p className="text-slate-500 text-lg mb-4">아직 데이터가 없습니다.</p>
-          <p className="text-slate-400">
-            마음생각 다시 쓰기를 완료하면 통계가 표시됩니다.
-          </p>
+          <p className="text-slate-400">세션을 완료하면 통계가 표시됩니다.</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

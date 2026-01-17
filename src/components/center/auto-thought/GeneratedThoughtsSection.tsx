@@ -18,12 +18,12 @@ export function GeneratedThoughtsSection({
               onClick={() => onSelectThought(index)}
               className={`w-full text-left p-4 rounded-2xl border transition-all shadow-sm ${
                 selectedThoughtIndex === index
-                  ? "border-blue-500 bg-blue-50/80 shadow-md"
-                  : "border-slate-200/80 hover:border-blue-300 bg-white"
+                  ? "border-blue-500 bg-transparent shadow-md"
+                  : "border-slate-200/80 hover:border-blue-300 bg-transparent"
               }`}
             >
               <div className="flex items-start gap-3">
-                <p className="text-slate-800 flex-1 leading-relaxed">
+                <p className="text-slate-800 flex-1 leading-relaxed font-serif">
                   {thought}
                 </p>
                 {selectedThoughtIndex === index && (

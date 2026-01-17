@@ -1,5 +1,4 @@
 // src/components/left/LeftPage.tsx
-import type { User } from "@supabase/supabase-js";
 import { useEffect } from "react";
 import type { EmotionThoughtPair } from "../../types";
 import type { SelectedCognitiveError } from "../../types/sessionHistory";
@@ -18,9 +17,6 @@ interface LeftPageProps {
   step: number;
   emotionThoughtPairs: EmotionThoughtPair[];
   userInput: string;
-  user: User | null;
-  positiveReframes: { [emotion: string]: string };
-  onSetPositiveReframes: (reframes: { [emotion: string]: string }) => void;
   onSelectCognitiveErrors: (errors: SelectedCognitiveError[]) => void;
   onNext: () => void;
   onPrevious?: () => void;
@@ -34,9 +30,6 @@ export function LeftPage({
   step,
   emotionThoughtPairs,
   userInput,
-  user,
-  positiveReframes,
-  onSetPositiveReframes,
   onSelectCognitiveErrors,
   onNext,
   onPrevious,
@@ -61,7 +54,6 @@ export function LeftPage({
     empathyLoading,
     generateEmpathy,
     handleConfirm2Errors,
-    handleSaveError,
     handleIntensitySet,
     header,
     isLite,
@@ -72,8 +64,6 @@ export function LeftPage({
     rerollCandidates,
     runRankThenKickoffTop3Details,
     selected,
-    savingErrorId,
-    isErrorSaved,
     goPrevPage,
     goNextPage,
     setShowIntensityModal,
@@ -86,7 +76,6 @@ export function LeftPage({
     step,
     emotionThoughtPairs,
     userInput,
-    user,
     onSelectCognitiveErrors,
     onNext,
     mode,
@@ -122,7 +111,7 @@ export function LeftPage({
   return (
     <div className="relative min-h-[600px] flex flex-col text-[15px] leading-6">
       {showBackButton && (
-        <div className="absolute right-4 top-0 z-10 flex items-center gap-2">
+        <div className="absolute right-4 -top-3 z-10 flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
@@ -189,9 +178,6 @@ export function LeftPage({
             onRetryRank={() => void runRankThenKickoffTop3Details()}
             onReroll={() => void rerollCandidates()}
             onToggleSelect={toggleSelect}
-            onSaveError={handleSaveError}
-            savingErrorId={savingErrorId}
-            isErrorSaved={isErrorSaved}
             onPrevPage={goPrevPage}
             onNextPage={goNextPage}
             onConfirm={handleConfirm2Errors}

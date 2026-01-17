@@ -33,6 +33,8 @@ interface CenterPanelProps {
   onPrevious?: () => void;
   onExit?: () => void;
   mode: CbtMode;
+  onChangeMode: (next: CbtMode) => void;
+  onStartMinimal?: () => void;
   user: User | null;
   resumeCenterView?: "thoughts" | null;
   onResumeCenterViewHandled?: () => void;
@@ -55,6 +57,8 @@ export function CenterPanel({
   onPrevious,
   onExit,
   mode,
+  onChangeMode,
+  onStartMinimal,
   user,
   resumeCenterView,
   onResumeCenterViewHandled,
@@ -176,6 +180,10 @@ export function CenterPanel({
   };
 
   const handleStepOneNext = () => {
+    if (mode.detailMode === "lite") {
+      onStartMinimal?.();
+      return;
+    }
     const validation = validateUserText(userInput, {
       minLength: 10,
       minLengthMessage: "상황을 10자 이상 입력해주세요.",
@@ -223,7 +231,7 @@ export function CenterPanel({
   return (
     <div className="relative min-h-[600px] flex flex-col">
       {showBackButton && (
-        <div className="absolute right-4 top-0 z-10 flex items-center gap-2">
+        <div className="absolute right-4 -top-3 z-10 flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
@@ -307,12 +315,13 @@ export function CenterPanel({
             userInput={userInput}
             onInputChange={handleInputChange}
             onNext={handleStepOneNext}
+            mode={mode}
+            onChangeMode={onChangeMode}
             randomExamples={randomExamples}
             onExampleClick={handleExampleClick}
             onRefreshExamples={refreshExamples}
-            onSaveTrigger={notes.handleSaveTriggerOnly}
             onOpenSavedTriggers={notes.openSavedTriggersModal}
-            savingTrigger={notes.savingTrigger}
+            showExamples={mode.detailMode !== "lite"}
           />
         )}
 
@@ -352,8 +361,6 @@ export function CenterPanel({
             generatedThoughts={flow.generatedThoughts}
             selectedThoughtIndex={flow.selectedThoughtIndex}
             customThought={flow.customThought}
-            currentPrefetchKey={flow.currentPrefetchKey}
-            activeNoteTrigger={notes.activeNoteTrigger}
             onSelectThought={flow.handleThoughtSelect}
             onRegenerate={() => {
               flow.clearPrefetch();
@@ -366,22 +373,12 @@ export function CenterPanel({
               flow.clearPrefetch();
               flow.startPrefetchThoughts();
             }}
-            onAddFavorite={(thought) =>
-              notes.addThoughtToFavorites(
-                thought,
-                flow.selectedEmotion,
-                flow.emotionIntensity
-              )
-            }
             onLoadFavorites={() => void notes.openSavedDetailsModal()}
             onCustomThoughtChange={flow.handleCustomThoughtChange}
             onCustomThoughtSelect={flow.handleCustomThoughtSelect}
             onSubmitCustom={flow.submitCustomThought}
             onSubmit={flow.submitThoughtSelection}
             canSubmit={flow.selectedThoughtIndex !== null}
-            savingDetail={notes.savingDetail}
-            savingDetailId={notes.savingDetailId}
-            isDetailSaved={notes.isDetailSaved}
           />
         )}
 

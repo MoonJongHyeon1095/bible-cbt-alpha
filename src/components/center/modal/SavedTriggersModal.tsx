@@ -58,7 +58,7 @@ export function SavedTriggersModal({
           </div>
 
           <div className="flex flex-col gap-3 flex-1 min-h-0">
-            <div className="flex-1 min-h-0 border border-slate-200 rounded-xl p-3 bg-slate-50/80 overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-y-auto">
               {loading ? (
                 <div className="flex items-center gap-2 text-slate-500 text-sm">
                   <Loader2 className="size-4 animate-spin" />
@@ -73,46 +73,46 @@ export function SavedTriggersModal({
                   {paged.map((note) => {
                     const isExpanded = Boolean(expandedIds[note.id]);
                     return (
-                    <button
-                      key={note.id}
-                      onClick={() => onSelect(note)}
-                      className="group w-full text-left px-4 py-3 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-sm shadow-sm"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="text-slate-800 font-semibold text-sm">
-                          {note.title || "저장된 상황"}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            setExpandedIds((prev) => ({
-                              ...prev,
-                              [note.id]: !prev[note.id],
-                            }));
-                          }}
-                          className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 sm:hidden"
-                          aria-expanded={isExpanded}
-                          aria-label="내용 펼치기"
-                        >
-                          <ChevronDown
-                            className={`size-3 transition-transform ${
-                              isExpanded ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-                      </div>
-                      <div
-                        className={`text-slate-700 text-sm leading-6 mt-1 overflow-hidden transition-[max-height] duration-300 ease-out sm:group-hover:max-h-48 sm:group-hover:line-clamp-none ${
-                          isExpanded
-                            ? "max-h-48"
-                            : "line-clamp-2 max-h-12"
-                        }`}
+                      <button
+                        key={note.id}
+                        onClick={() => onSelect(note)}
+                        className="group w-full text-left px-4 py-3 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-sm shadow-sm"
                       >
-                        {note.trigger}
-                      </div>
-                    </button>
-                  );
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="text-slate-800 font-semibold text-sm">
+                            {note.title || "저장된 상황"}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setExpandedIds((prev) => ({
+                                ...prev,
+                                [note.id]: !prev[note.id],
+                              }));
+                            }}
+                            className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 hover:border-indigo-300 hover:text-indigo-700 sm:hidden"
+                            aria-expanded={isExpanded}
+                            aria-label="내용 펼치기"
+                          >
+                            <ChevronDown
+                              className={`size-3 transition-transform ${
+                                isExpanded ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+                        </div>
+                        <div
+                          className={`text-slate-700 text-sm leading-6 mt-1 overflow-hidden transition-[max-height] duration-300 ease-out sm:group-hover:max-h-48 sm:group-hover:line-clamp-none ${
+                            isExpanded
+                              ? "max-h-48"
+                              : "line-clamp-2 max-h-12"
+                          }`}
+                        >
+                          {note.trigger}
+                        </div>
+                      </button>
+                    );
                   })}
                 </div>
               )}

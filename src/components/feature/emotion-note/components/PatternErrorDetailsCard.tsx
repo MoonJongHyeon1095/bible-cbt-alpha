@@ -1,14 +1,14 @@
 import { AlertCircle, Info, Loader2, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { validateUserText } from "../../../../utils/validation";
 import { Button } from "../../../ui/button";
 import { Textarea } from "../../../ui/textarea";
-import { validateUserText } from "../../../../utils/validation";
 import type { PatternErrorDetail } from "../types";
 import {
   CognitiveErrorInfoPopover,
   getCognitiveErrorMeta,
-} from "./info-popovers";
+} from "./pop-over/InfoPopovers";
 
 type ErrorEditor = PatternErrorDetail;
 
@@ -34,7 +34,7 @@ export function PatternErrorDetailsCard({
   const handleChange = (
     id: string,
     field: keyof ErrorEditor,
-    value: string
+    value: string,
   ) => {
     setEditing((prev) => ({
       ...prev,

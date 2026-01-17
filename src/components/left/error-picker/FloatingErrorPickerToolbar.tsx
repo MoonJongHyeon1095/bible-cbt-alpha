@@ -1,19 +1,16 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { ErrorIndex } from "../../../lib/ai";
+import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 
 type Props = {
   isVisible: boolean;
   selectedCount: number;
-  selectedIndices: ErrorIndex[];
-  savingErrorId?: ErrorIndex | null;
-  isErrorSaved?: (idx: ErrorIndex) => boolean;
-  onSaveError?: (idx: ErrorIndex) => void;
   pageIndex: number;
   totalPages: number;
   canPrev: boolean;
   canNext: boolean;
   onPrevPage: () => void;
   onNextPage: () => void;
+  onReroll: () => void;
+  isRerollDisabled: boolean;
   canConfirm?: boolean;
   onConfirm?: () => void;
 };
@@ -21,35 +18,20 @@ type Props = {
 export function FloatingErrorPickerToolbar({
   isVisible,
   selectedCount,
-  selectedIndices,
-  savingErrorId,
-  isErrorSaved,
-  onSaveError,
   pageIndex,
   totalPages,
   canPrev,
   canNext,
   onPrevPage,
   onNextPage,
+  onReroll,
+  isRerollDisabled,
   canConfirm,
   onConfirm,
 }: Props) {
   if (!isVisible) return null;
 
-  const selectedUnsaved = selectedIndices.filter(
-    (index) => !(isErrorSaved?.(index) ?? false)
-  );
-  const hasSelection = selectedIndices.length > 0;
-  const canSave = hasSelection && selectedUnsaved.length > 0 && onSaveError;
-  const allSaved = hasSelection && selectedUnsaved.length === 0;
-  const isSaving =
-    savingErrorId != null && selectedIndices.includes(savingErrorId);
   const showConfirm = selectedCount === 2 && onConfirm;
-
-  const handleSaveSelected = () => {
-    if (!onSaveError) return;
-    selectedUnsaved.forEach((index) => onSaveError(index));
-  };
 
   return (
     <div className="pointer-events-none fixed z-[60] right-5 bottom-[calc(env(safe-area-inset-bottom)+12px)] sm:bottom-[calc(env(safe-area-inset-bottom)+var(--mobile-tabbar-height,96px)+16px)]">
@@ -58,16 +40,15 @@ export function FloatingErrorPickerToolbar({
           <span className={selectedCount === 0 ? "opacity-60" : "opacity-100"}>
             {selectedCount} / 2개 선택됨
           </span>
-          {onSaveError && (
-            <button
-              type="button"
-              onClick={handleSaveSelected}
-              disabled={!canSave || isSaving}
-              className="pointer-events-auto rounded-full border border-emerald-300 bg-white px-3 py-1 text-xs font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-100 disabled:opacity-60"
-            >
-              {allSaved ? "저장됨" : isSaving ? "저장 중" : "감정노트에 저장"}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={onReroll}
+            disabled={isRerollDisabled}
+            className="pointer-events-auto inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-emerald-800 shadow-sm transition hover:bg-emerald-100 disabled:opacity-60"
+          >
+            <RefreshCw className="size-3" />
+            다른 인지오류 검토
+          </button>
         </div>
         <div className="pointer-events-auto mt-2 flex items-center justify-center">
           <div className="flex items-center gap-2">

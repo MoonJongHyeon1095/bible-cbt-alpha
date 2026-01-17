@@ -31,3 +31,21 @@ export async function createAlternativeAPI(body: {
   const payload = await res.json().catch(() => ({}));
   return { ok: res.ok, payload };
 }
+
+export async function saveSessionPatternAPI(body: {
+  noteId?: string | number | null;
+  title: string;
+  triggerText: string;
+  emotion: string;
+  automaticThought: string;
+  alternativeThought: string;
+  errors: Array<{ errorLabel: string; errorDescription?: string }>;
+  behavior?: { behaviorLabel: string; behaviorText: string } | null;
+}) {
+  const res = await authFetch("/api/cbt-session-complete", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  const payload = await res.json().catch(() => ({}));
+  return { ok: res.ok, payload };
+}

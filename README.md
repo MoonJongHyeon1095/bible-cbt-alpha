@@ -1,9 +1,9 @@
-# Bible Cognitive Therapy - 마음생각 다시 쓰기
+# Bible Cognitive Therapy - 마인드 렌즈
 
 ### 역할 접미사 예시
 
 Page: 화면 진입점 PrayerNotesPage
-View/Section: 큰 블록 PrayerNoteResponsesSection
+View/Section/Panel: 큰 블록 PrayerNoteResponsesSection (View나 Panel은 Section이 모인 더 큰 상위 블록)
 List: 컬렉션 렌더 PrayerNoteList
 Item/Card: 단일 엔티티 PrayerNoteCard
 Form: 입력/편집 PrayerNoteForm
