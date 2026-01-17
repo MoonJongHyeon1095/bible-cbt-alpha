@@ -71,36 +71,50 @@ export function SelectedSectionActions({
       ? {
           action: "bg-amber-500 text-white hover:bg-amber-600",
           left: "bg-white border border-amber-200 text-amber-700 hover:bg-amber-50",
+          wrap:
+            "border-amber-200 bg-amber-50/95 ring-amber-100 shadow-amber-900/10",
         }
       : theme === "errors"
       ? {
           action: "bg-rose-500 text-white hover:bg-rose-600",
           left: "bg-white border border-rose-200 text-rose-700 hover:bg-rose-50",
+          wrap:
+            "border-rose-200 bg-rose-50/95 ring-rose-100 shadow-rose-900/10",
         }
       : theme === "alternatives"
       ? {
           action: "bg-green-500 text-white hover:bg-green-600",
           left: "bg-white border border-green-200 text-green-700 hover:bg-green-50",
+          wrap:
+            "border-green-200 bg-green-50/95 ring-green-100 shadow-green-900/10",
         }
       : theme === "behaviors"
       ? {
           action: "bg-blue-500 text-white hover:bg-blue-600",
           left: "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50",
+          wrap:
+            "border-blue-200 bg-blue-50/95 ring-blue-100 shadow-blue-900/10",
         }
       : theme === "prayer"
       ? {
           action: "bg-emerald-700 text-white hover:bg-emerald-800",
           left: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-900/10",
+          wrap:
+            "border-emerald-200 bg-emerald-50/95 ring-emerald-100 shadow-emerald-900/10",
         }
       : theme === "history"
       ? {
           action:
             "bg-white border border-slate-200 text-slate-700 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700",
           left: "bg-white border border-slate-200 text-slate-700 hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700",
+          wrap:
+            "border-slate-200 bg-white/95 ring-slate-100 shadow-slate-900/10",
         }
       : {
           action: "bg-emerald-700 text-white hover:bg-emerald-800",
           left: "bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50",
+          wrap:
+            "border-emerald-200 bg-emerald-50/95 ring-emerald-100 shadow-emerald-900/10",
         };
 
   const baseStyle = {
@@ -108,12 +122,23 @@ export function SelectedSectionActions({
       "calc(env(safe-area-inset-bottom) + var(--mobile-tabbar-height, 96px) + 16px)",
   };
 
+  const showGroupWrap = Boolean(onAdd);
+
   return (
     <div
       style={baseStyle}
       className={cn("fixed z-[60] right-5", className)}
     >
-      <div className="flex items-center gap-2">
+      <div
+        className={cn(
+          "flex items-center gap-2",
+          showGroupWrap &&
+            cn(
+              "rounded-2xl border px-3 py-2 shadow-lg ring-1 backdrop-blur",
+              themeStyles.wrap
+            )
+        )}
+      >
         <Button
           type="button"
           aria-label={editAriaLabel ?? editLabel}

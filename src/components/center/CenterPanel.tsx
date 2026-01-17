@@ -107,17 +107,6 @@ export function CenterPanel({
   const resumeHandledRef = useRef(false);
 
   useEffect(() => {
-    try {
-      const acknowledged = localStorage.getItem(CENTER_DISCLAIMER_KEY);
-      if (!acknowledged) {
-        setIsDisclaimerOpen(true);
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  useEffect(() => {
     if (!resumeCenterView) {
       resumeHandledRef.current = false;
       return;
