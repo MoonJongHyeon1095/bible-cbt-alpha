@@ -5,7 +5,13 @@ import type { NavSharedProps } from "../navigation/types";
 
 type MobileTopBarProps = Pick<
   NavSharedProps,
-  "user" | "mode" | "onChangeMode" | "onLogout" | "onShowAuth" | "onNavigate"
+  | "user"
+  | "mode"
+  | "onChangeMode"
+  | "onLogout"
+  | "onShowAuth"
+  | "onNavigate"
+  | "onHomeRefresh"
 >;
 
 export function MobileTopBar({
@@ -15,6 +21,7 @@ export function MobileTopBar({
   onLogout,
   onShowAuth,
   onNavigate,
+  onHomeRefresh,
 }: MobileTopBarProps) {
   return (
     <div
@@ -25,7 +32,7 @@ export function MobileTopBar({
         {/* 모바일 로고 */}
         <button
           type="button"
-          onClick={() => onNavigate("cbt")}
+          onClick={onHomeRefresh}
           className="flex items-center gap-2 min-w-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-xl"
         >
           <div className="shrink-0">

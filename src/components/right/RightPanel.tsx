@@ -110,7 +110,7 @@ export function RightPanel({
           }
         }}
         variant="outline"
-        className="mb-4 w-full gap-2 rounded-full border-2 border-green-400 text-green-700 transition-all hover:-translate-y-0.5 hover:border-green-500 hover:bg-green-50 hover:shadow-md"
+        className="mb-4 w-full gap-2 rounded-full border-2 border-indigo-400 text-indigo-700 transition-all hover:-translate-y-0.5 hover:border-indigo-500 hover:bg-indigo-50 hover:shadow-md"
       >
         <RefreshCw className="size-4" />
         같은 주제로 다시 하기
@@ -447,7 +447,7 @@ export function RightPanel({
   return (
     <div className="relative min-h-[600px] flex flex-col">
       {showBackButton && (
-        <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+        <div className="absolute right-4 top-0 z-10 flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
@@ -598,7 +598,7 @@ export function RightPanel({
                   ) : (
                     <Button
                       onClick={handleFinalComplete}
-                      className="w-full rounded-full bg-purple-600 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-md"
+                      className="w-full rounded-full bg-indigo-600 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-md"
                       disabled={isBehaviorGenerating}
                     >
                       {isBehaviorGenerating ? "행동 제안 생성중" : "완료하기"}
@@ -672,7 +672,7 @@ export function RightPanel({
                   />
                   <Button
                     onClick={handleFinalComplete}
-                    className="w-full rounded-full bg-purple-600 py-6 text-lg transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-lg"
+                    className="w-full rounded-full bg-indigo-600 py-6 text-lg transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
                     disabled={isBehaviorGenerating}
                   >
                     {isBehaviorGenerating ? "행동제안 생성 중" : "완료"}
@@ -752,7 +752,7 @@ export function RightPanel({
                 <>
                   <Button
                     onClick={handleFinalComplete}
-                    className="mb-4 w-full rounded-full bg-purple-600 transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-lg"
+                  className="mb-4 w-full rounded-full bg-indigo-600 transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
                     disabled={isBehaviorGenerating}
                   >
                     {isBehaviorGenerating ? "행동 제안 생성중" : "완료"}

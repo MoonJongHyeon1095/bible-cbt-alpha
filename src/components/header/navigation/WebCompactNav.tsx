@@ -15,6 +15,7 @@ type WebCompactNavProps = Pick<
   | "onLogout"
   | "onShowAuth"
   | "onNavigate"
+  | "onHomeRefresh"
 >;
 
 export function WebCompactNav({
@@ -26,6 +27,7 @@ export function WebCompactNav({
   onLogout,
   onShowAuth,
   onNavigate,
+  onHomeRefresh,
 }: WebCompactNavProps) {
   const [open, setOpen] = useState(false);
   const go = (page: string) => {
@@ -40,7 +42,10 @@ export function WebCompactNav({
           {/* 모바일 로고 */}
           <button
             type="button"
-            onClick={() => go("cbt")}
+            onClick={() => {
+              onHomeRefresh();
+              setOpen(false);
+            }}
             className="flex items-center gap-2 min-w-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-xl"
           >
             <div className="shrink-0">

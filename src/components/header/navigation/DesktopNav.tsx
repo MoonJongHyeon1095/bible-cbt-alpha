@@ -13,6 +13,7 @@ type DesktopNavProps = Pick<
   | "onLogout"
   | "onShowAuth"
   | "onNavigate"
+  | "onHomeRefresh"
 >;
 
 export function DesktopNav({
@@ -24,6 +25,7 @@ export function DesktopNav({
   onLogout,
   onShowAuth,
   onNavigate,
+  onHomeRefresh,
 }: DesktopNavProps) {
   return (
     <div className="max-w-[1800px] mx-auto px-8 py-4">
@@ -31,7 +33,7 @@ export function DesktopNav({
         {/* Logo */}
         <button
           type="button"
-          onClick={() => onNavigate("cbt")}
+          onClick={onHomeRefresh}
           className="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded-xl"
         >
           <div className="shrink-0">

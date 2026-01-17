@@ -13,6 +13,7 @@ import { WebCompactNav } from "./WebCompactNav";
 interface NavigationProps {
   currentPage: string;
   onNavigate: (page: string) => void;
+  onHomeRefresh: () => void;
   user: any;
   onLogout: () => void;
   onShowAuth: () => void;
@@ -24,6 +25,7 @@ interface NavigationProps {
 export function Navigation({
   currentPage,
   onNavigate,
+  onHomeRefresh,
   user,
   onLogout,
   onShowAuth,
@@ -61,17 +63,13 @@ export function Navigation({
   };
 
   const goHomeRefresh = () => {
-    if (currentPage === "cbt") {
-      window.location.reload();
-      return;
-    }
-    go("cbt");
+    onHomeRefresh();
   };
 
   if (isNativeMobile) {
     return (
       <>
-        <nav className="bg-white border-b-2 border-purple-100 shadow-sm sticky top-0 z-50">
+        <nav className="bg-white sticky top-0 z-50">
           <MobileTopBar
             user={user}
             mode={mode}
@@ -79,6 +77,7 @@ export function Navigation({
             onLogout={onLogout}
             onShowAuth={onShowAuth}
             onNavigate={go}
+            onHomeRefresh={goHomeRefresh}
           />
         </nav>
         <MobileTabBar
@@ -92,7 +91,7 @@ export function Navigation({
   }
 
   return (
-    <nav className="bg-white border-b-2 border-purple-100 shadow-sm sticky top-0 z-50">
+    <nav className="bg-white sticky top-0 z-50">
       {isDesktop ? (
         <DesktopNav
           currentPage={currentPage}
@@ -103,6 +102,7 @@ export function Navigation({
           onLogout={onLogout}
           onShowAuth={onShowAuth}
           onNavigate={go}
+          onHomeRefresh={goHomeRefresh}
         />
       ) : (
         <WebCompactNav
@@ -114,6 +114,7 @@ export function Navigation({
           onLogout={onLogout}
           onShowAuth={onShowAuth}
           onNavigate={go}
+          onHomeRefresh={goHomeRefresh}
         />
       )}
     </nav>

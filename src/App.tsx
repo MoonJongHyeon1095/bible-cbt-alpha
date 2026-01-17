@@ -27,6 +27,7 @@ const getIsDesktop = () =>
 export default function App() {
   const [currentPage, setCurrentPage] = useState("cbt");
   const [cbtStep, setCbtStep] = useState(1);
+  const [cbtResetKey, setCbtResetKey] = useState(0);
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -112,11 +113,25 @@ export default function App() {
     checkUser();
   };
 
+  const handleHomeRefresh = () => {
+    if (currentPage !== "cbt") {
+      setCurrentPage("cbt");
+    }
+    setCbtStep(1);
+    setCbtResetKey((prev) => prev + 1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case "cbt":
         return (
-          <CBTSessionPage mode={mode} user={user} onStepChange={setCbtStep} />
+          <CBTSessionPage
+            key={cbtResetKey}
+            mode={mode}
+            user={user}
+            onStepChange={setCbtStep}
+          />
         );
 
       case "dashboard":
@@ -152,6 +167,7 @@ export default function App() {
       <Navigation
         currentPage={currentPage}
         onNavigate={setCurrentPage}
+        onHomeRefresh={handleHomeRefresh}
         user={user}
         onLogout={handleLogout}
         onShowAuth={() => setShowAuthModal(true)}
