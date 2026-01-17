@@ -13,10 +13,11 @@ export function CenterDisclaimerBanner({
         <p className="min-w-0 text-sm text-amber-900 flex items-center gap-2">
           <Info className="size-4 text-amber-600" />
           <span>
-            이 서비스는 치료/진단용이 아닙니다.
-            <span className="hidden sm:inline"> </span>
-            <br className="sm:hidden" />
-            AI가 생성한 참고용 정보를 제공합니다.
+            <span className="sm:hidden">중요 안내</span>
+            <span className="hidden sm:inline">
+              이 서비스는 치료/진단용이 아닙니다. AI가 생성한 참고용 정보를
+              제공합니다.
+            </span>
           </span>
         </p>
         <button
