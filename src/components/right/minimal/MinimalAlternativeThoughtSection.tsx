@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import type { EmotionThoughtPair } from "../../../types";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
 import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
+import { MinimalStepHeaderSection } from "../../common/MinimalStepHeaderSection";
 import { MinimalAlternativeThoughtBodySection } from "./components/MinimalAlternativeThoughtBodySection";
 import { MinimalAlternativeThoughtErrorState } from "./components/MinimalAlternativeThoughtErrorState";
-import { MinimalAlternativeThoughtHeaderSection } from "./components/MinimalAlternativeThoughtHeaderSection";
 import { MinimalAlternativeThoughtLoadingState } from "./components/MinimalAlternativeThoughtLoadingState";
 import { useAlternativeThoughts } from "./hooks/useAlternativeThoughts";
 
@@ -17,7 +17,7 @@ interface MinimalAlternativeThoughtSectionProps {
   onSelect: (thought: string) => void;
 }
 
-const TITLE = "어떤 생각이 가장 마음에 와닿나요?";
+const TITLE = "어떤 생각이 마음에 와닿나요?";
 const DESCRIPTION = "가장 힘이 되는 생각을 골라주세요.";
 
 export function MinimalAlternativeThoughtSection({
@@ -82,10 +82,7 @@ export function MinimalAlternativeThoughtSection({
   return (
     <div className="min-h-screen flex items-center justify-center px-6 pt-12 pb-10">
       <div className="w-full max-w-xl space-y-8">
-        <MinimalAlternativeThoughtHeaderSection
-          title={TITLE}
-          description={DESCRIPTION}
-        />
+        <MinimalStepHeaderSection title={TITLE} description={DESCRIPTION} />
 
         <MinimalAlternativeThoughtBodySection
           thought={currentThought?.thought ?? ""}

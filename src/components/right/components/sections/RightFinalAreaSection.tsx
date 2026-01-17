@@ -81,7 +81,7 @@ export function RightFinalAreaSection({
         />
       )}
 
-      <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
+      <div className="space-y-4">
         {shouldShowDial && (
           <FinalIntensityCard
             emotionThoughtPairs={emotionThoughtPairs}

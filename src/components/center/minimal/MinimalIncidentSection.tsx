@@ -1,9 +1,9 @@
 import { toast } from "sonner";
 import { validateUserText } from "../../../utils/validation";
 import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
+import { MinimalStepHeaderSection } from "../../common/MinimalStepHeaderSection";
 import { ALL_EXAMPLES } from "../constants/examples";
 import { MinimalIncidentForm } from "./components/MinimalIncidentForm";
-import { MinimalIncidentHeaderSection } from "./components/MinimalIncidentHeaderSection";
 
 interface MinimalIncidentSectionProps {
   userInput: string;
@@ -16,6 +16,9 @@ export function MinimalIncidentSection({
   onInputChange,
   onNext,
 }: MinimalIncidentSectionProps) {
+  const title = "오늘 무슨 일이 있었나요?";
+  const description =
+    "힘들었던 경험이나 불편했던 상황을 자유롭게 적어주세요.";
   const handleShowExample = () => {
     if (!ALL_EXAMPLES.length) return;
     const index = Math.floor(Math.random() * ALL_EXAMPLES.length);
@@ -38,7 +41,11 @@ export function MinimalIncidentSection({
   return (
     <div className="min-h-screen flex items-center justify-center px-6 pt-12 pb-10">
       <div className="w-full max-w-xl space-y-8">
-        <MinimalIncidentHeaderSection />
+        <MinimalStepHeaderSection
+          title={title}
+          description={description}
+          titleClassName="font-normal"
+        />
         <MinimalIncidentForm
           userInput={userInput}
           onInputChange={onInputChange}

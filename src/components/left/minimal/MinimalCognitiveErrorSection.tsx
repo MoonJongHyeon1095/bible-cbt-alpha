@@ -2,9 +2,9 @@ import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
 import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
+import { MinimalStepHeaderSection } from "../../common/MinimalStepHeaderSection";
 import { MinimalCognitiveErrorCard } from "./components/MinimalCognitiveErrorCard";
 import { MinimalCognitiveErrorErrorState } from "./components/MinimalCognitiveErrorErrorState";
-import { MinimalCognitiveErrorHeaderSection } from "./components/MinimalCognitiveErrorHeaderSection";
 import { MinimalCognitiveErrorLoadingState } from "./components/MinimalCognitiveErrorLoadingState";
 import { useCognitiveErrorRanking } from "./hooks/useCognitiveErrorRanking";
 
@@ -67,7 +67,7 @@ export function MinimalCognitiveErrorSection({
   return (
     <div className="min-h-screen flex items-center justify-center px-6 pt-12 pb-10">
       <div className="w-full max-w-xl space-y-8">
-        <MinimalCognitiveErrorHeaderSection description={HEADER_TEXT} />
+        <MinimalStepHeaderSection description={HEADER_TEXT} />
 
         {currentRankItem && (
           <MinimalCognitiveErrorCard

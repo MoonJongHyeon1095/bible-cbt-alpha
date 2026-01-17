@@ -2,8 +2,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { validateUserText } from "../../../utils/validation";
 import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
+import { MinimalStepHeaderSection } from "../../common/MinimalStepHeaderSection";
 import { MinimalAutoThoughtControlSection } from "./components/MinimalAutoThoughtControlSection";
-import { MinimalAutoThoughtHeaderSection } from "./components/MinimalAutoThoughtHeaderSection";
 import { MinimalAutoThoughtHintSection } from "./components/MinimalAutoThoughtHintSection";
 import { MinimalAutoThoughtInputForm } from "./components/MinimalAutoThoughtInputForm";
 import { MinimalAutoThoughtLoadingState } from "./components/MinimalAutoThoughtLoadingState";
@@ -26,6 +26,14 @@ export function MinimalAutoThoughtSection({
   onSubmitThought,
 }: MinimalAutoThoughtSectionProps) {
   const [customThought, setCustomThought] = useState("");
+  const title = (
+    <>
+      {emotion} 뒤에 숨어있는
+      <span className="hidden sm:inline"> </span>
+      <br className="sm:hidden" />
+      생각을 찾아볼게요.
+    </>
+  );
 
   const resetSelection = () => {
     onWantsCustomChange(false);
@@ -70,11 +78,20 @@ export function MinimalAutoThoughtSection({
   return (
     <div className="relative min-h-screen flex items-center justify-center px-6 pt-12 pb-10">
       <div className="w-full max-w-xl space-y-8">
-        <MinimalAutoThoughtHeaderSection
-          emotion={emotion}
-          error={error}
-          onReload={() => void reloadThoughts()}
-        />
+        <MinimalStepHeaderSection title={title}>
+          {error && (
+            <div className="text-sm text-slate-500">
+              {error}{" "}
+              <button
+                type="button"
+                onClick={() => void reloadThoughts()}
+                className="underline underline-offset-4 hover:text-slate-700"
+              >
+                다시 불러오기
+              </button>
+            </div>
+          )}
+        </MinimalStepHeaderSection>
 
         <div className="min-h-[72px] flex items-center">
           {wantsCustom ? (

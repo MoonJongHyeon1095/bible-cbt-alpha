@@ -68,6 +68,7 @@ export function RightPage({
   const hasSelectedThought = Boolean(selectedAlternativeThought);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const bibleSectionRef = useRef<HTMLDivElement | null>(null);
+  const skipStepScrollRef = useRef(false);
 
   const hasAnyIntensity = useMemo(
     () => emotionThoughtPairs.some((p) => p.intensity != null),
@@ -102,6 +103,9 @@ export function RightPage({
   };
 
   const goNextIfNeeded = (options?: { skipScroll?: boolean }) => {
+    if (options?.skipScroll) {
+      skipStepScrollRef.current = true;
+    }
     if (step < 5) onNext(options);
   };
 
@@ -173,6 +177,12 @@ export function RightPage({
   }, [hasSelectedThought, setFinalIntensities, setShowFinalIntensity, step]);
 
   useEffect(() => {
+    if (step === 4 && hasSelectedThought && wantsBibleVerse == null) {
+      scrollToTop();
+    }
+  }, [hasSelectedThought, step, wantsBibleVerse]);
+
+  useEffect(() => {
     if (!selectedAlternativeThought) {
       setSelectedBehavior(null);
       setIsBehaviorGenerating(false);
@@ -207,6 +217,7 @@ export function RightPage({
   };
 
   const handleDoesNotWantBible = async () => {
+    skipStepScrollRef.current = true;
     lockBibleChoice();
 
     setWantsBibleVerse(false);
@@ -215,7 +226,12 @@ export function RightPage({
 
     setShowFinalIntensity(true);
     seedFinalIntensitiesFromPairs();
-    goNextIfNeeded();
+    goNextIfNeeded({ skipScroll: true });
+  };
+
+  const handleRequestBible = () => {
+    skipStepScrollRef.current = true;
+    void handleWantsBible();
   };
 
   const handleFinalComplete = async () => {
@@ -422,6 +438,10 @@ export function RightPage({
   };
 
   useEffect(() => {
+    if (skipStepScrollRef.current) {
+      skipStepScrollRef.current = false;
+      return;
+    }
     // 단계 변화 시 스크롤을 상단으로
     scrollToTop();
   }, [step]);
@@ -467,7 +487,7 @@ export function RightPage({
   return (
     <div className="relative min-h-[600px] flex flex-col">
       {showBackButton && (
-        <div className="absolute right-4 top-0 z-10 flex items-center gap-2">
+        <div className="absolute right-4 -top-3 z-10 flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
@@ -522,7 +542,7 @@ export function RightPage({
             />
             {isChristian ? (
               <BibleOfferCard
-                onAccept={handleWantsBible}
+                onAccept={handleRequestBible}
                 onDecline={handleDoesNotWantBible}
                 bibleLoading={bibleLoading}
                 bibleError={bibleError}
@@ -539,14 +559,14 @@ export function RightPage({
 
         {showBibleResult && (
           <div className="space-y-4">
-            <RightBibleResultSection
-              bibleSectionRef={bibleSectionRef}
-              bibleLoading={bibleLoading}
-              bibleError={bibleError}
-              bibleVerse={bibleVerse}
-              onRetry={handleWantsBible}
-              onComplete={handleFinalComplete}
-              restartAction={renderRestartWithSameInput()}
+              <RightBibleResultSection
+                bibleSectionRef={bibleSectionRef}
+                bibleLoading={bibleLoading}
+                bibleError={bibleError}
+                bibleVerse={bibleVerse}
+                onRetry={handleRequestBible}
+                onComplete={handleFinalComplete}
+                restartAction={renderRestartWithSameInput()}
               userInput={userInput}
               emotionThoughtPairs={emotionThoughtPairs}
               selectedCognitiveErrors={selectedCognitiveErrors}
@@ -573,7 +593,7 @@ export function RightPage({
             onLoadingChange={setIsBehaviorGenerating}
             onBackToAlternatives={handleBackToAlternatives}
             showBibleOffer={showBibleOfferInFinalArea}
-            onAcceptBible={handleWantsBible}
+            onAcceptBible={handleRequestBible}
             onDeclineBible={handleDoesNotWantBible}
             bibleLoading={bibleLoading}
             bibleError={bibleError}
