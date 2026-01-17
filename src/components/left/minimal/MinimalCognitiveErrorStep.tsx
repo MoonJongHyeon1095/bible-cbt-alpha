@@ -1,4 +1,4 @@
-import { RefreshCw } from "lucide-react";
+import { Info, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -8,8 +8,8 @@ import {
   type ErrorIndex,
 } from "../../../lib/ai";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
-import { MinimalLoadingScreen } from "../../center/minimal/MinimalLoadingScreen";
 import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
+import { CognitiveErrorInfoPopover } from "../../feature/emotion-note/components/info-popovers";
 
 interface MinimalCognitiveErrorStepProps {
   userInput: string;
@@ -153,6 +153,9 @@ export function MinimalCognitiveErrorStep({
   const currentDetail = currentRankItem
     ? detailByIndex[currentRankItem.index]
     : null;
+  const currentMeta = currentRankItem
+    ? COGNITIVE_ERRORS_BY_INDEX[currentRankItem.index]
+    : undefined;
 
   const handleNext = async () => {
     if (rankLoading || detailLoading) return;
@@ -192,7 +195,21 @@ export function MinimalCognitiveErrorStep({
   const loading = rankLoading && ranked.length === 0;
 
   if (loading) {
-    return <MinimalLoadingScreen message="인지오류를 분석하고 있어요." />;
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6 pt-12 pb-10">
+        <div className="w-full max-w-xl space-y-8">
+          <div className="space-y-3">
+            <p className="text-base sm:text-lg text-slate-500 leading-relaxed">
+              고르라고 하지 말고 매번 새로고침 하는 거 같은 문구
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-slate-500">
+            <div className="size-4 rounded-full border-2 border-slate-300 border-t-transparent animate-spin" />
+            <span>인지오류를 분석하고 있어요.</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
@@ -223,10 +240,22 @@ export function MinimalCognitiveErrorStep({
 
         {currentRankItem && (
           <div className="w-full rounded-3xl border border-slate-200 bg-white/80 px-6 py-5 text-left">
-            <p className="text-base sm:text-lg font-semibold text-slate-900">
-              {COGNITIVE_ERRORS_BY_INDEX[currentRankItem.index]?.title ??
-                "인지오류"}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-base sm:text-lg font-semibold text-slate-900">
+                {currentMeta?.title ?? "인지오류"}
+              </p>
+              {currentMeta && (
+                <CognitiveErrorInfoPopover errorLabel={currentMeta.title}>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-full p-1 text-rose-500 hover:bg-rose-100"
+                    aria-label={`${currentMeta.title} 설명 보기`}
+                  >
+                    <Info className="size-4" />
+                  </button>
+                </CognitiveErrorInfoPopover>
+              )}
+            </div>
             {currentRankItem.evidenceQuote && (
               <p className="mt-2 text-xs sm:text-sm text-slate-500">
                 “{currentRankItem.evidenceQuote}”

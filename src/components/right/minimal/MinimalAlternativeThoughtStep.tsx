@@ -2,7 +2,6 @@ import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { EmotionThoughtPair } from "../../../types";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
-import { MinimalLoadingScreen } from "../../center/minimal/MinimalLoadingScreen";
 import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
 import { useAlternativeThoughts } from "../hooks/useAlternativeThoughts";
 
@@ -55,7 +54,24 @@ export function MinimalAlternativeThoughtStep({
   };
 
   if (thoughtsLoading) {
-    return <MinimalLoadingScreen message="대안사고를 정리하고 있어요." />;
+    return (
+      <div className="min-h-screen flex items-center justify-center px-6 pt-12 pb-10">
+        <div className="w-full max-w-xl space-y-8">
+          <div className="space-y-3">
+            <h1 className="text-3xl sm:text-4xl font-serif font-semibold leading-tight text-slate-900">
+              어떤 대안사고가 가장 마음에 와닿나요?
+            </h1>
+            <p className="text-base sm:text-lg text-slate-500 leading-relaxed">
+              고르라고 하지말고 매번 새로고침 하는 거 같은 문구
+            </p>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-slate-500">
+            <div className="size-4 rounded-full border-2 border-slate-300 border-t-transparent animate-spin" />
+            <span>대안사고를 정리하고 있어요.</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (thoughtsError) {
