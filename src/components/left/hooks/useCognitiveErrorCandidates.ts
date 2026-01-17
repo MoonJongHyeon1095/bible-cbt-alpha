@@ -8,7 +8,7 @@ import {
 } from "../../../lib/ai";
 import type { EmotionThoughtPair } from "../../../types";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
-import type { DetailItem, RankItem } from "./useLeftPanelTypes";
+import type { DetailItem, RankItem } from "./useLeftPageTypes";
 
 type UseCognitiveErrorCandidatesParams = {
   step: number;

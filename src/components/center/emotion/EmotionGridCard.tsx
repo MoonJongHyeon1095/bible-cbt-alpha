@@ -19,7 +19,7 @@ export function EmotionGridCard({
         </h3>
       </div> */}
 
-      <div className="grid grid-cols-2 gap-3 max-h-[550px] overflow-y-auto pr-2">
+      <div className="grid grid-cols-2 gap-3">
         {EMOTIONS.map((emotion) => {
           const isSelected = selectedEmotion === emotion.label;
 

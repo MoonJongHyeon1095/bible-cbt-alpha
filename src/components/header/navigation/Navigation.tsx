@@ -1,16 +1,10 @@
 // src/components/header/Navigation.tsx
 import { Capacitor } from "@capacitor/core";
-import {
-  BookMarked,
-  BookOpen,
-  HeartPulse,
-  LayoutDashboard,
-  LifeBuoy,
-} from "lucide-react";
+import { BookOpen, HeartPulse, LayoutDashboard, LifeBuoy } from "lucide-react";
 import { useMemo } from "react";
+import { MobileTabBar } from "../mobile/MobileTabBar";
+import { MobileTopBar } from "../mobile/MobileTopBar";
 import { DesktopNav } from "./DesktopNav";
-import { MobileTabBar } from "./MobileTabBar";
-import { MobileTopBar } from "./MobileTopBar";
 import type { CbtMode } from "./ModePicker";
 import type { NavItem } from "./types";
 import { useIsDesktop } from "./useIsDesktop";
@@ -19,6 +13,7 @@ import { WebCompactNav } from "./WebCompactNav";
 interface NavigationProps {
   currentPage: string;
   onNavigate: (page: string) => void;
+  onHomeRefresh: () => void;
   user: any;
   onLogout: () => void;
   onShowAuth: () => void;
@@ -30,6 +25,7 @@ interface NavigationProps {
 export function Navigation({
   currentPage,
   onNavigate,
+  onHomeRefresh,
   user,
   onLogout,
   onShowAuth,
@@ -56,11 +52,6 @@ export function Navigation({
         label: "기도노트",
         icon: BookOpen,
       });
-      base.splice(2, 0, {
-        id: "scripture-notes",
-        label: "말씀노트",
-        icon: BookMarked,
-      });
     }
 
     return base;
@@ -72,17 +63,13 @@ export function Navigation({
   };
 
   const goHomeRefresh = () => {
-    if (currentPage === "cbt") {
-      window.location.reload();
-      return;
-    }
-    go("cbt");
+    onHomeRefresh();
   };
 
   if (isNativeMobile) {
     return (
       <>
-        <nav className="bg-white border-b-2 border-purple-100 shadow-sm sticky top-0 z-50">
+        <nav className="bg-white sticky top-0 z-50">
           <MobileTopBar
             user={user}
             mode={mode}
@@ -90,6 +77,7 @@ export function Navigation({
             onLogout={onLogout}
             onShowAuth={onShowAuth}
             onNavigate={go}
+            onHomeRefresh={goHomeRefresh}
           />
         </nav>
         <MobileTabBar
@@ -103,7 +91,7 @@ export function Navigation({
   }
 
   return (
-    <nav className="bg-white border-b-2 border-purple-100 shadow-sm sticky top-0 z-50">
+    <nav className="bg-white sticky top-0 z-50">
       {isDesktop ? (
         <DesktopNav
           currentPage={currentPage}
@@ -114,6 +102,7 @@ export function Navigation({
           onLogout={onLogout}
           onShowAuth={onShowAuth}
           onNavigate={go}
+          onHomeRefresh={goHomeRefresh}
         />
       ) : (
         <WebCompactNav
@@ -125,6 +114,7 @@ export function Navigation({
           onLogout={onLogout}
           onShowAuth={onShowAuth}
           onNavigate={go}
+          onHomeRefresh={goHomeRefresh}
         />
       )}
     </nav>

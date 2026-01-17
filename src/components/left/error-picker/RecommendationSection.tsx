@@ -16,8 +16,8 @@ export function RecommendationSection({
   isRerollDisabled,
 }: Props) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 shadow-sm">
-      <div className="flex items-center justify-between mb-3">
+    <div className="space-y-3 pt-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-base font-semibold text-emerald-900">
           인지오류 후보
         </p>

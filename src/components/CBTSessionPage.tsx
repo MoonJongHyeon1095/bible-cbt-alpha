@@ -1,14 +1,17 @@
 // src/components/CBTSessionPage.tsx
 import type { User } from "@supabase/supabase-js";
+import { History } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { EmotionThoughtPair } from "../types";
 import type { SelectedCognitiveError } from "../types/sessionHistory";
 import { CenterPanel } from "./center/CenterPanel";
+import { SelectedSectionActions } from "./feature/common/SelectedSectionActions";
 import { EmailModal } from "./feature/EmailModal";
 import { HistoryModal } from "./feature/dashboard/HistoryModal";
 import { CbtMode } from "./header/navigation/ModePicker";
-import { LeftPanel } from "./left/LeftPanel";
+import { LeftPage } from "./left/LeftPage";
 import { RightPanel } from "./right/RightPanel";
+import { clearCbtSessionStorage } from "../utils/cbtSessionStorage";
 
 export function CBTSessionPage({
   mode,
@@ -97,15 +100,7 @@ export function CBTSessionPage({
     setSelectedCognitiveErrors([]);
     setSelectedAlternativeThought("");
     setPositiveReframes({});
-    try {
-      sessionStorage.removeItem("cbt_saved_error_keys");
-      sessionStorage.removeItem("cbt_saved_alternative_keys");
-      sessionStorage.removeItem("cbt_saved_behavior_keys");
-      sessionStorage.removeItem("cbt_saved_detail_keys");
-      sessionStorage.removeItem("cbt_active_note");
-    } catch {
-      /* ignore */
-    }
+    clearCbtSessionStorage();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -115,15 +110,7 @@ export function CBTSessionPage({
     setSelectedCognitiveErrors([]);
     setSelectedAlternativeThought("");
     setPositiveReframes({});
-    try {
-      sessionStorage.removeItem("cbt_saved_error_keys");
-      sessionStorage.removeItem("cbt_saved_alternative_keys");
-      sessionStorage.removeItem("cbt_saved_behavior_keys");
-      sessionStorage.removeItem("cbt_saved_detail_keys");
-      sessionStorage.removeItem("cbt_active_note");
-    } catch {
-      /* ignore */
-    }
+    clearCbtSessionStorage();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -154,7 +141,7 @@ export function CBTSessionPage({
     if (step === 3) {
       return (
         <div className="w-full">
-          <LeftPanel
+          <LeftPage
             step={step}
             emotionThoughtPairs={emotionThoughtPairs}
             userInput={userInput}
@@ -196,7 +183,7 @@ export function CBTSessionPage({
   };
 
   return (
-    <div className="w-full px-4 sm:px-8 py-6 sm:py-8">
+    <div className="max-w-[1800px] mx-auto px-8 py-8">
       {/* Header (추천 섹션 제거) */}
       <header className="text-center mb-5 sm:mb-8">
         {/* 필요하면 여기 타이틀/서브타이틀만 유지 */}
@@ -204,6 +191,15 @@ export function CBTSessionPage({
 
       {/* ✅ PWA 단일 화면 */}
       <div className="mb-8">{renderStepScreen()}</div>
+
+      <SelectedSectionActions
+        hidden={step !== 1}
+        theme="behaviors"
+        editLabel="세션 기록 보기"
+        editAriaLabel="세션 기록 보기"
+        onEdit={() => setShowHistoryModal(true)}
+        editIcon={<History className="size-4 mr-1" />}
+      />
 
       {/* 툴 도크 비활성화 */}
       {/* <ToolDock

@@ -11,7 +11,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useAutoCloseOnScroll } from "../../common/utils/useAutoCloseOnScroll";
 import { Button } from "../../../ui/button";
-import { Card } from "../../../ui/card";
 import type { Pattern } from "../types";
 import {
   BehaviorInfoPopover,
@@ -226,9 +225,9 @@ export function PatternCard({
   };
 
   return (
-    <Card
+    <div
       id={`pattern-${pattern.id}`}
-      className="p-6 hover:shadow-lg transition-shadow bg-white border-indigo-100"
+      className="w-full"
     >
       <div className="mb-6 space-y-3">
         <div className="flex items-center justify-between">
@@ -837,6 +836,6 @@ export function PatternCard({
           content={previewContent.content}
         />
       ) : null}
-    </Card>
+    </div>
   );
 }

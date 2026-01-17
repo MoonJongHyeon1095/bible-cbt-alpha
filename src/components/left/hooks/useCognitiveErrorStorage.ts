@@ -14,7 +14,7 @@ import {
 } from "../../feature/emotion-note/utils/storage";
 import { formatAutoTitle } from "../../../utils/formatAutoTitle";
 import { validateUserText } from "../../../utils/validation";
-import type { DetailItem } from "./useLeftPanelTypes";
+import type { DetailItem } from "./useLeftPageTypes";
 
 type UseCognitiveErrorStorageParams = {
   user: User | null;

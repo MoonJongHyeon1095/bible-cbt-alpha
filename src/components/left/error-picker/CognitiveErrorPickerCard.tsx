@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import type { ErrorIndex } from "../../../lib/ai";
 import { Button } from "../../ui/button";
 import { EmotionThoughtSummaryCard } from "../EmotionThoughtSummaryCard";
-import { FlowActionButton } from "../FlowActionButton";
 import { CognitiveErrorCandidateCard } from "./CognitiveErrorCandidateCard";
 import { FloatingErrorPickerToolbar } from "./FloatingErrorPickerToolbar";
 import { PinnedSelectionSection } from "./PinnedSelectionSection";
@@ -174,26 +173,20 @@ export function CognitiveErrorPickerCard({
           <FloatingErrorPickerToolbar
             isVisible={hasRerolled || selectedCount > 0}
             selectedCount={selectedCount}
+            selectedIndices={selected}
+            savingErrorId={savingErrorId}
+            isErrorSaved={isErrorSaved}
+            onSaveError={onSaveError}
             pageIndex={pageIndex}
             totalPages={totalPages}
             canPrev={canPrev}
             canNext={canNext}
             onPrevPage={onPrevPage}
             onNextPage={onNextPage}
+            canConfirm={canConfirm}
+            onConfirm={onConfirm}
           />
 
-          <FlowActionButton
-            onClick={onConfirm}
-            disabled={!canConfirm}
-            label={
-              canConfirm
-                ? "다음 단계로 이동"
-                : selectedCount < 2
-                  ? "인지오류 2개를 선택해주세요"
-                  : "상세 서술 준비 중"
-            }
-            className="mt-4"
-          />
         </>
       )}
     </div>

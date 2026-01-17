@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../../ui/button";
 import { cn } from "../../ui/utils";
+import { useModalOpen } from "./hooks/useModalOpen";
 
 interface ScrollToTopButtonProps {
   threshold?: number;
@@ -31,6 +32,7 @@ export function ScrollToTopButton({
   forceAction = false,
   hidden = false,
 }: ScrollToTopButtonProps) {
+  const isModalOpen = useModalOpen();
   const [visible, setVisible] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -92,24 +94,21 @@ export function ScrollToTopButton({
     };
   }, []);
 
-  const baseStyle = isDesktop
-    ? undefined
-    : {
-        bottom:
-          "calc(env(safe-area-inset-bottom) + var(--mobile-tabbar-height, 96px) + 16px)",
-      };
+  const baseStyle = {
+    bottom:
+      "calc(env(safe-area-inset-bottom) + var(--mobile-tabbar-height, 96px) + 16px)",
+  };
 
   const baseClassName = cn(
     "fixed z-[60] rounded-full shadow-lg",
-    "right-5 md:right-8 md:bottom-8",
-    "transition-all duration-300",
-    className
+    "right-5",
+    "transition-all duration-300"
   );
 
   const shouldShowAction =
     showAction && actionLabel && onActionClick && (forceAction || !visible);
 
-  if (hidden) {
+  if (hidden || isModalOpen) {
     return null;
   }
 
@@ -123,7 +122,8 @@ export function ScrollToTopButton({
         className={cn(
           baseClassName,
           "px-4 py-3 rounded-full",
-          actionClassName ?? "bg-indigo-600 text-white hover:bg-indigo-700"
+          actionClassName ?? "bg-indigo-600 text-white hover:bg-indigo-700",
+          className
         )}
       >
         {actionIcon ?? <Plus className="size-5 mr-2" />}
@@ -151,7 +151,8 @@ export function ScrollToTopButton({
         "bg-indigo-600 text-white",
         visible
           ? "opacity-100 translate-y-0"
-          : "pointer-events-none opacity-0 translate-y-4"
+          : "pointer-events-none opacity-0 translate-y-4",
+        className
       )}
     >
       <ChevronUp className="size-5" />

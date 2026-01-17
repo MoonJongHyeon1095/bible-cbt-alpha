@@ -95,7 +95,6 @@ export function SavedTriggersModal({
                           aria-expanded={isExpanded}
                           aria-label="내용 펼치기"
                         >
-                          자세히
                           <ChevronDown
                             className={`size-3 transition-transform ${
                               isExpanded ? "rotate-180" : ""

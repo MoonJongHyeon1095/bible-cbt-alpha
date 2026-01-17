@@ -171,8 +171,7 @@ export function FirstEmotionIntensityModal({
                       </h3>
                     </div>
                   </div>
-                  <span className="inline-flex items-center gap-2 text-xs font-semibold text-rose-600">
-                    {showIntro ? "닫기" : "자세히"}
+                  <span className="inline-flex items-center text-xs font-semibold text-rose-600">
                     <ChevronDown
                       className={`size-4 text-rose-500 transition-transform ${
                         showIntro ? "rotate-180" : ""

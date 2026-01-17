@@ -114,7 +114,7 @@ export function CommunityPage() {
   const categories = ["일반", "불안", "우울", "관계", "감사", "기도제목"];
 
   return (
-    <div className="max-w-[1000px] mx-auto px-8 py-8">
+    <div className="max-w-[1800px] mx-auto px-8 py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl text-slate-900 mb-2 flex items-center gap-3">

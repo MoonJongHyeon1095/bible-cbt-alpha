@@ -32,6 +32,7 @@ import { useTriggerNotes } from "./hooks/useTriggerNotes";
 import { ProgressSummaryCard } from "./ProgressSummaryCard";
 import { SelectedThoughtCard } from "./SelectedThoughtCard";
 import { ShalomCard } from "./ShalomCard";
+import { clearCbtSessionStorage } from "../../utils/cbtSessionStorage";
 
 interface RightPanelProps {
   step: number;
@@ -81,7 +82,6 @@ export function RightPanel({
 
   const showBackButton = step > 1 && Boolean(onPrevious);
 
-  const [savingScripture, setSavingScripture] = useState(false);
   const [savingPrayer, setSavingPrayer] = useState(false);
   const [selectedBehavior, setSelectedBehavior] = useState<{
     behaviorId: CognitiveBehaviorId;
@@ -111,7 +111,7 @@ export function RightPanel({
           }
         }}
         variant="outline"
-        className="mb-4 w-full gap-2 rounded-full border-2 border-green-400 text-green-700 transition-all hover:-translate-y-0.5 hover:border-green-500 hover:bg-green-50 hover:shadow-md"
+        className="mb-4 w-full gap-2 rounded-full border-2 border-indigo-400 text-indigo-700 transition-all hover:-translate-y-0.5 hover:border-indigo-500 hover:bg-indigo-50 hover:shadow-md"
       >
         <RefreshCw className="size-4" />
         같은 주제로 다시 하기
@@ -281,71 +281,11 @@ export function RightPanel({
     }
 
     toast.success("세션 기록이 저장되었습니다. 평안을 기원합니다.");
-    try {
-      sessionStorage.removeItem("cbt_saved_error_keys");
-      sessionStorage.removeItem("cbt_saved_alternative_keys");
-      sessionStorage.removeItem("cbt_saved_behavior_keys");
-      sessionStorage.removeItem("cbt_saved_detail_keys");
-      sessionStorage.removeItem("cbt_active_note");
-    } catch {
-      /* ignore */
-    }
+    clearCbtSessionStorage();
     onComplete();
   };
 
   const primaryEmotion = emotionThoughtPairs[0]?.emotion ?? "";
-
-  const handleSaveScripture = async () => {
-    if (!bibleVerse || savingScripture) return;
-
-    const now = new Date().toISOString();
-
-    if (!user) {
-      try {
-        setSavingScripture(true);
-        const existingRaw = localStorage.getItem("scripture_notes");
-        const existing = existingRaw ? JSON.parse(existingRaw) : [];
-        const newNote = {
-          id: Date.now().toString(),
-          book: bibleVerse.book,
-          chapter: bibleVerse.chapter,
-          startVerse: bibleVerse.startVerse,
-          endVerse: bibleVerse.endVerse,
-          verse: bibleVerse.verse,
-          reflections: [],
-          timestamp: now,
-        };
-        const updated = [newNote, ...existing];
-        localStorage.setItem("scripture_notes", JSON.stringify(updated));
-        toast.success("말씀 노트에 저장되었습니다.");
-      } catch (e) {
-        console.error("말씀 노트 로컬 저장 실패:", e);
-        toast.error("말씀을 저장하지 못했습니다.");
-      } finally {
-        setSavingScripture(false);
-      }
-      return;
-    }
-
-    setSavingScripture(true);
-    try {
-      const { error } = await supabase.from("scripture_notes").insert({
-        user_id: user.id,
-        book: bibleVerse.book,
-        chapter: bibleVerse.chapter,
-        start_verse: bibleVerse.startVerse,
-        end_verse: bibleVerse.endVerse,
-        verse: bibleVerse.verse,
-      });
-      if (error) throw error;
-      toast.success("말씀 노트에 저장되었습니다.");
-    } catch (e) {
-      console.error("말씀 노트 저장 실패:", e);
-      toast.error("말씀 노트를 저장하지 못했습니다.");
-    } finally {
-      setSavingScripture(false);
-    }
-  };
 
   const handleSavePrayer = async () => {
     if (!bibleVerse) return;
@@ -357,6 +297,19 @@ export function RightPanel({
       : "기도 노트";
     const tags = primaryEmotion ? [primaryEmotion] : [];
 
+    let emotionNoteId: string | null = null;
+    try {
+      const raw = sessionStorage.getItem("cbt_active_note");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.noteId) {
+          emotionNoteId = String(parsed.noteId);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+
     if (!user) {
       try {
         setSavingPrayer(true);
@@ -367,6 +320,12 @@ export function RightPanel({
           title,
           content: bibleVerse.prayer,
           tags,
+          emotionNoteId,
+          book: bibleVerse.book,
+          chapter: bibleVerse.chapter,
+          startVerse: bibleVerse.startVerse,
+          endVerse: bibleVerse.endVerse,
+          responses: [],
           timestamp: now,
         };
         const updated = [newNote, ...existing];
@@ -388,6 +347,11 @@ export function RightPanel({
         title,
         content: bibleVerse.prayer,
         tags,
+        emotion_note_id: emotionNoteId ? Number(emotionNoteId) : null,
+        book: bibleVerse.book,
+        chapter: bibleVerse.chapter,
+        start_verse: bibleVerse.startVerse,
+        end_verse: bibleVerse.endVerse,
       });
       if (error) throw error;
       toast.success("기도 노트에 저장되었습니다.");
@@ -474,9 +438,9 @@ export function RightPanel({
   };
 
   return (
-    <div className="relative p-6 min-h-[600px] flex flex-col">
+    <div className="relative min-h-[600px] flex flex-col">
       {showBackButton && (
-        <div className="absolute right-4 top-4 z-10 flex items-center gap-2">
+        <div className="absolute right-4 top-0 z-10 flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
@@ -627,7 +591,7 @@ export function RightPanel({
                   ) : (
                     <Button
                       onClick={handleFinalComplete}
-                      className="w-full rounded-full bg-purple-600 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-md"
+                      className="w-full rounded-full bg-indigo-600 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-md"
                       disabled={isBehaviorGenerating}
                     >
                       {isBehaviorGenerating ? "행동 제안 생성중" : "완료하기"}
@@ -696,14 +660,12 @@ export function RightPanel({
                 <div ref={bibleSectionRef} className="space-y-4">
                   <BibleVerseCard
                     bibleVerse={bibleVerse}
-                    onSaveScripture={handleSaveScripture}
                     onSavePrayer={handleSavePrayer}
-                    savingScripture={savingScripture}
                     savingPrayer={savingPrayer}
                   />
                   <Button
                     onClick={handleFinalComplete}
-                    className="w-full rounded-full bg-purple-600 py-6 text-lg transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-lg"
+                    className="w-full rounded-full bg-indigo-600 py-6 text-lg transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
                     disabled={isBehaviorGenerating}
                   >
                     {isBehaviorGenerating ? "행동제안 생성 중" : "완료"}
@@ -783,7 +745,7 @@ export function RightPanel({
                 <>
                   <Button
                     onClick={handleFinalComplete}
-                    className="mb-4 w-full rounded-full bg-purple-600 transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-lg"
+                  className="mb-4 w-full rounded-full bg-indigo-600 transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
                     disabled={isBehaviorGenerating}
                   >
                     {isBehaviorGenerating ? "행동 제안 생성중" : "완료"}

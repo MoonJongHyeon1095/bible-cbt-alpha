@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { generateBurnsEmpathy } from "../../../lib/ai";
 import type { EmotionThoughtPair } from "../../../types";
-import type { BurnsEmpathyShape } from "./useLeftPanelTypes";
+import type { BurnsEmpathyShape } from "./useLeftPageTypes";
 
 type UseEmpathyStateParams = {
   step: number;

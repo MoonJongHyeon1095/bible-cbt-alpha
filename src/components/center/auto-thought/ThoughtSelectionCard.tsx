@@ -3,12 +3,11 @@ import { toast } from "sonner";
 import { validateUserText } from "../../../utils/validation";
 import { Button } from "../../ui/button";
 import type { EmotionData } from "../types";
-import { ActionsSection } from "./ActionsSection";
+import { AutomaticThoughtToolBar } from "./AutomaticThoughtToolBar";
 import { CustomThoughtSection } from "./CustomThoughtSection";
 import { GeneratedThoughtsSection } from "./GeneratedThoughtsSection";
 import { GuidanceSection } from "./GuidanceSection";
 import { LoadingInsightCard } from "./LoadingInsightCard";
-import { SubmitSection } from "./SubmitSection";
 
 interface ThoughtSelectionCardProps {
   selectedEmotion: string;
@@ -127,15 +126,21 @@ export function ThoughtSelectionCard({
     <>
       <GuidanceSection selectedEmotion={selectedEmotion} />
       <div className="flex justify-end">
-        <ActionsSection
+        <AutomaticThoughtToolBar
           currentPrefetchKey={currentPrefetchKey}
           selectedThought={selectedGeneratedThought}
+          customThoughtTrimmed={customThoughtTrimmed}
+          selectedThoughtIndex={selectedThoughtIndex}
           savingDetail={savingDetail}
           savingDetailId={savingDetailId}
           isDetailSaved={isDetailSaved}
           onRegenerate={onRegenerate}
           onSaveSelectedThought={onAddFavorite}
           onLoadFavorites={onLoadFavorites}
+          onSaveCustomThought={handleSaveCustomThought}
+          onSelectCustomThought={handleSelectCustomThought}
+          onSubmit={onSubmit}
+          canSubmit={canSubmit}
         />
       </div>
       <GeneratedThoughtsSection
@@ -143,22 +148,10 @@ export function ThoughtSelectionCard({
         selectedThoughtIndex={selectedThoughtIndex}
         onSelectThought={onSelectThought}
       />
-      <SubmitSection
-        customThoughtTrimmed={customThoughtTrimmed}
-        selectedThoughtIndex={selectedThoughtIndex}
-        canSubmit={canSubmit}
-        onSubmit={onSubmit}
-      />
       <CustomThoughtSection
         customThought={customThought}
         customThoughtTrimmed={customThoughtTrimmed}
-        selectedThoughtIndex={selectedThoughtIndex}
-        savingDetail={savingDetail}
-        savingDetailId={savingDetailId}
-        isDetailSaved={isDetailSaved}
         onCustomThoughtChange={onCustomThoughtChange}
-        onSaveCustomThought={handleSaveCustomThought}
-        onSelectCustomThought={handleSelectCustomThought}
       />
     </>
   );
