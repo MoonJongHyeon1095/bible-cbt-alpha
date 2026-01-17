@@ -9,6 +9,7 @@ import { validateUserText } from "../../utils/validation";
 import { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
 import { ThoughtSelectionCard } from "./auto-thought/ThoughtSelectionCard";
+import { CenterDisclaimerBanner } from "./CenterDisclaimerBanner";
 import { CenterHeader } from "./CenterHeader";
 import { ALL_EXAMPLES } from "./constants/examples";
 import { EmotionDetailCard } from "./emotion/EmotionDetailCard";
@@ -16,6 +17,7 @@ import { EmotionGridCard } from "./emotion/EmotionGridCard";
 import { useEmotionFlow } from "./hooks/useEmotionFlow";
 import { useEmotionNotes } from "./hooks/useEmotionNotes";
 import { IncidentStepCard } from "./incident/IncidentStepCard";
+import { CenterDisclaimerModal } from "./modal/CenterDisclaimerModal";
 import { FirstEmotionIntensityModal } from "./modal/FirstEmotionIntensityModal";
 import { SavedDetailsModal } from "./modal/SavedDetailsModal";
 import { SavedTriggersModal } from "./modal/SavedTriggersModal";
@@ -40,6 +42,8 @@ function scrollToTop(containerRef: React.RefObject<HTMLDivElement | null>) {
   if (containerRef.current) containerRef.current.scrollTop = 0;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+
+const CENTER_DISCLAIMER_KEY = "center_disclaimer_ack_v1";
 
 export function CenterPanel({
   step,
@@ -66,6 +70,7 @@ export function CenterPanel({
     const shuffled = [...ALL_EXAMPLES].sort(() => Math.random() - 0.5);
     return shuffled.slice(0, 4);
   });
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
 
   const refreshExamples = () => {
     const shuffled = [...ALL_EXAMPLES].sort(() => Math.random() - 0.5);
@@ -100,6 +105,17 @@ export function CenterPanel({
   const emotionSet = flow.view === "thoughts";
 
   const resumeHandledRef = useRef(false);
+
+  useEffect(() => {
+    try {
+      const acknowledged = localStorage.getItem(CENTER_DISCLAIMER_KEY);
+      if (!acknowledged) {
+        setIsDisclaimerOpen(true);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   useEffect(() => {
     if (!resumeCenterView) {
@@ -198,6 +214,23 @@ export function CenterPanel({
     onNext();
   };
 
+  const acknowledgeDisclaimer = () => {
+    try {
+      localStorage.setItem(CENTER_DISCLAIMER_KEY, "true");
+    } catch {
+      // ignore
+    }
+    setIsDisclaimerOpen(false);
+  };
+
+  const handleDisclaimerOpenChange = (open: boolean) => {
+    if (open) {
+      setIsDisclaimerOpen(true);
+      return;
+    }
+    acknowledgeDisclaimer();
+  };
+
   return (
     <div className="relative p-6 min-h-[600px] flex flex-col">
       {showBackButton && (
@@ -222,6 +255,7 @@ export function CenterPanel({
           </Button>
         </div>
       )}
+      <CenterDisclaimerBanner onOpenDetails={() => setIsDisclaimerOpen(true)} />
       <div className="mb-6">
         <CenterHeader
           step={step}
@@ -229,6 +263,12 @@ export function CenterPanel({
           showEmotionDetail={showEmotionDetail}
         />
       </div>
+
+      <CenterDisclaimerModal
+        open={isDisclaimerOpen}
+        onOpenChange={handleDisclaimerOpenChange}
+        onConfirm={acknowledgeDisclaimer}
+      />
 
       <FirstEmotionIntensityModal
         // ✅ deep일 때만 실제로 열리게 방지

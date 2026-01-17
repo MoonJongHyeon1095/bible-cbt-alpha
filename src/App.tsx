@@ -10,7 +10,6 @@ import { PatternsPage } from "./components/feature/emotion-note/components/Patte
 import { HelplinePage } from "./components/feature/HelplinePage";
 import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPage";
 import { ScriptureNotesPage } from "./components/feature/scripture-note/ScriptureNotesPage";
-import { CommentSection } from "./components/footer/CommentSection";
 import { Navigation } from "./components/header/navigation/Navigation";
 import { Notice } from "./components/Notice";
 import { Toaster } from "./components/ui/sonner";
@@ -190,7 +189,6 @@ export default function App() {
               </div>
             </div>
 
-            <CommentSection />
           </div>
         </footer>
       )}
