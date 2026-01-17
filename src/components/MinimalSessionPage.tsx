@@ -128,7 +128,7 @@ export function MinimalSessionPage({
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-[#f8f5f0] via-white to-[#eef3f2]">
+    <div className="relative min-h-screen bg-gradient-to-br from-[#efe9df] via-[#f7f3ee] to-[#dfe8e6]">
       {currentStepIndex > 0 && (
         <div className="absolute inset-x-0 top-6 z-10">
           <div className="mx-auto max-w-xl px-6">
