@@ -1,12 +1,6 @@
-// src/components/right/RightPanel.tsx
+// src/components/right/RightPage.tsx
 import type { User } from "@supabase/supabase-js";
-import {
-  ArrowLeft,
-  DoorOpen,
-  Loader2,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, DoorOpen, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { CognitiveBehaviorId } from "../../constants/behaviors";
@@ -20,22 +14,21 @@ import { clearCbtSessionStorage } from "../../utils/cbtSessionStorage";
 import { formatAutoTitle } from "../../utils/formatAutoTitle";
 import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
-import { AlternativeThoughtCard } from "./AlternativeThoughtCard";
-import { AlternativeThoughtQuoteCard } from "./AlternativeThoughtQuoteCard";
-import { BehaviorReviewCard } from "./behavior/BehaviorReviewCard";
-import { BibleOfferCard } from "./BibleOfferCard";
-import { BibleVerseCard } from "./BibleVerseCard";
-import { FinalIntensityCard } from "./FinalIntensityCard";
+import { BibleOfferCard } from "./components/BibleOfferCard";
 import { useAlternativeThoughts } from "./hooks/useAlternativeThoughts";
 import { useBibleVerse } from "./hooks/useBibleVerse";
 import { useFinalIntensity } from "./hooks/useFinalIntensity";
-import { ProgressSummaryCard } from "./ProgressSummaryCard";
-import { SelectedThoughtCard } from "./SelectedThoughtCard";
-import { ShalomCard } from "./ShalomCard";
+import { RightAlternativePickerSection } from "./components/sections/RightAlternativePickerSection";
+import { RightBibleResultSection } from "./components/sections/RightBibleResultSection";
+import { RightFinalAreaSection } from "./components/sections/RightFinalAreaSection";
+import { RightPlaceholderSection } from "./components/sections/RightPlaceholderSection";
+import { RightShalomSection } from "./components/sections/RightShalomSection";
+import { RightStepHeaderSection } from "./components/sections/RightStepHeaderSection";
+import { RightSummarySection } from "./components/sections/RightSummarySection";
 import { saveSessionPatternAPI } from "./utils/api";
 import { saveSessionPatternLocal } from "./utils/storage";
 
-interface RightPanelProps {
+interface RightPageProps {
   step: number;
   emotionThoughtPairs: EmotionThoughtPair[];
   userInput: string;
@@ -45,14 +38,14 @@ interface RightPanelProps {
   onSetSelectedAlternativeThought: (thought: string) => void;
   onComplete: () => void;
   onRestartWithSameInput?: () => void;
-  onNext: () => void;
+  onNext: (options?: { skipScroll?: boolean }) => void;
   onPrevious?: () => void;
   onExit?: () => void;
   mode: CbtMode;
   user: User | null;
 }
 
-export function RightPanel({
+export function RightPage({
   step,
   emotionThoughtPairs,
   userInput,
@@ -67,7 +60,7 @@ export function RightPanel({
   onExit,
   user,
   mode,
-}: RightPanelProps) {
+}: RightPageProps) {
   const isDeep = mode.detailMode === "deep";
   const isChristian = mode.toneMode === "christian";
   const isDeepNormal = isDeep && !isChristian;
@@ -108,8 +101,8 @@ export function RightPanel({
     }
   };
 
-  const goNextIfNeeded = () => {
-    if (step < 5) onNext();
+  const goNextIfNeeded = (options?: { skipScroll?: boolean }) => {
+    if (step < 5) onNext(options);
   };
 
   const renderRestartWithSameInput = () => {
@@ -168,7 +161,7 @@ export function RightPanel({
     isDeep,
     isChristian,
     hasSelectedThought,
-    onAdvance: goNextIfNeeded,
+    onAdvance: () => goNextIfNeeded({ skipScroll: true }),
   });
 
   useEffect(() => {
@@ -495,83 +488,29 @@ export function RightPanel({
           </Button>
         </div>
       )}
-      <div className="mb-4 space-y-2">
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600">
-          {header.badge}
-        </div>
-        <h2 className="text-slate-800 text-xl">{header.title}</h2>
-        <p className="text-slate-600 text-sm mt-1">{header.desc}</p>
-      </div>
+      <RightStepHeaderSection
+        badge={header.badge}
+        title={header.title}
+        desc={header.desc}
+      />
 
       <div ref={scrollRef} className="flex-1 space-y-6 overflow-y-auto">
-        {showStep3Placeholder && (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-slate-500">인지오류 검토를 완료해주세요.</p>
-          </div>
-        )}
+        {showStep3Placeholder && <RightPlaceholderSection />}
 
         {showAlternativesPicker && (
-          <div className="space-y-4">
-            {thoughtsLoading ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="size-10 animate-spin text-purple-600 mb-4" />
-                <p className="text-slate-600 text-lg">
-                  대안적 사고를 생성하고 있습니다...
-                </p>
-              </div>
-            ) : thoughtsError ? (
-              <div className="bg-red-50 border border-red-200 text-red-800 p-5 rounded-lg">
-                <p className="mb-3 text-base">{thoughtsError}</p>
-                <Button
-                  onClick={() => void generateAlternatives({ force: true })}
-                  variant="outline"
-                  size="sm"
-                >
-                  다시 시도
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex justify-end">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleReviewAlternatives}
-                    className="gap-1 border-purple-300 text-purple-700 hover:bg-purple-50 whitespace-normal leading-tight"
-                    disabled={thoughtsLoading}
-                  >
-                    <RefreshCw className="size-4" />
-                    다른 답변 검토
-                  </Button>
-                </div>
-                <div className="space-y-4">
-                  {alternativeThoughts.map((item, index) => (
-                    <AlternativeThoughtCard
-                      key={index}
-                      item={item}
-                      onSelect={handleSelectThought}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {thoughtsLoading && <AlternativeThoughtQuoteCard />}
-          </div>
+          <RightAlternativePickerSection
+            thoughtsLoading={thoughtsLoading}
+            thoughtsError={thoughtsError}
+            alternativeThoughts={alternativeThoughts}
+            onSelectThought={handleSelectThought}
+            onRetry={() => void generateAlternatives({ force: true })}
+            onReviewAlternatives={handleReviewAlternatives}
+          />
         )}
 
         {showStep4AfterPickPanel && (
           <div className="space-y-4">
-            <ProgressSummaryCard
-              userInput={userInput}
-              emotionThoughtPairs={emotionThoughtPairs}
-              selectedCognitiveErrors={selectedCognitiveErrors}
-            />
-            <SelectedThoughtCard
-              thought={selectedAlternativeThought}
-              onBackToAlternatives={handleBackToAlternatives}
-            />
-            <BehaviorReviewCard
+            <RightSummarySection
               userInput={userInput}
               emotionThoughtPairs={emotionThoughtPairs}
               selectedCognitiveErrors={selectedCognitiveErrors}
@@ -579,8 +518,8 @@ export function RightPanel({
               selectedBehaviorId={selectedBehavior?.behaviorId ?? null}
               onSelectBehavior={setSelectedBehavior}
               onLoadingChange={setIsBehaviorGenerating}
+              onBackToAlternatives={handleBackToAlternatives}
             />
-
             {isChristian ? (
               <BibleOfferCard
                 onAccept={handleWantsBible}
@@ -589,122 +528,25 @@ export function RightPanel({
                 bibleError={bibleError}
               />
             ) : (
-              <div className="relative overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 via-white to-sky-50 p-5 shadow-sm">
-                <div className="mb-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wide text-blue-500">
-                      마무리
-                    </p>
-                    <h3 className="text-base font-semibold text-blue-900">
-                      평안의 마침
-                    </h3>
-                  </div>
-                  <div className="flex size-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                    <Sparkles className="size-4" />
-                  </div>
-                </div>
-
-                <ShalomCard className="text-sm leading-relaxed text-blue-900" />
-
-                <div className="mt-4 border-t border-blue-100 pt-4">
-                  {isDeep ? (
-                    <div className="flex items-center gap-2 text-slate-600 text-sm">
-                      <Loader2 className="size-4 animate-spin" />
-                      마무리 단계로 이동 중...
-                    </div>
-                  ) : (
-                    <Button
-                      onClick={handleFinalComplete}
-                      className="w-full rounded-full bg-indigo-600 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-md"
-                      disabled={isBehaviorGenerating}
-                    >
-                      {isBehaviorGenerating ? "행동 제안 생성중" : "완료하기"}
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <RightShalomSection
+                isDeep={isDeep}
+                isBehaviorGenerating={isBehaviorGenerating}
+                onComplete={handleFinalComplete}
+              />
             )}
           </div>
         )}
 
         {showBibleResult && (
           <div className="space-y-4">
-            {bibleLoading && (
-              <div
-                ref={bibleSectionRef}
-                className="flex flex-col items-center justify-center py-10"
-              >
-                <Loader2 className="size-10 animate-spin text-blue-600 mb-4" />
-                <p className="text-slate-600 text-lg">
-                  말씀과 기도문을 생성하고 있습니다...
-                </p>
-              </div>
-            )}
-
-            {!bibleLoading && bibleError && (
-              <div
-                ref={bibleSectionRef}
-                className="bg-red-50 border border-red-200 text-red-800 p-5 rounded-lg"
-              >
-                <p className="mb-3 text-base">{bibleError}</p>
-                <Button onClick={handleWantsBible} variant="outline" size="sm">
-                  다시 시도
-                </Button>
-              </div>
-            )}
-
-            {!bibleLoading && !bibleError && bibleVerse && (
-              <>
-                <ProgressSummaryCard
-                  userInput={userInput}
-                  emotionThoughtPairs={emotionThoughtPairs}
-                  selectedCognitiveErrors={selectedCognitiveErrors}
-                />
-                <SelectedThoughtCard
-                  thought={selectedAlternativeThought}
-                  onBackToAlternatives={handleBackToAlternatives}
-                />
-                <BehaviorReviewCard
-                  userInput={userInput}
-                  emotionThoughtPairs={emotionThoughtPairs}
-                  selectedCognitiveErrors={selectedCognitiveErrors}
-                  selectedAlternativeThought={selectedAlternativeThought}
-                  selectedBehaviorId={selectedBehavior?.behaviorId ?? null}
-                  onSelectBehavior={setSelectedBehavior}
-                  onLoadingChange={setIsBehaviorGenerating}
-                />
-                <div ref={bibleSectionRef} className="space-y-4">
-                  <BibleVerseCard
-                    bibleVerse={bibleVerse}
-                    onSavePrayer={handleSavePrayer}
-                    savingPrayer={savingPrayer}
-                  />
-                  <Button
-                    onClick={handleFinalComplete}
-                    className="w-full rounded-full bg-indigo-600 py-6 text-lg transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
-                    disabled={isBehaviorGenerating}
-                  >
-                    {isBehaviorGenerating ? "행동제안 생성 중" : "완료"}
-                  </Button>
-                  {renderRestartWithSameInput()}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {showFinalArea && (
-          <div className="space-y-4">
-            <ProgressSummaryCard
-              userInput={userInput}
-              emotionThoughtPairs={emotionThoughtPairs}
-              selectedCognitiveErrors={selectedCognitiveErrors}
-            />
-            <SelectedThoughtCard
-              thought={selectedAlternativeThought}
-              onBackToAlternatives={handleBackToAlternatives}
-            />
-            <BehaviorReviewCard
+            <RightBibleResultSection
+              bibleSectionRef={bibleSectionRef}
+              bibleLoading={bibleLoading}
+              bibleError={bibleError}
+              bibleVerse={bibleVerse}
+              onRetry={handleWantsBible}
+              onComplete={handleFinalComplete}
+              restartAction={renderRestartWithSameInput()}
               userInput={userInput}
               emotionThoughtPairs={emotionThoughtPairs}
               selectedCognitiveErrors={selectedCognitiveErrors}
@@ -712,57 +554,48 @@ export function RightPanel({
               selectedBehaviorId={selectedBehavior?.behaviorId ?? null}
               onSelectBehavior={setSelectedBehavior}
               onLoadingChange={setIsBehaviorGenerating}
+              onBackToAlternatives={handleBackToAlternatives}
+              isBehaviorGenerating={isBehaviorGenerating}
+              savingPrayer={savingPrayer}
+              onSavePrayer={handleSavePrayer}
             />
-            {showBibleOfferInFinalArea && (
-              <BibleOfferCard
-                onAccept={handleWantsBible}
-                onDecline={handleDoesNotWantBible}
-                bibleLoading={bibleLoading}
-                bibleError={bibleError}
-              />
-            )}
-
-            <div className="bg-blue-50 p-5 rounded-lg border border-blue-200">
-              {shouldShowDial && (
-                <FinalIntensityCard
-                  emotionThoughtPairs={emotionThoughtPairs}
-                  finalIntensities={finalIntensities}
-                  onChange={(emotion, value) =>
-                    setFinalIntensities((prev) => ({
-                      ...prev,
-                      [emotion]: value,
-                    }))
-                  }
-                />
-              )}
-
-              <ShalomCard />
-
-              {isDeep && hasAnyIntensity && !shouldShowDial ? (
-                <Button
-                  onClick={() => {
-                    setShowFinalIntensity(true);
-                    if (Object.keys(finalIntensities).length === 0)
-                      seedFinalIntensitiesFromPairs();
-                  }}
-                  className="w-full bg-purple-600 hover:bg-purple-700"
-                >
-                  감정 변화 기록하기
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    onClick={handleFinalComplete}
-                    className="mb-4 w-full rounded-full bg-indigo-600 transition-all hover:-translate-y-0.5 hover:bg-indigo-700 hover:shadow-lg"
-                    disabled={isBehaviorGenerating}
-                  >
-                    {isBehaviorGenerating ? "행동 제안 생성중" : "완료"}
-                  </Button>
-                  {renderRestartWithSameInput()}
-                </>
-              )}
-            </div>
           </div>
+        )}
+
+        {showFinalArea && (
+          <RightFinalAreaSection
+            userInput={userInput}
+            emotionThoughtPairs={emotionThoughtPairs}
+            selectedCognitiveErrors={selectedCognitiveErrors}
+            selectedAlternativeThought={selectedAlternativeThought}
+            selectedBehaviorId={selectedBehavior?.behaviorId ?? null}
+            onSelectBehavior={setSelectedBehavior}
+            onLoadingChange={setIsBehaviorGenerating}
+            onBackToAlternatives={handleBackToAlternatives}
+            showBibleOffer={showBibleOfferInFinalArea}
+            onAcceptBible={handleWantsBible}
+            onDeclineBible={handleDoesNotWantBible}
+            bibleLoading={bibleLoading}
+            bibleError={bibleError}
+            shouldShowDial={shouldShowDial}
+            finalIntensities={finalIntensities}
+            onChangeFinalIntensity={(emotion, value) =>
+              setFinalIntensities((prev) => ({
+                ...prev,
+                [emotion]: value,
+              }))
+            }
+            onEnableFinalIntensity={() => {
+              setShowFinalIntensity(true);
+              if (Object.keys(finalIntensities).length === 0)
+                seedFinalIntensitiesFromPairs();
+            }}
+            onComplete={handleFinalComplete}
+            isBehaviorGenerating={isBehaviorGenerating}
+            isDeep={isDeep}
+            hasAnyIntensity={hasAnyIntensity}
+            restartAction={renderRestartWithSameInput()}
+          />
         )}
       </div>
     </div>

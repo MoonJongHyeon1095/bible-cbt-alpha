@@ -1,7 +1,7 @@
 import { BookOpen, Loader2, Sparkles } from "lucide-react";
-import { Button } from "../ui/button";
-import type { BibleVerseResult } from "./types";
-import { formatScriptureReference } from "../../utils/scripture";
+import { Button } from "../../ui/button";
+import type { BibleVerseResult } from "../types";
+import { formatScriptureReference } from "../../../utils/scripture";
 
 interface BibleVerseCardProps {
   bibleVerse: BibleVerseResult;

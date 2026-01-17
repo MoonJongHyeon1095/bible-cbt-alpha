@@ -1,5 +1,5 @@
-import type { CognitiveBehaviorId } from "../../../constants/behaviors";
-import { COGNITIVE_BEHAVIORS } from "../../../constants/behaviors";
+import type { CognitiveBehaviorId } from "../../../../constants/behaviors";
+import { COGNITIVE_BEHAVIORS } from "../../../../constants/behaviors";
 
 export type BehaviorMeta = (typeof COGNITIVE_BEHAVIORS)[number];
 

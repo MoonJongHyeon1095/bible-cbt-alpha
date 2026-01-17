@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import type { CognitiveBehaviorId } from "../../../constants/behaviors";
-import { getRecommendedBehaviors } from "../../../constants/errorBehaviorMap";
+import type { CognitiveBehaviorId } from "../../../../constants/behaviors";
+import { getRecommendedBehaviors } from "../../../../constants/errorBehaviorMap";
 import {
   COGNITIVE_ERRORS,
   COGNITIVE_ERRORS_BY_ID,
   COGNITIVE_ERRORS_BY_INDEX,
-} from "../../../constants/errors";
-import type { EmotionThoughtPair } from "../../../types";
-import type { SelectedCognitiveError } from "../../../types/sessionHistory";
-import { useBehaviorSuggestions } from "../hooks/useBehaviorSuggestions";
+} from "../../../../constants/errors";
+import type { EmotionThoughtPair } from "../../../../types";
+import type { SelectedCognitiveError } from "../../../../types/sessionHistory";
+import { useBehaviorSuggestions } from "../../hooks/useBehaviorSuggestions";
 import { BehaviorReviewHeaderSection } from "./BehaviorReviewHeaderSection";
 import { BehaviorReviewListSection } from "./BehaviorReviewListSection";
 import type {
@@ -36,6 +36,7 @@ export function BehaviorReviewCard({
   onLoadingChange: (isLoading: boolean) => void;
 }) {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [hasStarted, setHasStarted] = useState(false);
   const mappedErrors = selectedCognitiveErrors
     .map((error) => {
       const byId = error.id ? COGNITIVE_ERRORS_BY_ID[error.id] : undefined;
@@ -82,7 +83,7 @@ export function BehaviorReviewCard({
     behaviorList.length > 0;
   const { suggestionsById, loadingId, errorAll, errorById, regenerateOne } =
     useBehaviorSuggestions({
-      enabled: suggestionsEnabled,
+      enabled: suggestionsEnabled && hasStarted,
       userInput,
       emotionThoughtPairs,
       selectedCognitiveErrors,
@@ -105,6 +106,20 @@ export function BehaviorReviewCard({
       onSelectBehavior(null);
     }
   }, [behaviorList.length, onSelectBehavior, suggestionsEnabled]);
+
+  if (!hasStarted) {
+    return (
+      <div className="flex justify-center py-4">
+        <button
+          type="button"
+          onClick={() => setHasStarted(true)}
+          className="inline-flex items-center gap-2 rounded-full border border-indigo-300 bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-indigo-700"
+        >
+          구체적인 행동을 제안합니다
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-lg border-2 border-indigo-200 bg-indigo-50 p-4">

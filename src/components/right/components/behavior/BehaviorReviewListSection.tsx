@@ -1,5 +1,5 @@
-import type { CognitiveBehaviorId } from "../../../constants/behaviors";
-import { Accordion } from "../../ui/accordion";
+import type { CognitiveBehaviorId } from "../../../../constants/behaviors";
+import { Accordion } from "../../../ui/accordion";
 import type {
   BehaviorErrorMap,
   BehaviorReviewItem,

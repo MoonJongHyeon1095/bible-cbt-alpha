@@ -1,12 +1,12 @@
-import type { EmotionThoughtPair } from "../../types";
-import type { SelectedCognitiveError } from "../../types/sessionHistory";
+import type { EmotionThoughtPair } from "../../../types";
+import type { SelectedCognitiveError } from "../../../types/sessionHistory";
 import { AlertCircle, Brain, Flag } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../ui/accordion";
+} from "../../ui/accordion";
 
 export function ProgressSummaryCard({
   userInput,

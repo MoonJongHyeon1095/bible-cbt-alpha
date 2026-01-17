@@ -11,7 +11,7 @@ import { HistoryModal } from "./feature/dashboard/HistoryModal";
 import { EmailModal } from "./feature/EmailModal";
 import { CbtMode } from "./header/navigation/ModePicker";
 import { LeftPage } from "./left/LeftPage";
-import { RightPanel } from "./right/RightPanel";
+import { RightPage } from "./right/RightPage";
 
 export function CBTSessionPage({
   mode,
@@ -79,9 +79,11 @@ export function CBTSessionPage({
     onStepChange?.(step);
   }, [onStepChange, step]);
 
-  const handleNext = () => {
+  const handleNext = (options?: { skipScroll?: boolean }) => {
     if (step < 6) setStep(step + 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!options?.skipScroll) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   const handlePrevious = () => {
@@ -167,7 +169,7 @@ export function CBTSessionPage({
 
     return (
       <div className="w-full">
-        <RightPanel
+        <RightPage
           step={step}
           emotionThoughtPairs={emotionThoughtPairs}
           userInput={userInput}

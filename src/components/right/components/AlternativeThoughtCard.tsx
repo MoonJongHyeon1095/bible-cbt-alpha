@@ -1,4 +1,4 @@
-import type { AlternativeThought } from "./types";
+import type { AlternativeThought } from "../types";
 
 interface AlternativeThoughtCardProps {
   item: AlternativeThought;

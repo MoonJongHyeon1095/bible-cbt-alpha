@@ -1,10 +1,10 @@
 import { Check, Loader2, RefreshCw } from "lucide-react";
-import type { CognitiveBehaviorId } from "../../../constants/behaviors";
+import type { CognitiveBehaviorId } from "../../../../constants/behaviors";
 import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../../ui/accordion";
+} from "../../../ui/accordion";
 import type {
   BehaviorErrorMap,
   BehaviorReviewItem,

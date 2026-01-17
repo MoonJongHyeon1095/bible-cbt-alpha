@@ -1,6 +1,6 @@
 import { Gauge } from "lucide-react";
-import type { EmotionThoughtPair } from "../../types";
-import { Slider } from "../ui/slider";
+import type { EmotionThoughtPair } from "../../../types";
+import { Slider } from "../../ui/slider";
 
 interface FinalIntensityCardProps {
   emotionThoughtPairs: EmotionThoughtPair[];

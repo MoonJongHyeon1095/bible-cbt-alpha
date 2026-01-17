@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 
 interface SelectedThoughtCardProps {
   thought: string;

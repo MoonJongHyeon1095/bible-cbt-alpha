@@ -55,7 +55,7 @@ export function CenterHeader({
         {header.badge}
       </div>
 
-      <h2 className="mt-3 text-slate-900 text-2xl font-extrabold tracking-tight">
+      <h2 className="mt-3 text-slate-800 text-xl">
         {header.title}
       </h2>
 
