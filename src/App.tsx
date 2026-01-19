@@ -6,12 +6,12 @@ import { toast } from "sonner";
 import { AuthModal } from "./components/AuthModal";
 import { CBTSessionPage } from "./components/CBTSessionPage";
 import { EnterancePage } from "./components/enterance/EnterancePage";
-import { MinimalSessionPage } from "./components/MinimalSessionPage";
 import { DashboardPage } from "./components/feature/dashboard/DashboardPage";
 import { PatternsPage } from "./components/feature/emotion-note/components/PatternsPage";
 import { HelplinePage } from "./components/feature/HelplinePage";
 import { PrayerNotesPage } from "./components/feature/prayer-note/PrayerNotesPage";
 import { Navigation } from "./components/header/navigation/Navigation";
+import { MinimalSessionPage } from "./components/MinimalSessionPage";
 import { Notice } from "./components/Notice";
 import { Toaster } from "./components/ui/sonner";
 import { authHelpers } from "./lib/supabase/auth";
@@ -37,7 +37,7 @@ export default function App() {
   const [cbtStep, setCbtStep] = useState(1);
   const [cbtResetKey, setCbtResetKey] = useState(0);
   const [cbtSessionKind, setCbtSessionKind] = useState<"minimal" | "cbt">(
-    "cbt",
+    "minimal",
   );
   const [showEnterance, setShowEnterance] = useState(false);
   const [showMinimalCbt, setShowMinimalCbt] = useState(true);
@@ -262,6 +262,8 @@ export default function App() {
           <CBTSessionPage
             mode={mode}
             onStartMinimal={handleStartMinimalFromLite}
+            sessionKind={cbtSessionKind}
+            onSessionKindChange={setCbtSessionKind}
             user={user}
           />
         );
@@ -283,8 +285,8 @@ export default function App() {
   const mainClassName = hideChrome
     ? undefined
     : isNativeMobile
-      ? undefined
-      : "pb-8";
+    ? undefined
+    : "pb-8";
   const mainStyle =
     hideChrome || !isNativeMobile
       ? undefined
@@ -302,8 +304,8 @@ export default function App() {
         hideChrome
           ? "min-h-screen bg-white"
           : showLiteGradient
-            ? "min-h-screen bg-gradient-to-br from-[#efe9df] via-[#f7f3ee] to-[#dfe8e6]"
-            : "min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50"
+          ? "min-h-screen bg-[linear-gradient(120deg,#efe9df_0%,#f7f3ee_30%,#dfe8e6_100%)] sm:bg-gradient-to-br sm:from-[#efe9df] sm:via-[#f7f3ee] sm:to-[#dfe8e6] sm:via-[65%] sm:to-[100%]"
+          : "min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50"
       }
     >
       {!hideChrome && (
@@ -337,7 +339,6 @@ export default function App() {
                 </p>
               </div>
             </div>
-
           </div>
         </footer>
       )}
