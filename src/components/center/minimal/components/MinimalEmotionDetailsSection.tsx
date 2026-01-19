@@ -23,7 +23,7 @@ export function MinimalEmotionDetailsSection({
       }`}
     >
       {emotion && (
-        <div className="space-y-6">
+        <div className="mx-auto max-w-2xl space-y-6">
           <div className="space-y-2 text-slate-700">
             <p className="text-lg sm:text-xl font-serif font-semibold text-slate-900">
               {emotion.description}

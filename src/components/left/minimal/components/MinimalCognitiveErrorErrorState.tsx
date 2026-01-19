@@ -9,7 +9,7 @@ export function MinimalCognitiveErrorErrorState({
 }: MinimalCognitiveErrorErrorStateProps) {
   return (
     <div className="min-h-screen flex items-center justify-center px-6 pt-12 pb-10">
-      <div className="w-full max-w-md text-center space-y-4">
+      <div className="w-full max-w-4xl text-center space-y-4">
         <p className="text-base text-slate-600">{error}</p>
         <button
           type="button"

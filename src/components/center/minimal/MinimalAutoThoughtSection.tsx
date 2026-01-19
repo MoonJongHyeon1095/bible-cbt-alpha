@@ -77,7 +77,7 @@ export function MinimalAutoThoughtSection({
 
   return (
     <div className="relative min-h-screen flex items-center justify-center px-6 pt-12 pb-10">
-      <div className="w-full max-w-xl space-y-8">
+      <div className="w-full max-w-4xl space-y-8">
         <MinimalStepHeaderSection title={title}>
           {error && (
             <div className="text-sm text-slate-500">
