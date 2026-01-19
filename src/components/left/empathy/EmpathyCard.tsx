@@ -43,7 +43,8 @@ export function EmpathyCard({
   onLiteNext,
   showCognitivePreparingHint,
 }: Props) {
-  const isLite = mode.detailMode === "lite";
+  const isEmotionDialInactive =
+    mode.emotionDialMode === "emotion-dial-inactive";
   const empathyBlocks = burnsEmpathy
     ? [
         {
@@ -134,14 +135,14 @@ export function EmpathyCard({
             )}
           </div>
 
-          {!isLite && (
+          {!isEmotionDialInactive && (
             <FlowActionButton
               onClick={onOpenIntensityModal}
               label="감정 강도 조절하기"
             />
           )}
 
-          {isLite && (
+          {isEmotionDialInactive && (
             <FlowActionButton onClick={onLiteNext} label="다음 단계로 이동" />
           )}
 

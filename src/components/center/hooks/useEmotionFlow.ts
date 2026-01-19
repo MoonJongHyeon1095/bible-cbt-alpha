@@ -33,7 +33,8 @@ export function useEmotionFlow({
   onNext,
   onScrollTop,
 }: UseEmotionFlowParams) {
-  const isDeep = mode.detailMode === "deep";
+  const isEmotionDialActive =
+    mode.emotionDialMode === "emotion-dial-active";
 
   const [view, setView] = useState<EmotionView>("grid");
   const [selectedEmotion, setSelectedEmotion] = useState<string>("");
@@ -194,7 +195,7 @@ export function useEmotionFlow({
 
     const emotionLabel = selectedEmotionData.label;
 
-    if (isDeep) {
+    if (isEmotionDialActive) {
       setView("intensity");
       return;
     }
@@ -234,7 +235,7 @@ export function useEmotionFlow({
       return;
     }
 
-    const storedIntensity = isDeep ? emotionIntensity : null;
+    const storedIntensity = isEmotionDialActive ? emotionIntensity : null;
     const newPair: EmotionThoughtPair = {
       emotion: selectedEmotion,
       intensity: storedIntensity,
@@ -242,11 +243,7 @@ export function useEmotionFlow({
     };
     setSelectedThoughtIndex(999);
     setCustomThought(trimmed);
-    const nextPairs = [
-      ...emotionThoughtPairs.filter((pair) => pair.emotion !== newPair.emotion),
-      newPair,
-    ];
-    onSetEmotionThoughtPairs(nextPairs);
+    onSetEmotionThoughtPairs([newPair]);
 
     onScrollTop();
     onNext();
@@ -255,7 +252,7 @@ export function useEmotionFlow({
   const handleComplete = () => {
     if (selectedThoughtIndex === null) return;
 
-    const storedIntensity = isDeep ? emotionIntensity : null;
+    const storedIntensity = isEmotionDialActive ? emotionIntensity : null;
 
     const newPair: EmotionThoughtPair = {
       emotion: selectedEmotion,
@@ -263,11 +260,7 @@ export function useEmotionFlow({
       thought: generatedThoughts[selectedThoughtIndex],
     };
 
-    const nextPairs = [
-      ...emotionThoughtPairs.filter((pair) => pair.emotion !== newPair.emotion),
-      newPair,
-    ];
-    onSetEmotionThoughtPairs(nextPairs);
+    onSetEmotionThoughtPairs([newPair]);
     onScrollTop();
     onNext();
   };
@@ -276,19 +269,13 @@ export function useEmotionFlow({
     if (selectedThoughtIndex === null) return;
 
     if (selectedThoughtIndex === 999 && customThought.trim()) {
-      const storedIntensity = isDeep ? emotionIntensity : null;
+      const storedIntensity = isEmotionDialActive ? emotionIntensity : null;
       const newPair: EmotionThoughtPair = {
         emotion: selectedEmotion,
         intensity: storedIntensity,
         thought: customThought.trim(),
       };
-      const nextPairs = [
-        ...emotionThoughtPairs.filter(
-          (pair) => pair.emotion !== newPair.emotion
-        ),
-        newPair,
-      ];
-      onSetEmotionThoughtPairs(nextPairs);
+      onSetEmotionThoughtPairs([newPair]);
       onNext();
       return;
     }
@@ -297,7 +284,7 @@ export function useEmotionFlow({
   };
 
   return {
-    isDeep,
+    isEmotionDialActive,
     view,
     selectedEmotion,
     setSelectedEmotion,

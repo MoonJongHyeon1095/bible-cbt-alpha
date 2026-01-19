@@ -14,14 +14,16 @@ import { RightPage } from "./right/RightPage";
 
 export function CBTSessionPage({
   mode,
-  onChangeMode,
   onStartMinimal,
+  sessionKind,
+  onSessionKindChange,
   user,
   onStepChange,
 }: {
   mode: CbtMode;
-  onChangeMode: (next: CbtMode) => void;
   onStartMinimal?: () => void;
+  sessionKind: "minimal" | "cbt";
+  onSessionKindChange: (next: "minimal" | "cbt") => void;
   user: User | null;
   onStepChange?: (step: number) => void;
 }) {
@@ -109,8 +111,9 @@ export function CBTSessionPage({
             onPrevious={handlePrevious}
             onExit={resetAll}
             mode={mode}
-            onChangeMode={onChangeMode}
             onStartMinimal={onStartMinimal}
+            sessionKind={sessionKind}
+            onSessionKindChange={onSessionKindChange}
             user={user}
             resumeCenterView={resumeCenterView}
             onResumeCenterViewHandled={() => setResumeCenterView(null)}

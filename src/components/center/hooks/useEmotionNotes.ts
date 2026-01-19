@@ -29,7 +29,7 @@ interface UseEmotionNotesParams {
   userInput: string;
   selectedEmotion: string;
   emotionIntensity: number;
-  isDeep: boolean;
+  isEmotionDialActive: boolean;
   emotionThoughtPairs: EmotionThoughtPair[];
   onSetEmotionThoughtPairs: (pairs: EmotionThoughtPair[]) => void;
   onNext: () => void;
@@ -43,7 +43,7 @@ export function useEmotionNotes({
   userInput,
   selectedEmotion,
   emotionIntensity,
-  isDeep,
+  isEmotionDialActive,
   emotionThoughtPairs,
   onSetEmotionThoughtPairs,
   onNext,
@@ -62,6 +62,11 @@ export function useEmotionNotes({
   const activeNoteIdRef = useRef<string | null>(null);
 
   const useServerNotes = Boolean(user);
+  const useServerNotesRef = useRef(useServerNotes);
+
+  useEffect(() => {
+    useServerNotesRef.current = useServerNotes;
+  }, [useServerNotes]);
 
   const setActiveNote = (
     noteId: string | null,
@@ -147,6 +152,7 @@ export function useEmotionNotes({
 
     try {
       const { ok, payload } = await fetchNotesAPI();
+      if (!useServerNotesRef.current) return;
       if (!ok)
         throw new Error(payload?.error || "노트를 불러오지 못했습니다.");
       const notes = Array.isArray(payload?.notes)
@@ -154,6 +160,7 @@ export function useEmotionNotes({
         : [];
       setSavedTriggerNotes(notes);
     } catch (e) {
+      if (!useServerNotesRef.current) return;
       console.error("감정 노트 불러오기 실패:", e);
       if (!silent) toast.error("감정 노트를 불러오지 못했습니다.");
     } finally {
@@ -243,7 +250,7 @@ export function useEmotionNotes({
   const loadFromFavorites = (detail: EmotionNoteDetailWithNote) => {
     const emotion = detail.emotion || selectedEmotion;
     const thought = detail.automaticThought;
-    const storedIntensity = isDeep ? emotionIntensity : null;
+    const storedIntensity = isEmotionDialActive ? emotionIntensity : null;
     const validation = validateUserText(thought);
     if (!validation.ok) {
       toast.error(validation.message);

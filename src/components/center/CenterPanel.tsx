@@ -33,8 +33,9 @@ interface CenterPanelProps {
   onPrevious?: () => void;
   onExit?: () => void;
   mode: CbtMode;
-  onChangeMode: (next: CbtMode) => void;
   onStartMinimal?: () => void;
+  sessionKind: "minimal" | "cbt";
+  onSessionKindChange: (next: "minimal" | "cbt") => void;
   user: User | null;
   resumeCenterView?: "thoughts" | null;
   onResumeCenterViewHandled?: () => void;
@@ -57,8 +58,9 @@ export function CenterPanel({
   onPrevious,
   onExit,
   mode,
-  onChangeMode,
   onStartMinimal,
+  sessionKind,
+  onSessionKindChange,
   user,
   resumeCenterView,
   onResumeCenterViewHandled,
@@ -95,7 +97,7 @@ export function CenterPanel({
     userInput,
     selectedEmotion: flow.selectedEmotion,
     emotionIntensity: flow.emotionIntensity,
-    isDeep: flow.isDeep,
+    isEmotionDialActive: flow.isEmotionDialActive,
     emotionThoughtPairs,
     onSetEmotionThoughtPairs,
     onNext,
@@ -180,7 +182,7 @@ export function CenterPanel({
   };
 
   const handleStepOneNext = () => {
-    if (mode.detailMode === "lite") {
+    if (sessionKind === "minimal") {
       onStartMinimal?.();
       return;
     }
@@ -273,7 +275,7 @@ export function CenterPanel({
 
       <FirstEmotionIntensityModal
         // ✅ deep일 때만 실제로 열리게 방지
-        open={flow.isDeep && showIntensityModal}
+        open={flow.isEmotionDialActive && showIntensityModal}
         emotion={flow.selectedEmotion}
         intensity={flow.emotionIntensity}
         onIntensityChange={flow.setEmotionIntensity}
@@ -315,13 +317,13 @@ export function CenterPanel({
             userInput={userInput}
             onInputChange={handleInputChange}
             onNext={handleStepOneNext}
-            mode={mode}
-            onChangeMode={onChangeMode}
+            sessionKind={sessionKind}
+            onChangeSessionKind={onSessionKindChange}
             randomExamples={randomExamples}
             onExampleClick={handleExampleClick}
             onRefreshExamples={refreshExamples}
             onOpenSavedTriggers={notes.openSavedTriggersModal}
-            showExamples={mode.detailMode !== "lite"}
+            showExamples={sessionKind === "cbt"}
           />
         )}
 

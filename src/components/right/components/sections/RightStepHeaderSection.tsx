@@ -15,12 +15,14 @@ export function RightStepHeaderSection({
         {badge}
       </div>
       {title ? (
-        <h2 className="text-slate-800 text-xl lg:text-3xl font-serif">
+        <h2 className="text-slate-800 text-xl min-[600px]:text-3xl font-serif font-semibold">
           {title}
         </h2>
       ) : null}
       {desc ? (
-        <p className="text-slate-600 text-sm lg:text-lg mt-1">{desc}</p>
+        <p className="text-slate-600 text-sm min-[600px]:text-lg mt-1">
+          {desc}
+        </p>
       ) : null}
     </div>
   );

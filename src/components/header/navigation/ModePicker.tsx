@@ -11,14 +11,13 @@ import { Button } from "../../ui/button";
 import { ToggleRow } from "../../ui/mode-switch";
 
 export type CbtMode = {
-  detailMode: "lite" | "deep";
+  emotionDialMode: "emotion-dial-active" | "emotion-dial-inactive";
   toneMode: "normal" | "christian";
 };
 
 type PopoverPos = { top: number; left: number };
 
 type ModePickerProps = {
-  // ✅ controlled
   value: CbtMode;
   onChange: (mode: CbtMode) => void;
 
@@ -29,7 +28,10 @@ type ModePickerProps = {
 export function ModePicker({
   value,
   onChange,
-  defaultMode = { detailMode: "deep", toneMode: "christian" },
+  defaultMode = {
+    emotionDialMode: "emotion-dial-active",
+    toneMode: "christian",
+  },
 }: ModePickerProps) {
   const [show, setShow] = useState(false);
 
@@ -86,14 +88,14 @@ export function ModePicker({
     };
   }, [show]);
 
-  const deepEnabled = value.detailMode === "deep";
+  const emotionDialActive = value.emotionDialMode === "emotion-dial-active";
   const christianEnabled = value.toneMode === "christian";
 
   const subtitle = useMemo(() => {
-    const detail = deepEnabled ? "심화" : "Lite";
+    const detail = emotionDialActive ? "다이얼 ON" : "다이얼 OFF";
     const tone = christianEnabled ? "기독교" : "일반";
     return `${detail} · ${tone}`;
-  }, [deepEnabled, christianEnabled]);
+  }, [emotionDialActive, christianEnabled]);
 
   return (
     <div className="relative" ref={rootRef}>
@@ -148,11 +150,13 @@ export function ModePicker({
             <ToggleRow
               label="감정 다이얼 활성화"
               description="감정 강도 측정하는 단계를 추가합니다."
-              checked={deepEnabled}
+              checked={emotionDialActive}
               onChange={(next) =>
                 onChange({
                   ...value,
-                  detailMode: next ? "deep" : "lite",
+                  emotionDialMode: next
+                    ? "emotion-dial-active"
+                    : "emotion-dial-inactive",
                 })
               }
             />

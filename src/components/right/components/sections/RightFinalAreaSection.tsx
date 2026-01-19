@@ -31,7 +31,7 @@ interface RightFinalAreaSectionProps {
   onEnableFinalIntensity: () => void;
   onComplete: () => void;
   isBehaviorGenerating: boolean;
-  isDeep: boolean;
+  isEmotionDialActive: boolean;
   hasAnyIntensity: boolean;
   restartAction?: React.ReactNode;
 }
@@ -56,7 +56,7 @@ export function RightFinalAreaSection({
   onEnableFinalIntensity,
   onComplete,
   isBehaviorGenerating,
-  isDeep,
+  isEmotionDialActive,
   hasAnyIntensity,
   restartAction,
 }: RightFinalAreaSectionProps) {
@@ -92,7 +92,7 @@ export function RightFinalAreaSection({
 
         <ShalomCard />
 
-        {isDeep && hasAnyIntensity && !shouldShowDial ? (
+        {isEmotionDialActive && hasAnyIntensity && !shouldShowDial ? (
           <Button
             onClick={onEnableFinalIntensity}
             className="w-full bg-purple-600 hover:bg-purple-700"

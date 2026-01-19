@@ -56,7 +56,7 @@ export function LeftPage({
     handleConfirm2Errors,
     handleIntensitySet,
     header,
-    isLite,
+    isEmotionDialInactive,
     intensitySet,
     rankError,
     rankLoading,
@@ -187,7 +187,7 @@ export function LeftPage({
         {step >= 4 && <LeftCompletionSection />}
       </div>
 
-      {currentPair && !isLite && (
+      {currentPair && !isEmotionDialInactive && (
         <EmotionIntensityModal
           open={showIntensityModal}
           emotion={currentPair.emotion}

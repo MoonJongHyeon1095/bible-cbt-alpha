@@ -1,14 +1,12 @@
 import { FolderOpen } from "lucide-react";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
-import type { CbtMode } from "../../header/navigation/ModePicker";
-
 interface IncidentInputSectionProps {
   userInput: string;
   onInputChange: (value: string) => void;
   onNext: () => void;
-  mode: CbtMode;
-  onChangeMode: (next: CbtMode) => void;
+  sessionKind: "minimal" | "cbt";
+  onChangeSessionKind: (next: "minimal" | "cbt") => void;
   onOpenSavedTriggers: () => void;
 }
 
@@ -16,14 +14,14 @@ export function IncidentInputSection({
   userInput,
   onInputChange,
   onNext,
-  mode,
-  onChangeMode,
+  sessionKind,
+  onChangeSessionKind,
   onOpenSavedTriggers,
 }: IncidentInputSectionProps) {
-  const isLite = mode.detailMode === "lite";
-  const handleSelectDetailMode = (detailMode: CbtMode["detailMode"]) => {
-    if (mode.detailMode === detailMode) return;
-    onChangeMode({ ...mode, detailMode });
+  const isLite = sessionKind === "minimal";
+  const handleSelectSessionKind = (next: "minimal" | "cbt") => {
+    if (sessionKind === next) return;
+    onChangeSessionKind(next);
   };
 
   return (
@@ -31,7 +29,7 @@ export function IncidentInputSection({
       <div className="-mt-9 flex items-end gap-2">
         <button
           type="button"
-          onClick={() => handleSelectDetailMode("lite")}
+          onClick={() => handleSelectSessionKind("minimal")}
           className={`relative rounded-t-2xl border border-b-0 px-4 py-2 text-sm font-semibold transition ${
             isLite
               ? "border-amber-200 bg-amber-50 text-amber-900 shadow-sm"
@@ -49,7 +47,7 @@ export function IncidentInputSection({
         </button>
         <button
           type="button"
-          onClick={() => handleSelectDetailMode("deep")}
+          onClick={() => handleSelectSessionKind("cbt")}
           className={`relative rounded-t-2xl border border-b-0 px-4 py-2 text-sm font-semibold transition ${
             !isLite
               ? "border-blue-200 bg-blue-50 text-blue-900 shadow-sm"

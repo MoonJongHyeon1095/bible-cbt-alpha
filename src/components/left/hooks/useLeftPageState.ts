@@ -28,7 +28,8 @@ export function useLeftPageState({
       ? emotionThoughtPairs[emotionThoughtPairs.length - 1]
       : null;
 
-  const isLite = mode.detailMode === "lite";
+  const isEmotionDialInactive =
+    mode.emotionDialMode === "emotion-dial-inactive";
 
   const pairKey = useMemo(() => {
     if (!currentPair) return "";
@@ -109,7 +110,7 @@ export function useLeftPageState({
     handleConfirm2Errors: candidateState.handleConfirm2Errors,
     handleIntensitySet: intensityState.handleIntensitySet,
     header,
-    isLite,
+    isEmotionDialInactive,
     intensitySet: intensityState.intensitySet,
     rankError: candidateState.rankError,
     rankLoading: candidateState.rankLoading,

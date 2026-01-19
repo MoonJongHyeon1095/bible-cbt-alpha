@@ -21,7 +21,10 @@ import type { User } from "@supabase/supabase-js";
 import type { CbtMode } from "./components/header/navigation/ModePicker";
 
 const CBT_MODE_STORAGE_KEY = "cbt-mode";
-const DEFAULT_MODE: CbtMode = { detailMode: "deep", toneMode: "christian" };
+const DEFAULT_MODE: CbtMode = {
+  emotionDialMode: "emotion-dial-active",
+  toneMode: "christian",
+};
 const ENTERANCE_SEEN_KEY = "enterance_seen";
 const MINIMAL_SEEN_KEY = "minimal_session_seen";
 
@@ -33,6 +36,9 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState("cbt");
   const [cbtStep, setCbtStep] = useState(1);
   const [cbtResetKey, setCbtResetKey] = useState(0);
+  const [cbtSessionKind, setCbtSessionKind] = useState<"minimal" | "cbt">(
+    "cbt",
+  );
   const [showEnterance, setShowEnterance] = useState(false);
   const [showMinimalCbt, setShowMinimalCbt] = useState(true);
   const [isMinimalExiting, setIsMinimalExiting] = useState(false);
@@ -52,9 +58,15 @@ export default function App() {
     try {
       const raw = localStorage.getItem(CBT_MODE_STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as Partial<CbtMode>;
+        const parsed = JSON.parse(raw) as Partial<CbtMode> & {
+          detailMode?: "lite" | "deep";
+        };
         const restored: CbtMode = {
-          detailMode: parsed.detailMode === "deep" ? "deep" : "lite",
+          emotionDialMode:
+            parsed.emotionDialMode ??
+            (parsed.detailMode === "deep"
+              ? "emotion-dial-active"
+              : "emotion-dial-inactive"),
           toneMode: parsed.toneMode === "christian" ? "christian" : "normal",
         };
         setMode(restored);
@@ -224,8 +236,9 @@ export default function App() {
             <CBTSessionPage
               key={cbtResetKey}
               mode={mode}
-              onChangeMode={(next) => setMode(next)}
               onStartMinimal={handleStartMinimalFromLite}
+              sessionKind={cbtSessionKind}
+              onSessionKindChange={setCbtSessionKind}
               user={user}
               onStepChange={setCbtStep}
             />
@@ -248,7 +261,6 @@ export default function App() {
         return (
           <CBTSessionPage
             mode={mode}
-            onChangeMode={(next) => setMode(next)}
             onStartMinimal={handleStartMinimalFromLite}
             user={user}
           />
@@ -280,7 +292,7 @@ export default function App() {
 
   const showLiteGradient =
     currentPage === "cbt" &&
-    mode.detailMode === "lite" &&
+    cbtSessionKind === "minimal" &&
     !showEnterance &&
     !showMinimalCbt;
 
