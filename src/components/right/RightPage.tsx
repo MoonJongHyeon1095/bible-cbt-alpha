@@ -59,9 +59,9 @@ export function RightPage({
   user,
   mode,
 }: RightPageProps) {
-  const isDeep = mode.detailMode === "deep";
+  const isEmotionDialActive = mode.emotionDialMode === "emotion-dial-active";
   const isChristian = mode.toneMode === "christian";
-  const isDeepNormal = isDeep && !isChristian;
+  const isEmotionDialActiveNormal = isEmotionDialActive && !isChristian;
 
   const hasSelectedThought = Boolean(selectedAlternativeThought);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -160,7 +160,7 @@ export function RightPage({
     step,
     userInput,
     emotionThoughtPairs,
-    isDeep,
+    isEmotionDialActive,
     isChristian,
     hasSelectedThought,
     onAdvance: () => goNextIfNeeded({ skipScroll: true }),
@@ -190,7 +190,7 @@ export function RightPage({
   const handleSelectThought = (thought: string) => {
     onSetSelectedAlternativeThought(thought);
 
-    if (isDeepNormal && !autoAdvancedRef.current) {
+    if (isEmotionDialActiveNormal && !autoAdvancedRef.current) {
       autoAdvancedRef.current = true;
 
       setWantsBibleVerse(false);
@@ -220,7 +220,7 @@ export function RightPage({
 
     setWantsBibleVerse(false);
 
-    if (!isDeep) return;
+    if (!isEmotionDialActive) return;
 
     setShowFinalIntensity(true);
     seedFinalIntensitiesFromPairs();
@@ -235,7 +235,7 @@ export function RightPage({
   const handleFinalComplete = async () => {
     const pairsToSave = emotionThoughtPairs.map((pair) => ({
       ...pair,
-      intensity: isDeep
+      intensity: isEmotionDialActive
         ? finalIntensities[pair.emotion] ?? pair.intensity ?? null
         : null,
     }));
@@ -257,7 +257,7 @@ export function RightPage({
           }
         : null,
       bibleVerse: wantsBibleVerse ? bibleVerse : null,
-      detailMode: mode.detailMode,
+      emotionDialMode: mode.emotionDialMode,
     };
 
     if (user) {
@@ -418,13 +418,17 @@ export function RightPage({
   const showFinalArea =
     hasSelectedThought &&
     !showBibleResult &&
-    (step >= 5 || wantsBibleVerse === false || isDeepNormal);
+    (step >= 5 ||
+      wantsBibleVerse === false ||
+      isEmotionDialActiveNormal);
   const showStep4AfterPickPanel =
     step === 4 && hasSelectedThought && !showFinalArea;
   const showBibleOfferInFinalArea =
     isChristian && hasSelectedThought && wantsBibleVerse === null;
   const shouldShowDial =
-    isDeep && hasAnyIntensity && (isDeepNormal || showFinalIntensity);
+    isEmotionDialActive &&
+    hasAnyIntensity &&
+    (isEmotionDialActiveNormal || showFinalIntensity);
 
   const scrollToTop = () => {
     if (scrollRef.current) {
@@ -545,7 +549,7 @@ export function RightPage({
               />
             ) : (
               <RightShalomSection
-                isDeep={isDeep}
+                isEmotionDialActive={isEmotionDialActive}
                 isBehaviorGenerating={isBehaviorGenerating}
                 onComplete={handleFinalComplete}
               />
@@ -608,7 +612,7 @@ export function RightPage({
             }}
             onComplete={handleFinalComplete}
             isBehaviorGenerating={isBehaviorGenerating}
-            isDeep={isDeep}
+            isEmotionDialActive={isEmotionDialActive}
             hasAnyIntensity={hasAnyIntensity}
             restartAction={renderRestartWithSameInput()}
           />

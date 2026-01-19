@@ -199,6 +199,41 @@ html {
 }
 
 @layer utilities {
+  @keyframes minimal-bg-float {
+    0% {
+      background-position:
+        0% 20%,
+        100% 0%,
+        20% 100%,
+        80% 60%;
+    }
+    50% {
+      background-position:
+        60% 10%,
+        40% 80%,
+        80% 60%,
+        20% 30%;
+    }
+    100% {
+      background-position:
+        0% 20%,
+        100% 0%,
+        20% 100%,
+        80% 60%;
+    }
+  }
+
+  .minimal-bg-waves {
+    background-image:
+      radial-gradient(1200px 600px at 0% 20%, rgba(239, 233, 223, 0.55), transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, rgba(247, 243, 238, 0.6), transparent 60%),
+      radial-gradient(800px 500px at 20% 100%, rgba(223, 232, 230, 0.6), transparent 55%),
+      radial-gradient(700px 420px at 80% 60%, rgba(239, 233, 223, 0.45), transparent 58%);
+    background-repeat: no-repeat;
+    background-size: 160% 160%;
+    animation: minimal-bg-float 12s ease-in-out infinite;
+    opacity: 1;
+  }
   @keyframes minimal-idle-caret-blink {
     0%,
     100% {

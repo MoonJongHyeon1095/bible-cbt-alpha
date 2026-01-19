@@ -13,6 +13,7 @@ import { MinimalAutoThoughtSection } from "./center/minimal/MinimalAutoThoughtSe
 import { MinimalEmotionSection } from "./center/minimal/MinimalEmotionSection";
 import { MinimalIncidentSection } from "./center/minimal/MinimalIncidentSection";
 import { MinimalFloatingBackButton } from "./common/MinimalFloatingBackButton";
+import { MinimalFloatingHomeButton } from "./common/MinimalFloatingHomeButton";
 import { MinimalSavingModal } from "./common/MinimalSavingModal";
 import { MinimalCognitiveErrorSection } from "./left/minimal/MinimalCognitiveErrorSection";
 import { MinimalAlternativeThoughtSection } from "./right/minimal/MinimalAlternativeThoughtSection";
@@ -61,6 +62,10 @@ export function MinimalSessionPage({
       return;
     }
     setStep(stepOrder[currentStepIndex - 1]);
+  };
+  const handleGoHome = () => {
+    clearCbtSessionStorage();
+    onComplete();
   };
 
   const handleSubmitThought = (thought: string) => {
@@ -121,7 +126,7 @@ export function MinimalSessionPage({
       selectedAlternativeThought: thought,
       selectedBehavior: null,
       bibleVerse: null,
-      detailMode: mode.detailMode,
+      emotionDialMode: mode.emotionDialMode,
     };
 
     const minimalPayload = {
@@ -185,61 +190,64 @@ export function MinimalSessionPage({
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-[#efe9df] via-[#f7f3ee] to-[#dfe8e6] dark:from-[#0f1115] dark:via-[#141824] dark:to-[#0f1a1f]">
-      <MinimalSavingModal open={isSaving} />
-      {currentStepIndex > 0 && (
-        <div className="absolute inset-x-0 top-6 z-10">
-          <div className="mx-auto max-w-xl px-6">
+      <div className="pointer-events-none absolute inset-0 z-0 minimal-bg-waves" />
+      <div className="relative z-10">
+        <MinimalSavingModal open={isSaving} />
+        {currentStepIndex > 0 && (
+          <div className="fixed top-8 left-6 z-10">
             <MinimalFloatingBackButton onClick={handleBack} />
           </div>
+        )}
+        <div className="fixed top-8 right-6 z-10">
+          <MinimalFloatingHomeButton onClick={handleGoHome} />
         </div>
-      )}
-      {step === "incident" && (
-        <MinimalIncidentSection
-          userInput={userInput}
-          onInputChange={setUserInput}
-          onNext={() => setStep("emotion")}
-        />
-      )}
+        {step === "incident" && (
+          <MinimalIncidentSection
+            userInput={userInput}
+            onInputChange={setUserInput}
+            onNext={() => setStep("emotion")}
+          />
+        )}
 
-      {step === "emotion" && (
-        <MinimalEmotionSection
-          selectedEmotion={selectedEmotion}
-          onSelectEmotion={setSelectedEmotion}
-          onNext={() => {
-            setAutoThoughtWantsCustom(false);
-            setStep("thought");
-          }}
-        />
-      )}
+        {step === "emotion" && (
+          <MinimalEmotionSection
+            selectedEmotion={selectedEmotion}
+            onSelectEmotion={setSelectedEmotion}
+            onNext={() => {
+              setAutoThoughtWantsCustom(false);
+              setStep("thought");
+            }}
+          />
+        )}
 
-      {step === "thought" && (
-        <MinimalAutoThoughtSection
-          userInput={userInput}
-          emotion={selectedEmotion}
-          wantsCustom={autoThoughtWantsCustom}
-          onWantsCustomChange={setAutoThoughtWantsCustom}
-          onSubmitThought={handleSubmitThought}
-        />
-      )}
+        {step === "thought" && (
+          <MinimalAutoThoughtSection
+            userInput={userInput}
+            emotion={selectedEmotion}
+            wantsCustom={autoThoughtWantsCustom}
+            onWantsCustomChange={setAutoThoughtWantsCustom}
+            onSubmitThought={handleSubmitThought}
+          />
+        )}
 
-      {step === "errors" && (
-        <MinimalCognitiveErrorSection
-          userInput={userInput}
-          thought={emotionThoughtPairs[0]?.thought ?? ""}
-          onSelect={handleSelectErrors}
-        />
-      )}
+        {step === "errors" && (
+          <MinimalCognitiveErrorSection
+            userInput={userInput}
+            thought={emotionThoughtPairs[0]?.thought ?? ""}
+            onSelect={handleSelectErrors}
+          />
+        )}
 
-      {step === "alternative" && (
-        <MinimalAlternativeThoughtSection
-          userInput={userInput}
-          emotionThoughtPairs={emotionThoughtPairs}
-          selectedCognitiveErrors={selectedCognitiveErrors}
-          seed={alternativeSeed}
-          onSelect={handleComplete}
-        />
-      )}
-
+        {step === "alternative" && (
+          <MinimalAlternativeThoughtSection
+            userInput={userInput}
+            emotionThoughtPairs={emotionThoughtPairs}
+            selectedCognitiveErrors={selectedCognitiveErrors}
+            seed={alternativeSeed}
+            onSelect={handleComplete}
+          />
+        )}
+      </div>
     </div>
   );
 }

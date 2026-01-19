@@ -14,7 +14,7 @@ interface MinimalCognitiveErrorSectionProps {
   onSelect: (errors: SelectedCognitiveError[]) => void;
 }
 
-const HEADER_TEXT = "고르라고 하지 말고 매번 새로고침 하는 거 같은 문구";
+const HEADER_TEXT = "혹시 이런 경향이 있지 않을까요?";
 
 export function MinimalCognitiveErrorSection({
   userInput,
@@ -54,7 +54,7 @@ export function MinimalCognitiveErrorSection({
   if (loading) {
     return (
       <MinimalCognitiveErrorLoadingState
-        description={HEADER_TEXT}
+        title={HEADER_TEXT}
         message="인지오류를 분석하고 있어요."
       />
     );
@@ -66,8 +66,8 @@ export function MinimalCognitiveErrorSection({
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6 pt-12 pb-10">
-      <div className="w-full max-w-xl space-y-8">
-        <MinimalStepHeaderSection description={HEADER_TEXT} />
+      <div className="w-full max-w-4xl space-y-8">
+        <MinimalStepHeaderSection title={HEADER_TEXT} />
 
         {currentRankItem && (
           <MinimalCognitiveErrorCard

@@ -1,4 +1,3 @@
-import type { CbtMode } from "../../header/navigation/ModePicker";
 import { IncidentExamplesSection } from "./IncidentExamplesSection";
 import { IncidentInputSection } from "./IncidentInputSection";
 
@@ -6,8 +5,8 @@ interface IncidentStepCardProps {
   userInput: string;
   onInputChange: (value: string) => void;
   onNext: () => void;
-  mode: CbtMode;
-  onChangeMode: (next: CbtMode) => void;
+  sessionKind: "minimal" | "cbt";
+  onChangeSessionKind: (next: "minimal" | "cbt") => void;
   randomExamples: { emoji: string; text: string }[];
   onExampleClick: (text: string) => void;
   onRefreshExamples: () => void;
@@ -19,8 +18,8 @@ export function IncidentStepCard({
   userInput,
   onInputChange,
   onNext,
-  mode,
-  onChangeMode,
+  sessionKind,
+  onChangeSessionKind,
   randomExamples,
   onExampleClick,
   onRefreshExamples,
@@ -29,13 +28,13 @@ export function IncidentStepCard({
 }: IncidentStepCardProps) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="mt-4">
+      <div className="mt-8">
         <IncidentInputSection
           userInput={userInput}
           onInputChange={onInputChange}
           onNext={onNext}
-          mode={mode}
-          onChangeMode={onChangeMode}
+          sessionKind={sessionKind}
+          onChangeSessionKind={onChangeSessionKind}
           onOpenSavedTriggers={onOpenSavedTriggers}
         />
       </div>

@@ -3,13 +3,13 @@ import { Button } from "../../../ui/button";
 import { ShalomCard } from "../ShalomCard";
 
 interface RightShalomSectionProps {
-  isDeep: boolean;
+  isEmotionDialActive: boolean;
   isBehaviorGenerating: boolean;
   onComplete: () => void;
 }
 
 export function RightShalomSection({
-  isDeep,
+  isEmotionDialActive,
   isBehaviorGenerating,
   onComplete,
 }: RightShalomSectionProps) {
@@ -32,7 +32,7 @@ export function RightShalomSection({
       <ShalomCard className="text-sm leading-relaxed text-blue-900" />
 
       <div className="mt-4 border-t border-blue-100 pt-4">
-        {isDeep ? (
+        {isEmotionDialActive ? (
           <div className="flex items-center gap-2 text-slate-600 text-sm">
             <Loader2 className="size-4 animate-spin" />
             마무리 단계로 이동 중...

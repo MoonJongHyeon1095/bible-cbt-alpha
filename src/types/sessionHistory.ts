@@ -33,5 +33,5 @@ export interface SessionHistory {
     verse: string;
     prayer: string;
   } | null;
-  detailMode?: "lite" | "deep";
+  emotionDialMode?: "emotion-dial-active" | "emotion-dial-inactive";
 }

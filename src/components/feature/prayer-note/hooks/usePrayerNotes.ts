@@ -174,7 +174,6 @@ export function usePrayerNotes({ user }: UsePrayerNotesParams) {
     handleChapterChange: form.handleChapterChange,
     handleStartVerseChange: form.handleStartVerseChange,
     handleEndVerseChange: form.handleEndVerseChange,
-    verseLines: form.verseLines,
     setTitle: form.setTitle,
     setContent: form.setContent,
     handleSubmit,

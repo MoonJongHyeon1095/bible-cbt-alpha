@@ -81,7 +81,7 @@ export function MinimalAlternativeThoughtSection({
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6 pt-12 pb-10">
-      <div className="w-full max-w-xl space-y-8">
+      <div className="w-full max-w-4xl space-y-8">
         <MinimalStepHeaderSection title={TITLE} description={DESCRIPTION} />
 
         <MinimalAlternativeThoughtBodySection

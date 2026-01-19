@@ -1,16 +1,16 @@
-import { Undo2 } from "lucide-react";
+import { Home } from "lucide-react";
 
-interface MinimalFloatingBackButtonProps {
+interface MinimalFloatingHomeButtonProps {
   onClick: () => void;
   ariaLabel?: string;
   disabled?: boolean;
 }
 
-export function MinimalFloatingBackButton({
+export function MinimalFloatingHomeButton({
   onClick,
-  ariaLabel = "이전으로",
+  ariaLabel = "홈으로",
   disabled = false,
-}: MinimalFloatingBackButtonProps) {
+}: MinimalFloatingHomeButtonProps) {
   return (
     <button
       type="button"
@@ -21,7 +21,7 @@ export function MinimalFloatingBackButton({
         disabled ? "opacity-50 cursor-not-allowed" : ""
       }`}
     >
-      <Undo2 className="size-5" />
+      <Home className="size-5" />
     </button>
   );
 }

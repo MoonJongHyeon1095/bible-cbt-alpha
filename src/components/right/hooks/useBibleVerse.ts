@@ -9,7 +9,7 @@ type UseBibleVerseParams = {
   step: number;
   userInput: string;
   emotionThoughtPairs: EmotionThoughtPair[];
-  isDeep: boolean;
+  isEmotionDialActive: boolean;
   isChristian: boolean;
   hasSelectedThought: boolean;
   onAdvance: () => void;
@@ -19,7 +19,7 @@ export function useBibleVerse({
   step,
   userInput,
   emotionThoughtPairs,
-  isDeep,
+  isEmotionDialActive,
   isChristian,
   hasSelectedThought,
   onAdvance,
@@ -50,7 +50,7 @@ export function useBibleVerse({
     try {
       const emotions = emotionThoughtPairs
         .map((p) =>
-          isDeep && p.intensity != null
+          isEmotionDialActive && p.intensity != null
             ? `${p.emotion}(${p.intensity}/100)`
             : p.emotion
         )
@@ -84,7 +84,13 @@ export function useBibleVerse({
     } finally {
       setBibleLoading(false);
     }
-  }, [emotionThoughtPairs, isDeep, lockBibleChoice, onAdvance, userInput]);
+  }, [
+    emotionThoughtPairs,
+    isEmotionDialActive,
+    lockBibleChoice,
+    onAdvance,
+    userInput,
+  ]);
 
   useEffect(() => {
     if (!hasSelectedThought || step < 4) {
