@@ -160,7 +160,7 @@ export function CBTSessionPage({
   };
 
   return (
-    <div className="max-w-[1800px] mx-auto px-8 py-8">
+    <div className="max-w-6xl mx-auto px-8 py-8">
       <div className="mb-8">{renderStepScreen()}</div>
 
       <SelectedSectionActions

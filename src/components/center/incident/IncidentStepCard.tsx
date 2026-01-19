@@ -29,7 +29,7 @@ export function IncidentStepCard({
 }: IncidentStepCardProps) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="mt-4">
+      <div className="mt-8">
         <IncidentInputSection
           userInput={userInput}
           onInputChange={onInputChange}

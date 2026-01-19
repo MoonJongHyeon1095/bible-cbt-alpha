@@ -55,11 +55,13 @@ export function CenterHeader({
         {header.badge}
       </div>
 
-      <h2 className="mt-3 text-slate-800 text-xl">
+      <h2 className="mt-3 text-slate-800 text-xl lg:text-3xl font-serif">
         {header.title}
       </h2>
 
-      <p className="mt-1 text-sm text-slate-500">{header.desc}</p>
+      <p className="mt-1 text-sm lg:text-lg text-slate-500">
+        {header.desc}
+      </p>
     </div>
   );
 }

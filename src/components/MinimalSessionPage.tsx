@@ -13,6 +13,7 @@ import { MinimalAutoThoughtSection } from "./center/minimal/MinimalAutoThoughtSe
 import { MinimalEmotionSection } from "./center/minimal/MinimalEmotionSection";
 import { MinimalIncidentSection } from "./center/minimal/MinimalIncidentSection";
 import { MinimalFloatingBackButton } from "./common/MinimalFloatingBackButton";
+import { MinimalFloatingHomeButton } from "./common/MinimalFloatingHomeButton";
 import { MinimalSavingModal } from "./common/MinimalSavingModal";
 import { MinimalCognitiveErrorSection } from "./left/minimal/MinimalCognitiveErrorSection";
 import { MinimalAlternativeThoughtSection } from "./right/minimal/MinimalAlternativeThoughtSection";
@@ -61,6 +62,10 @@ export function MinimalSessionPage({
       return;
     }
     setStep(stepOrder[currentStepIndex - 1]);
+  };
+  const handleGoHome = () => {
+    clearCbtSessionStorage();
+    onComplete();
   };
 
   const handleSubmitThought = (thought: string) => {
@@ -187,10 +192,13 @@ export function MinimalSessionPage({
     <div className="relative min-h-screen bg-gradient-to-br from-[#efe9df] via-[#f7f3ee] to-[#dfe8e6] dark:from-[#0f1115] dark:via-[#141824] dark:to-[#0f1a1f]">
       <MinimalSavingModal open={isSaving} />
       {currentStepIndex > 0 && (
-        <div className="fixed top-6 left-6 z-10">
+        <div className="fixed top-8 left-6 z-10">
           <MinimalFloatingBackButton onClick={handleBack} />
         </div>
       )}
+      <div className="fixed top-8 right-6 z-10">
+        <MinimalFloatingHomeButton onClick={handleGoHome} />
+      </div>
       {step === "incident" && (
         <MinimalIncidentSection
           userInput={userInput}

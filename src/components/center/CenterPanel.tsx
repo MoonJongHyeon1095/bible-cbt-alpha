@@ -257,7 +257,7 @@ export function CenterPanel({
           onOpenDetails={() => setIsDisclaimerOpen(true)}
         />
       )}
-      <div className="mb-6">
+      <div className="mb-10">
         <CenterHeader
           step={step}
           emotionSet={emotionSet}
