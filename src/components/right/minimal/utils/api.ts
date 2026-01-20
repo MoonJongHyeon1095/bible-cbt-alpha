@@ -1,5 +1,5 @@
-import { formatAutoTitle } from "../../../../utils/formatAutoTitle";
 import type { SelectedCognitiveError } from "../../../../types/sessionHistory";
+import { formatAutoTitle } from "../../../../utils/formatAutoTitle";
 import { authFetch } from "../../../feature/emotion-note/utils/api";
 
 type MinimalSavePayload = {
@@ -18,7 +18,6 @@ export async function saveMinimalPatternAPI(payload: MinimalSavePayload) {
   const errorTitle = payload.cognitiveError?.title?.trim() ?? "";
   const errorDescription = payload.cognitiveError?.detail?.trim() ?? "";
 
-  const startedAt = Date.now();
   const res = await authFetch("/api/minimal-emotion-note", {
     method: "POST",
     body: JSON.stringify({
@@ -32,7 +31,6 @@ export async function saveMinimalPatternAPI(payload: MinimalSavePayload) {
         : null,
     }),
   });
-  console.info(`[minimal-save] batchSave: ${Date.now() - startedAt}ms`);
   const response = await res.json().catch(() => ({}));
   return { ok: res.ok, payload: response };
 }

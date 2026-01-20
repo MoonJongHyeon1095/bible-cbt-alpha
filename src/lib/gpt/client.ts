@@ -2,6 +2,7 @@
 
 // src/lib/gpt/client.ts
 import { ENV } from "../../config/env";
+import { readTokenSessionUsage, writeTokenSessionUsage } from "../../utils/tokenSessionStorage";
 
 const API_BASE = ENV.API_BASE || ""; // same-origin이면 ""
 
@@ -30,6 +31,18 @@ export async function callGptText(prompt: string, opts: GptCallOptions = {}) {
     const err = new Error(msg);
     (err as any).details = data?.details;
     throw err;
+  }
+
+  if (data?.usage) {
+    const prevUsage = readTokenSessionUsage() ?? {
+      total_tokens: 0,
+      request_count: 0,
+    };
+    const next = {
+      total_tokens: (data.usage.total_tokens || 0) + prevUsage.total_tokens,
+      request_count: prevUsage.request_count + 1,
+    };
+    writeTokenSessionUsage(next);
   }
 
   const text = typeof data?._text === "string" ? data._text.trim() : "";

@@ -1,3 +1,5 @@
+import { clearTokenSessionStorage } from "./tokenSessionStorage";
+
 const CBT_SESSION_KEYS = [
   "cbt_saved_error_keys",
   "cbt_saved_alternative_keys",
@@ -8,6 +10,7 @@ const CBT_SESSION_KEYS = [
 
 export function clearCbtSessionStorage() {
   try {
+    void clearTokenSessionStorage();
     CBT_SESSION_KEYS.forEach((key) => sessionStorage.removeItem(key));
   } catch {
     /* ignore */

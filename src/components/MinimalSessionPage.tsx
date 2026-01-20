@@ -1,26 +1,31 @@
-import { useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "../lib/supabase/client";
 import type { EmotionThoughtPair } from "../types";
 import type {
   SelectedCognitiveError,
   SessionHistory,
 } from "../types/sessionHistory";
-import { supabase } from "../lib/supabase/client";
 import { clearCbtSessionStorage } from "../utils/cbtSessionStorage";
-import type { CbtMode } from "./header/navigation/ModePicker";
 import { MinimalAutoThoughtSection } from "./center/minimal/MinimalAutoThoughtSection";
 import { MinimalEmotionSection } from "./center/minimal/MinimalEmotionSection";
 import { MinimalIncidentSection } from "./center/minimal/MinimalIncidentSection";
 import { MinimalFloatingBackButton } from "./common/MinimalFloatingBackButton";
 import { MinimalFloatingHomeButton } from "./common/MinimalFloatingHomeButton";
 import { MinimalSavingModal } from "./common/MinimalSavingModal";
+import type { CbtMode } from "./header/navigation/ModePicker";
 import { MinimalCognitiveErrorSection } from "./left/minimal/MinimalCognitiveErrorSection";
 import { MinimalAlternativeThoughtSection } from "./right/minimal/MinimalAlternativeThoughtSection";
 import { saveMinimalPatternAPI } from "./right/minimal/utils/api";
 import { saveMinimalPatternLocal } from "./right/minimal/utils/storage";
 
-type MinimalStep = "incident" | "emotion" | "thought" | "errors" | "alternative";
+type MinimalStep =
+  | "incident"
+  | "emotion"
+  | "thought"
+  | "errors"
+  | "alternative";
 
 interface MinimalSessionPageProps {
   mode: CbtMode;
@@ -85,7 +90,7 @@ export function MinimalSessionPage({
         index: item.index,
         title: item.title,
         detail: item.detail,
-      }))
+      })),
     );
     if (nextKey !== lastErrorsKeyRef.current) {
       setAlternativeSeed((prev) => prev + 1);
@@ -97,7 +102,6 @@ export function MinimalSessionPage({
 
   const handleComplete = async (thought: string) => {
     if (isSaving) return;
-    const totalStartedAt = Date.now();
     let completed = false;
     const markMinimalSeen = () => {
       try {
@@ -179,9 +183,6 @@ export function MinimalSessionPage({
       transitionAfter(240);
       completed = true;
     } finally {
-      console.info(
-        `[minimal-save] total: ${Date.now() - totalStartedAt}ms`
-      );
       if (!completed) {
         setIsSaving(false);
       }
