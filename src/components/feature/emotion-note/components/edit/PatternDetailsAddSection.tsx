@@ -1,12 +1,14 @@
-import { Brain, Save, Sparkles, X } from "lucide-react";
+import { Brain, Save, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { EMOTIONS } from "../../../../../constants/emotions";
 import { generateExtendedAutomaticThoughts } from "../../../../../lib/ai";
-import { DialogClose } from "../../../../ui/dialog";
-import { Button } from "../../../../ui/button";
 import { Textarea } from "../../../../ui/textarea";
+import { clearTokenSessionStorage } from "../../../../../utils/tokenSessionStorage";
+import { AiActionBar } from "./common/AiActionBar";
 import { AiCandidatesPanel } from "./common/AiCandidatesPanel";
 import { AiLoadingCard } from "./common/AiLoadingCard";
+import { checkAiUsageLimit } from "./common/aiUsageGuard";
+import { PatternAddSectionShell } from "./common/PatternAddSectionShell";
 import { SelectionCard } from "./common/SelectionCard";
 import { TagSelector } from "./common/TagSelector";
 
@@ -103,47 +105,36 @@ export function PatternDetailsAddSection({
     setAiStep("select-emotion");
   };
 
+  const handleAiAction = async () => {
+    const allowed = await checkAiUsageLimit();
+    if (!allowed) return;
+    startAiSelection();
+  };
+
   return (
-    <div className="border border-amber-200 rounded-xl bg-white shadow-sm">
-      <div className="border-b border-amber-200 px-4 py-3 text-sm font-semibold text-amber-900 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Brain className="size-4" />
-          배후의 자동 사고 추가
-        </div>
-        <DialogClose asChild>
-          <button
-            type="button"
-            className="rounded-full border border-amber-200 bg-white p-2 text-amber-700 transition hover:bg-amber-50"
-            aria-label="닫기"
-          >
-            <X className="size-4" />
-          </button>
-        </DialogClose>
-      </div>
-      <div className="p-5 space-y-4 bg-amber-50/70">
-        <div className="flex items-center justify-between gap-2 text-sm text-slate-700">
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={startAiSelection}
-              disabled={loading || aiLoading}
-              className="border-amber-300 text-amber-700 hover:bg-amber-100"
-            >
+    <PatternAddSectionShell
+      tone="amber"
+      title="배후의 자동 사고 추가"
+      icon={Brain}
+      onClose={() => void clearTokenSessionStorage()}
+    >
+        <AiActionBar
+          aiLabel={
+            <>
               <Sparkles className="size-4 mr-1" />
               {aiButtonLabel}
-            </Button>
-            <Button
-              size="sm"
-              onClick={onAddDetail}
-              disabled={!emotion.trim() || !automaticThought.trim() || loading}
-              className="bg-yellow-500 text-white hover:bg-yellow-600"
-            >
-              <Save className="size-4 mr-1" />
-              {loading ? "저장 중" : "저장"}
-            </Button>
-          </div>
-        </div>
+            </>
+          }
+          onAiClick={() => void handleAiAction()}
+          aiDisabled={loading || aiLoading}
+          aiClassName="border-amber-300 text-amber-700 hover:bg-amber-100"
+          saveLabel={loading ? "저장 중" : "저장"}
+          onSave={onAddDetail}
+          saveDisabled={!emotion.trim() || !automaticThought.trim() || loading}
+          saveClassName="bg-yellow-500 text-white hover:bg-yellow-600"
+          isSaving={loading}
+          saveIcon={<Save className="size-4 mr-1" />}
+        />
         {(manualMode || aiStep === "select-emotion") && (
           <div>
             <p className="text-xs text-slate-600 mb-2">감정 선택</p>
@@ -208,7 +199,6 @@ export function PatternDetailsAddSection({
             </AiCandidatesPanel>
           )}
         </div>
-      </div>
-    </div>
+    </PatternAddSectionShell>
   );
 }

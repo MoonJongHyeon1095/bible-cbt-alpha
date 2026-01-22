@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { Button } from "../../../ui/button";
 import { Card } from "../../../ui/card";
 import { validateUserText } from "../../../../utils/validation";
-import { clearTokenSessionStorage } from "../../../../utils/tokenSessionStorage";
 import { usePatternForm } from "../hooks/usePatternForm";
 import { usePatternsData } from "../hooks/usePatternsData";
 import type {
@@ -36,10 +35,6 @@ interface PatternsPageProps {
 }
 
 export function PatternsPage({ user }: PatternsPageProps) {
-  useEffect(() => {
-    void clearTokenSessionStorage();
-  }, []);
-
   const {
     patterns,
     loading,
