@@ -1,4 +1,6 @@
 import { FolderOpen } from "lucide-react";
+import { toast } from "sonner";
+import { fetchTokenUsageStatus } from "../../../utils/tokenSessionStorage";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
 interface IncidentInputSectionProps {
@@ -19,6 +21,31 @@ export function IncidentInputSection({
   onOpenSavedTriggers,
 }: IncidentInputSectionProps) {
   const isLite = sessionKind === "minimal";
+  const handleStartSession = async () => {
+    try {
+      const status = await fetchTokenUsageStatus();
+      const dailyLimit = status.is_member ? 20000 : 15000;
+      const monthlyLimit = status.is_member ? 150000 : 50000;
+
+      if (status.usage.daily_usage >= dailyLimit) {
+        toast.error(
+          "당일 토큰 사용량을 초과했습니다. (한국시간 매일 오전 09:00 초기화)",
+        );
+        return;
+      }
+
+      if (status.usage.monthly_usage >= monthlyLimit) {
+        toast.error(
+          "월 토큰 사용량을 초과했습니다. (한국시간 매월 1일 오전 09:00 초기화)",
+        );
+        return;
+      }
+    } catch (error) {
+      console.error("token usage check failed:", error);
+    }
+
+    onNext();
+  };
   const handleSelectSessionKind = (next: "minimal" | "cbt") => {
     if (sessionKind === next) return;
     onChangeSessionKind(next);
@@ -68,7 +95,7 @@ export function IncidentInputSection({
       {isLite ? (
         <div className="pt-2">
           <Button
-            onClick={onNext}
+            onClick={() => void handleStartSession()}
             className="w-full rounded-2xl bg-amber-50 text-base font-semibold text-amber-900 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg hover:bg-amber-100"
           >
             세션 시작하기
@@ -110,7 +137,7 @@ export function IncidentInputSection({
 
       {!isLite && (
         <Button
-          onClick={onNext}
+          onClick={() => void handleStartSession()}
           className="w-full rounded-2xl bg-blue-600 text-base font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-lg"
         >
           세션 시작하기
