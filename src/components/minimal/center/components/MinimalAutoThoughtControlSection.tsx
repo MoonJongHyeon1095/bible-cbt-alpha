@@ -33,7 +33,7 @@ export function MinimalAutoThoughtControlSection({
           onClick={onEnableCustom}
           className="inline-flex items-center rounded-full border border-slate-200 bg-white/80 px-5 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 hover:shadow-md"
         >
-          직접 입력
+          또는 직접 생각을 작성해보세요
         </button>
       )}
     </div>

@@ -1,14 +1,16 @@
-import { Lightbulb, Loader2, Save, Sparkles, X } from "lucide-react";
+import { Lightbulb, Loader2, Save, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { generateContextualAlternativeThoughts } from "../../../../../lib/ai";
-import { Button } from "../../../../ui/button";
-import { DialogClose } from "../../../../ui/dialog";
 import { Textarea } from "../../../../ui/textarea";
+import { clearTokenSessionStorage } from "../../../../../utils/tokenSessionStorage";
 import type { PatternDetail, PatternErrorDetail } from "../../types";
+import { AiActionBar } from "./common/AiActionBar";
 import { AiCandidatesPanel } from "./common/AiCandidatesPanel";
 import { AiLoadingCard } from "./common/AiLoadingCard";
+import { checkAiUsageLimit } from "./common/aiUsageGuard";
 import { ExpandableText } from "./common/ExpandableText";
 import { FloatingStepNav } from "./common/FloatingStepNav";
+import { PatternAddSectionShell } from "./common/PatternAddSectionShell";
 import { SelectionCard } from "./common/SelectionCard";
 import { SelectionPanel } from "./common/SelectionPanel";
 
@@ -86,6 +88,12 @@ export function PatternAlternativesAddSection({
     setAiError(null);
     setAiStep("select-thought");
     onChangeAlternativeText("");
+  };
+
+  const handleAiAction = async () => {
+    const allowed = await checkAiUsageLimit();
+    if (!allowed) return;
+    startAiSelection();
   };
 
   const handleSelectDetail = (detailId: string) => {
@@ -188,50 +196,30 @@ export function PatternAlternativesAddSection({
   };
 
   return (
-    <div className="border border-green-200 rounded-xl bg-white shadow-sm">
-      <div className="border-b border-green-200 px-4 py-3 text-sm font-semibold text-slate-800 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Lightbulb className="size-4" />
-          대안적 접근 추가
-        </div>
-        <DialogClose asChild>
-          <button
-            type="button"
-            className="rounded-full border border-green-200 bg-white p-2 text-green-700 transition hover:bg-green-50"
-            aria-label="닫기"
-          >
-            <X className="size-4" />
-          </button>
-        </DialogClose>
-      </div>
-      <div className="p-5 space-y-4 bg-green-50/70">
-        <div className="flex items-center justify-between gap-2 text-sm text-slate-700">
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={startAiSelection}
-              disabled={loading || aiLoading}
-              className="border-green-300 text-green-700 hover:bg-green-100"
-            >
+    <PatternAddSectionShell
+      tone="green"
+      title="대안적 접근 추가"
+      icon={Lightbulb}
+      onClose={() => void clearTokenSessionStorage()}
+    >
+        <AiActionBar
+          aiLabel={
+            <>
               <Sparkles className="size-4 mr-1" />
               {aiButtonLabel}
-            </Button>
-            <Button
-              size="sm"
-              onClick={onAddAlternative}
-              disabled={!alternativeText.trim() || loading}
-              className="bg-green-500 text-white hover:bg-green-600"
-            >
-              {loading ? (
-                <Loader2 className="size-4 mr-1 animate-spin" />
-              ) : (
-                <Save className="size-4 mr-1" />
-              )}
-              {loading ? "저장 중" : "저장"}
-            </Button>
-          </div>
-        </div>
+            </>
+          }
+          onAiClick={() => void handleAiAction()}
+          aiDisabled={loading || aiLoading}
+          aiClassName="border-green-300 text-green-700 hover:bg-green-100"
+          saveLabel={loading ? "저장 중" : "저장"}
+          onSave={onAddAlternative}
+          saveDisabled={!alternativeText.trim() || loading}
+          saveClassName="bg-green-500 text-white hover:bg-green-600"
+          isSaving={loading}
+          saveIcon={<Save className="size-4 mr-1" />}
+          savingIcon={<Loader2 className="size-4 mr-1 animate-spin" />}
+        />
         <div className="space-y-3">
           {aiStep === "select-thought" && (
             <SelectionPanel
@@ -378,7 +366,6 @@ export function PatternAlternativesAddSection({
           onBack={handleBackStep}
           tone="green"
         />
-      </div>
-    </div>
+    </PatternAddSectionShell>
   );
 }

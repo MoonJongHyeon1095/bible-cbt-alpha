@@ -1,6 +1,5 @@
 import { EMOTIONS } from "../../../../constants/emotions";
-import { MinimalFloatingNextButton } from "../../../common/MinimalFloatingNextButton";
-
+import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
 type EmotionItem = (typeof EMOTIONS)[number];
 
 interface MinimalEmotionDetailsSectionProps {

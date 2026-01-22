@@ -1,11 +1,12 @@
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
-import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
-import { MinimalStepHeaderSection } from "../../common/MinimalStepHeaderSection";
+
+import { MinimalFloatingNextButton } from "../common/MinimalFloatingNextButton";
+import { MinimalLoadingState } from "../common/MinimalLoadingState";
+import { MinimalStepHeaderSection } from "../common/MinimalStepHeaderSection";
 import { MinimalCognitiveErrorCard } from "./components/MinimalCognitiveErrorCard";
 import { MinimalCognitiveErrorErrorState } from "./components/MinimalCognitiveErrorErrorState";
-import { MinimalCognitiveErrorLoadingState } from "./components/MinimalCognitiveErrorLoadingState";
 import { useCognitiveErrorRanking } from "./hooks/useCognitiveErrorRanking";
 
 interface MinimalCognitiveErrorSectionProps {
@@ -53,9 +54,10 @@ export function MinimalCognitiveErrorSection({
 
   if (loading) {
     return (
-      <MinimalCognitiveErrorLoadingState
+      <MinimalLoadingState
         title={HEADER_TEXT}
         message="인지오류를 분석하고 있어요."
+        variant="page"
       />
     );
   }

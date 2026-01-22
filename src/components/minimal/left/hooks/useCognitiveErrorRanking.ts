@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   analyzeCognitiveErrorDetails,
   COGNITIVE_ERRORS_BY_INDEX,
@@ -41,6 +41,7 @@ export function useCognitiveErrorRanking({
   const [rankLoading, setRankLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const pendingDetailRef = useRef<Set<ErrorIndex>>(new Set());
   const cacheKey = useMemo(
     () => `${userInput.trim()}::${thought.trim()}`,
     [userInput, thought]
@@ -52,16 +53,22 @@ export function useCognitiveErrorRanking({
     setPageIndex(0);
     setWithinIndex(0);
     setError(null);
+    pendingDetailRef.current.clear();
   };
 
   const fetchDetails = async (indices: ErrorIndex[]) => {
-    if (!indices.length) return;
+    const unique = indices.filter(
+      (idx) =>
+        !detailByIndex[idx] && !pendingDetailRef.current.has(idx)
+    );
+    if (unique.length === 0) return;
+    unique.forEach((idx) => pendingDetailRef.current.add(idx));
     setDetailLoading(true);
     try {
       const detail = await analyzeCognitiveErrorDetails(
         userInput,
         thought,
-        indices
+        unique
       );
       setDetailByIndex((prev) => {
         const next = { ...prev };
@@ -73,6 +80,7 @@ export function useCognitiveErrorRanking({
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
     } finally {
+      unique.forEach((idx) => pendingDetailRef.current.delete(idx));
       setDetailLoading(false);
     }
   };
@@ -83,10 +91,6 @@ export function useCognitiveErrorRanking({
     try {
       const result = await rankCognitiveErrors(userInput, thought);
       setRanked(result.ranked);
-      const firstBatch = result.ranked
-        .slice(0, BATCH_SIZE)
-        .map((item) => item.index);
-      await fetchDetails(firstBatch);
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
     } finally {

@@ -1,20 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { generateExtendedAutomaticThoughts } from "../../../../lib/ai";
-
-type AutoThoughtCacheEntry = {
-  thoughts: string[];
-  index: number;
-  hasShownCustomPrompt: boolean;
-};
+import {
+  getAutoThoughtCache,
+  setAutoThoughtCache,
+  type AutoThoughtCacheEntry,
+} from "../../../../utils/minimalAutoThoughtCache";
 
 type UseAutoThoughtSuggestionsParams = {
   userInput: string;
   emotion: string;
   onResetSelection: () => void;
 };
-
-const autoThoughtCache = new Map<string, AutoThoughtCacheEntry>();
-const AUTO_THOUGHT_STORAGE_PREFIX = "minimal-auto-thoughts:";
 
 export function useAutoThoughtSuggestions({
   userInput,
@@ -43,7 +39,7 @@ export function useAutoThoughtSuggestions({
       setThoughts(nextThoughts);
       setCurrentIndex(0);
       setHasShownCustomPrompt(false);
-      autoThoughtCache.set(cacheKey, {
+      setAutoThoughtCache(cacheKey, {
         thoughts: nextThoughts,
         index: 0,
         hasShownCustomPrompt: false,
@@ -57,7 +53,7 @@ export function useAutoThoughtSuggestions({
 
   useEffect(() => {
     if (!userInput.trim() || !emotion) return;
-    const cached = autoThoughtCache.get(cacheKey);
+    const cached = getAutoThoughtCache(cacheKey);
     if (cached) {
       setThoughts(cached.thoughts);
       setCurrentIndex(cached.index);
@@ -65,27 +61,6 @@ export function useAutoThoughtSuggestions({
       setLoading(false);
       setError(null);
       return;
-    }
-    if (typeof window !== "undefined") {
-      try {
-        const raw = sessionStorage.getItem(
-          `${AUTO_THOUGHT_STORAGE_PREFIX}${cacheKey}`
-        );
-        if (raw) {
-          const parsed = JSON.parse(raw) as AutoThoughtCacheEntry;
-          if (parsed?.thoughts?.length) {
-            setThoughts(parsed.thoughts);
-            setCurrentIndex(parsed.index ?? 0);
-            setHasShownCustomPrompt(Boolean(parsed.hasShownCustomPrompt));
-            setLoading(false);
-            setError(null);
-            autoThoughtCache.set(cacheKey, parsed);
-            return;
-          }
-        }
-      } catch {
-        // ignore cache read errors
-      }
     }
     setHasShownCustomPrompt(false);
     void loadThoughts();
@@ -109,17 +84,7 @@ export function useAutoThoughtSuggestions({
       index: currentIndex,
       hasShownCustomPrompt,
     };
-    autoThoughtCache.set(cacheKey, entry);
-    if (typeof window !== "undefined") {
-      try {
-        sessionStorage.setItem(
-          `${AUTO_THOUGHT_STORAGE_PREFIX}${cacheKey}`,
-          JSON.stringify(entry)
-        );
-      } catch {
-        // ignore cache write errors
-      }
-    }
+    setAutoThoughtCache(cacheKey, entry);
   }, [cacheKey, currentIndex, hasShownCustomPrompt, thoughts]);
 
   const goNextThought = () => {

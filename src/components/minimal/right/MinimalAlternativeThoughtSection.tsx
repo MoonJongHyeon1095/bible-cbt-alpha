@@ -2,11 +2,11 @@ import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { EmotionThoughtPair } from "../../../types";
 import type { SelectedCognitiveError } from "../../../types/sessionHistory";
-import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
-import { MinimalStepHeaderSection } from "../../common/MinimalStepHeaderSection";
+import { MinimalFloatingNextButton } from "../common/MinimalFloatingNextButton";
+import { MinimalLoadingState } from "../common/MinimalLoadingState";
+import { MinimalStepHeaderSection } from "../common/MinimalStepHeaderSection";
 import { MinimalAlternativeThoughtBodySection } from "./components/MinimalAlternativeThoughtBodySection";
 import { MinimalAlternativeThoughtErrorState } from "./components/MinimalAlternativeThoughtErrorState";
-import { MinimalAlternativeThoughtLoadingState } from "./components/MinimalAlternativeThoughtLoadingState";
 import { useAlternativeThoughts } from "./hooks/useAlternativeThoughts";
 
 interface MinimalAlternativeThoughtSectionProps {
@@ -62,10 +62,11 @@ export function MinimalAlternativeThoughtSection({
 
   if (thoughtsLoading) {
     return (
-      <MinimalAlternativeThoughtLoadingState
+      <MinimalLoadingState
         title={TITLE}
         description={DESCRIPTION}
         message="대안사고를 정리하고 있어요."
+        variant="page"
       />
     );
   }
