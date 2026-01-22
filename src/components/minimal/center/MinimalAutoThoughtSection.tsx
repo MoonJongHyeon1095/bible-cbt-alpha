@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { validateUserText } from "../../../utils/validation";
-import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
-import { MinimalStepHeaderSection } from "../../common/MinimalStepHeaderSection";
+import { MinimalFloatingNextButton } from "../common/MinimalFloatingNextButton";
+import { MinimalLoadingState } from "../common/MinimalLoadingState";
+import { MinimalStepHeaderSection } from "../common/MinimalStepHeaderSection";
 import { MinimalAutoThoughtControlSection } from "./components/MinimalAutoThoughtControlSection";
 import { MinimalAutoThoughtHintSection } from "./components/MinimalAutoThoughtHintSection";
 import { MinimalAutoThoughtInputForm } from "./components/MinimalAutoThoughtInputForm";
-import { MinimalAutoThoughtLoadingState } from "./components/MinimalAutoThoughtLoadingState";
 import { MinimalAutoThoughtTextSection } from "./components/MinimalAutoThoughtTextSection";
 import { useAutoThoughtSuggestions } from "./hooks/useAutoThoughtSuggestions";
 
@@ -100,7 +100,7 @@ export function MinimalAutoThoughtSection({
               onChange={setCustomThought}
             />
           ) : loading ? (
-            <MinimalAutoThoughtLoadingState message="생각을 정리하고 있어요." />
+            <MinimalLoadingState message="생각을 정리하고 있어요." />
           ) : (
             <MinimalAutoThoughtTextSection
               text={currentThought}

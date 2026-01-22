@@ -1,7 +1,7 @@
 // api/token-usage.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { handleCors, json, readJson, requireAppKey } from "./_utils";
 import { getAuthUser, supabaseServiceClient } from "./_supabaseAuth";
+import { handleCors, json, readJson, requireAppKey } from "./_utils";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (handleCors(req, res)) return;
@@ -17,15 +17,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if ((!deviceId || typeof deviceId !== "string") && !userId) {
     return json(res, 400, { error: "deviceId or userId is required" });
   }
+  const resolvedDeviceId = userId ? null : deviceId;
 
-  const totalTokens = Number(usage?.total_tokens || 0);
+  const totalTokensRaw = Number(usage?.total_tokens || 0);
+  const inputTokens = Number(usage?.input_tokens || 0);
+  const outputTokens = Number(usage?.output_tokens || 0);
+  const totalTokens = totalTokensRaw || inputTokens + outputTokens;
   const requestCount = Number(usage?.request_count || 0);
 
-  if ([totalTokens, requestCount].some((v) => !Number.isFinite(v) || v < 0)) {
+  if ([totalTokens, inputTokens, outputTokens, requestCount].some((v) => !Number.isFinite(v) || v < 0)) {
     return json(res, 400, { error: "invalid usage values" });
   }
 
-  if (totalTokens + requestCount === 0) {
+  if (totalTokens + inputTokens + outputTokens + requestCount === 0) {
     return json(res, 200, { ok: true });
   }
 
@@ -37,11 +41,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const supabase = supabaseServiceClient();
   const { error } = await supabase.rpc("increment_token_usages", {
     p_user_id: userId,
-    p_device_id: deviceId,
+    p_device_id: resolvedDeviceId,
     p_year: year,
     p_month: month,
     p_day: day,
     p_total_tokens: totalTokens,
+    p_input_tokens: inputTokens,
+    p_output_tokens: outputTokens,
     p_request_count: requestCount,
   });
 

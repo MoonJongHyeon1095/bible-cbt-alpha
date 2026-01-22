@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { generateContextualAlternativeThoughts } from "../../../../lib/ai";
+import { AlternativeThought } from "../../../../lib/gpt/alternative";
 import type { EmotionThoughtPair } from "../../../../types";
 import type { SelectedCognitiveError } from "../../../../types/sessionHistory";
-import type { AlternativeThought } from "../../types";
+
 
 const alternativeThoughtsCache = new Map<string, AlternativeThought[]>();
 
@@ -24,6 +25,7 @@ export function useAlternativeThoughts({
   >([]);
   const [thoughtsLoading, setThoughtsLoading] = useState(false);
   const [thoughtsError, setThoughtsError] = useState<string | null>(null);
+  const inFlightRef = useRef(false);
 
   const requestKey = JSON.stringify({
     userInput,
@@ -33,6 +35,7 @@ export function useAlternativeThoughts({
 
   const generateAlternatives = useCallback(
     async (options?: { force?: boolean }) => {
+      if (inFlightRef.current) return;
       const cached = alternativeThoughtsCache.get(requestKey);
       if (!options?.force && cached) {
         setAlternativeThoughts(cached);
@@ -41,6 +44,7 @@ export function useAlternativeThoughts({
         return;
       }
 
+      inFlightRef.current = true;
       setThoughtsLoading(true);
       setThoughtsError(null);
 
@@ -62,6 +66,7 @@ export function useAlternativeThoughts({
         );
         console.error("대안사고 생성 오류:", err);
       } finally {
+        inFlightRef.current = false;
         setThoughtsLoading(false);
       }
     },

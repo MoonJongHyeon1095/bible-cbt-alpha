@@ -36,12 +36,23 @@ export async function callGptText(prompt: string, opts: GptCallOptions = {}) {
   if (data?.usage) {
     const prevUsage = readTokenSessionUsage() ?? {
       total_tokens: 0,
+      input_tokens: 0,
+      output_tokens: 0,
       request_count: 0,
     };
+    const inputTokens = Number(data.usage.input_tokens || 0);
+    const outputTokens = Number(data.usage.output_tokens || 0);
+    const totalTokens =
+      Number(data.usage.total_tokens || 0) || inputTokens + outputTokens;
     const next = {
-      total_tokens: (data.usage.total_tokens || 0) + prevUsage.total_tokens,
+      total_tokens: totalTokens + prevUsage.total_tokens,
+      input_tokens: inputTokens + prevUsage.input_tokens,
+      output_tokens: outputTokens + prevUsage.output_tokens,
       request_count: prevUsage.request_count + 1,
     };
+    // 지우지 마라 이거
+    console.log('inputTokens', next.input_tokens, 'outputTokens', next.output_tokens, 'totalTokens', next.total_tokens, 'requestCount', next.request_count);
+
     writeTokenSessionUsage(next);
   }
 

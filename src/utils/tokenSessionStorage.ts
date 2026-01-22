@@ -6,6 +6,8 @@ export const TOKEN_SESSION_KEY = "gpt_usage_total";
 
 export type TokenUsage = {
   total_tokens: number;
+  input_tokens: number;
+  output_tokens: number;
   request_count: number;
 };
 
@@ -19,6 +21,8 @@ export function readTokenSessionUsage(): TokenUsage | null {
     const parsed = JSON.parse(raw);
     return {
       total_tokens: Number(parsed?.total_tokens || 0),
+      input_tokens: Number(parsed?.input_tokens || 0),
+      output_tokens: Number(parsed?.output_tokens || 0),
       request_count: Number(parsed?.request_count || 0),
     };
   } catch {
@@ -58,7 +62,11 @@ export async function clearTokenSessionStorage() {
   try {
     const usage = readTokenSessionUsage();
     if (!usage) return;
-    const hasUsage = usage.total_tokens > 0 || usage.request_count > 0;
+    const hasUsage =
+      usage.total_tokens > 0 ||
+      usage.input_tokens > 0 ||
+      usage.output_tokens > 0 ||
+      usage.request_count > 0;
     if (!hasUsage) {
       sessionStorage.removeItem(TOKEN_SESSION_KEY);
       return;

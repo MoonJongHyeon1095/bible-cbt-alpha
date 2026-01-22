@@ -1,8 +1,8 @@
 import { toast } from "sonner";
 import { validateUserText } from "../../../utils/validation";
-import { MinimalFloatingNextButton } from "../../common/MinimalFloatingNextButton";
-import { MinimalStepHeaderSection } from "../../common/MinimalStepHeaderSection";
-import { ALL_EXAMPLES } from "../constants/examples";
+import { ALL_EXAMPLES } from "../../center/constants/examples";
+import { MinimalFloatingNextButton } from "../common/MinimalFloatingNextButton";
+import { MinimalStepHeaderSection } from "../common/MinimalStepHeaderSection";
 import { MinimalIncidentForm } from "./components/MinimalIncidentForm";
 
 interface MinimalIncidentSectionProps {

@@ -1,5 +1,6 @@
 import { EMOTIONS } from "../../../constants/emotions";
-import { MinimalStepHeaderSection } from "../../common/MinimalStepHeaderSection";
+import { MinimalStepHeaderSection } from "../common/MinimalStepHeaderSection";
+
 import { MinimalEmotionDetailsSection } from "./components/MinimalEmotionDetailsSection";
 import { MinimalEmotionList } from "./components/MinimalEmotionList";
 
@@ -21,7 +22,10 @@ export function MinimalEmotionSection({
   return (
     <div className="min-h-screen flex items-center justify-center px-6 pt-20 pb-10">
       <div className="w-full max-w-4xl space-y-10">
-        <MinimalStepHeaderSection title="감정을 선택해주세요." />
+        <MinimalStepHeaderSection
+          title="감정을 선택해주세요."
+          className="max-w-2xl mx-auto text-center"
+        />
         <MinimalEmotionList
           selectedEmotion={selectedEmotion}
           onSelectEmotion={onSelectEmotion}

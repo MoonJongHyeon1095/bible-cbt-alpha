@@ -1,1 +1,1 @@
-export { useAlternativeThoughts } from "../minimal/hooks/useAlternativeThoughts";
+export { useAlternativeThoughts } from "../../minimal/right/hooks/useAlternativeThoughts";

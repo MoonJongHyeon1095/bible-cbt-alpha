@@ -8,17 +8,17 @@ import type {
   SessionHistory,
 } from "../types/sessionHistory";
 import { clearCbtSessionStorage } from "../utils/cbtSessionStorage";
-import { MinimalAutoThoughtSection } from "./center/minimal/MinimalAutoThoughtSection";
-import { MinimalEmotionSection } from "./center/minimal/MinimalEmotionSection";
-import { MinimalIncidentSection } from "./center/minimal/MinimalIncidentSection";
-import { MinimalFloatingBackButton } from "./common/MinimalFloatingBackButton";
-import { MinimalFloatingHomeButton } from "./common/MinimalFloatingHomeButton";
-import { MinimalSavingModal } from "./common/MinimalSavingModal";
+import { MinimalAutoThoughtSection } from "./minimal/center/MinimalAutoThoughtSection";
+import { MinimalEmotionSection } from "./minimal/center/MinimalEmotionSection";
+import { MinimalIncidentSection } from "./minimal/center/MinimalIncidentSection";
+import { MinimalFloatingBackButton } from "./minimal/common/MinimalFloatingBackButton";
+import { MinimalFloatingHomeButton } from "./minimal/common/MinimalFloatingHomeButton";
+import { MinimalSavingModal } from "./minimal/common/MinimalSavingModal";
 import type { CbtMode } from "./header/navigation/ModePicker";
-import { MinimalCognitiveErrorSection } from "./left/minimal/MinimalCognitiveErrorSection";
-import { MinimalAlternativeThoughtSection } from "./right/minimal/MinimalAlternativeThoughtSection";
-import { saveMinimalPatternAPI } from "./right/minimal/utils/api";
-import { saveMinimalPatternLocal } from "./right/minimal/utils/storage";
+import { MinimalCognitiveErrorSection } from "./minimal/left/MinimalCognitiveErrorSection";
+import { MinimalAlternativeThoughtSection } from "./minimal/right/MinimalAlternativeThoughtSection";
+import { saveMinimalPatternAPI } from "./minimal/right/utils/api";
+import { saveMinimalPatternLocal } from "./minimal/right/utils/storage";
 
 type MinimalStep =
   | "incident"
