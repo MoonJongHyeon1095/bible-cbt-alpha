@@ -21,7 +21,7 @@ type SessionLayoutProps = {
   onCloseAuthModal: () => void;
   onHomeRefresh: () => void;
   onLogout: () => void;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string) => boolean | void;
   onShowAuth: () => void;
   onChangeMode: (next: CbtMode) => void;
 };

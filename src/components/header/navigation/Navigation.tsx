@@ -12,7 +12,7 @@ import { WebCompactNav } from "./WebCompactNav";
 
 interface NavigationProps {
   currentPage: string;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string) => boolean | void;
   onHomeRefresh: () => void;
   user: any;
   onLogout: () => void;
@@ -58,7 +58,8 @@ export function Navigation({
   }, [mode.toneMode]);
 
   const go = (page: string) => {
-    onNavigate(page);
+    const canNavigate = onNavigate(page);
+    if (canNavigate === false) return;
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

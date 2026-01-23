@@ -15,6 +15,6 @@ export type NavSharedProps = {
   onChangeMode: (mode: CbtMode) => void;
   onLogout: () => void;
   onShowAuth: () => void;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string) => boolean | void;
   onHomeRefresh: () => void;
 };

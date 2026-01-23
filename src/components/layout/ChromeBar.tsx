@@ -12,7 +12,7 @@ type ChromeBarProps = {
   onChangeMode: (next: CbtMode) => void;
   onHomeRefresh: () => void;
   onLogout: () => void;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string) => boolean | void;
   onShowAuth: () => void;
 };
 

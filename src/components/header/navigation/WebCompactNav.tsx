@@ -31,7 +31,11 @@ export function WebCompactNav({
 }: WebCompactNavProps) {
   const [open, setOpen] = useState(false);
   const go = (page: string) => {
-    onNavigate(page);
+    const canNavigate = onNavigate(page);
+    if (canNavigate === false) {
+      setOpen(false);
+      return;
+    }
     setOpen(false);
   };
 

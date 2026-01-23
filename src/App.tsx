@@ -16,6 +16,7 @@ export default function App() {
     handleHomeRefresh,
     handleLogout,
     handleMinimalComplete,
+    handleNavigate,
     handleStartMinimalFromLite,
     hideChrome,
     isDesktop,
@@ -25,7 +26,6 @@ export default function App() {
     mode,
     setCbtSessionKind,
     setCbtStep,
-    setCurrentPage,
     setMode,
     setShowAuthModal,
     showAuthModal,
@@ -54,7 +54,7 @@ export default function App() {
       onCloseAuthModal={() => setShowAuthModal(false)}
       onHomeRefresh={handleHomeRefresh}
       onLogout={handleLogout}
-      onNavigate={setCurrentPage}
+      onNavigate={handleNavigate}
       onShowAuth={() => setShowAuthModal(true)}
       onChangeMode={(next) => setMode(next)}
     >
