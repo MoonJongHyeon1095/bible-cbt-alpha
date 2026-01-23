@@ -4,8 +4,8 @@ import { History } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { EmotionThoughtPair } from "../types";
 import type { SelectedCognitiveError } from "../types/sessionHistory";
-import { clearCbtSessionStorage } from "../utils/cbtSessionStorage";
-import { CenterPanel } from "./center/CenterPanel";
+import { clearCbtSessionStorage } from "../utils/storage/cbtSessionStorage";
+import { CenterPage } from "./center/CenterPage";
 import { SelectedSectionActions } from "./common/SelectedSectionActions";
 import { HistoryModal } from "./feature/dashboard/HistoryModal";
 import { CbtMode } from "./header/navigation/ModePicker";
@@ -14,6 +14,7 @@ import { RightPage } from "./right/RightPage";
 
 export function CBTSessionPage({
   mode,
+  onChangeMode,
   onStartMinimal,
   sessionKind,
   onSessionKindChange,
@@ -21,6 +22,7 @@ export function CBTSessionPage({
   onStepChange,
 }: {
   mode: CbtMode;
+  onChangeMode: (next: CbtMode) => void;
   onStartMinimal?: () => void;
   sessionKind: "minimal" | "cbt";
   onSessionKindChange: (next: "minimal" | "cbt") => void;
@@ -100,7 +102,7 @@ export function CBTSessionPage({
     if (step === 1 || step === 2) {
       return (
         <div className="w-full">
-          <CenterPanel
+          <CenterPage
             key={`center-${step}`}
             step={step}
             userInput={userInput}
@@ -111,6 +113,7 @@ export function CBTSessionPage({
             onPrevious={handlePrevious}
             onExit={resetAll}
             mode={mode}
+            onChangeMode={onChangeMode}
             onStartMinimal={onStartMinimal}
             sessionKind={sessionKind}
             onSessionKindChange={onSessionKindChange}

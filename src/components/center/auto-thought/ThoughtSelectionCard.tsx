@@ -13,7 +13,7 @@ interface ThoughtSelectionCardProps {
   selectedEmotionData: EmotionData | null;
   loading: boolean;
   error: string | null;
-  generatedThoughts: string[];
+  generatedThoughts: Array<{ belief: string; emotionReason: string }>;
   selectedThoughtIndex: number | null;
   customThought: string;
   onSelectThought: (index: number) => void;
@@ -51,7 +51,7 @@ export function ThoughtSelectionCard({
     selectedThoughtIndex !== 999 &&
     selectedThoughtIndex >= 0 &&
     selectedThoughtIndex < generatedThoughts.length
-      ? generatedThoughts[selectedThoughtIndex]
+      ? generatedThoughts[selectedThoughtIndex]?.belief ?? null
       : null;
 
   const handleSelectCustomThought = () => {

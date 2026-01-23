@@ -25,6 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const body = await readJson(req);
   const prompt = body?.prompt;
   const systemPrompt = body?.systemPrompt;
+  const requestedModel = typeof body?.model === "string" ? body.model.trim() : "";
 
   if (!prompt || typeof prompt !== "string") return json(res, 400, { error: "prompt is required" });
   if (prompt.length > 4000) return json(res, 400, { error: "prompt too long" });
@@ -36,6 +37,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ? [{ role: "system", content: String(systemPrompt) }, { role: "user", content: prompt }]
     : [{ role: "user", content: prompt }];
 
+  const allowedModels = new Set(["gpt-4.1-mini", "gpt-4o-mini", "gpt-5-nano"]);
+  const model = allowedModels.has(requestedModel) ? requestedModel : "gpt-4.1-mini";
+
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
@@ -43,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       Authorization: `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: "gpt-4.1-mini",
+      model,
       input,
       temperature: 0.3,
       max_output_tokens: 1200,

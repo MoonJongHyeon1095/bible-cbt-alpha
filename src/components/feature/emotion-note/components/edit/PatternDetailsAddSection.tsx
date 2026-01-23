@@ -2,12 +2,12 @@ import { Brain, Save, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { EMOTIONS } from "../../../../../constants/emotions";
 import { generateExtendedAutomaticThoughts } from "../../../../../lib/ai";
+import { clearTokenSessionStorage } from "../../../../../utils/storage/tokenSessionStorage";
 import { Textarea } from "../../../../ui/textarea";
-import { clearTokenSessionStorage } from "../../../../../utils/tokenSessionStorage";
 import { AiActionBar } from "./common/AiActionBar";
 import { AiCandidatesPanel } from "./common/AiCandidatesPanel";
 import { AiLoadingCard } from "./common/AiLoadingCard";
-import { checkAiUsageLimit } from "./common/aiUsageGuard";
+import { checkAiUsageLimit } from "../../../../../utils/aiUsageGuard";
 import { PatternAddSectionShell } from "./common/PatternAddSectionShell";
 import { SelectionCard } from "./common/SelectionCard";
 import { TagSelector } from "./common/TagSelector";
@@ -35,7 +35,9 @@ export function PatternDetailsAddSection({
     "idle" | "select-emotion" | "loading" | "suggestions"
   >("idle");
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiCandidates, setAiCandidates] = useState<string[]>([]);
+  const [aiCandidates, setAiCandidates] = useState<
+    Array<{ belief: string; emotionReason: string }>
+  >([]);
   const [aiError, setAiError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const hasCandidates = aiCandidates.length > 0;
@@ -69,10 +71,14 @@ export function PatternDetailsAddSection({
     try {
       const result = await generateExtendedAutomaticThoughts(
         triggerText,
-        emotion
+        emotion,
       );
-      const thoughts = result.sdtThoughts.map((item) => item.thought);
-      setAiCandidates(thoughts);
+      setAiCandidates(
+        result.sdtThoughts.map((item) => ({
+          belief: item.belief,
+          emotionReason: item.emotionReason,
+        })),
+      );
       setAiStep("suggestions");
     } catch (error) {
       console.error(error);
@@ -83,8 +89,8 @@ export function PatternDetailsAddSection({
     }
   };
 
-  const handleSelectCandidate = (thought: string) => {
-    onChangeAutomaticThought(thought);
+  const handleSelectCandidate = (belief: string) => {
+    onChangeAutomaticThought(belief);
     requestAnimationFrame(() => {
       textareaRef.current?.focus();
     });
@@ -118,87 +124,93 @@ export function PatternDetailsAddSection({
       icon={Brain}
       onClose={() => void clearTokenSessionStorage()}
     >
-        <AiActionBar
-          aiLabel={
-            <>
-              <Sparkles className="size-4 mr-1" />
-              {aiButtonLabel}
-            </>
-          }
-          onAiClick={() => void handleAiAction()}
-          aiDisabled={loading || aiLoading}
-          aiClassName="border-amber-300 text-amber-700 hover:bg-amber-100"
-          saveLabel={loading ? "저장 중" : "저장"}
-          onSave={onAddDetail}
-          saveDisabled={!emotion.trim() || !automaticThought.trim() || loading}
-          saveClassName="bg-yellow-500 text-white hover:bg-yellow-600"
-          isSaving={loading}
-          saveIcon={<Save className="size-4 mr-1" />}
+      <AiActionBar
+        aiLabel={
+          <>
+            <Sparkles className="size-4 mr-1" />
+            {aiButtonLabel}
+          </>
+        }
+        onAiClick={() => void handleAiAction()}
+        aiDisabled={loading || aiLoading}
+        aiClassName="border-amber-300 text-amber-700 hover:bg-amber-100"
+        saveLabel={loading ? "저장 중" : "저장"}
+        onSave={onAddDetail}
+        saveDisabled={!emotion.trim() || !automaticThought.trim() || loading}
+        saveClassName="bg-yellow-500 text-white hover:bg-yellow-600"
+        isSaving={loading}
+        saveIcon={<Save className="size-4 mr-1" />}
+      />
+      {(manualMode || aiStep === "select-emotion") && (
+        <div>
+          <p className="text-xs text-slate-600 mb-2">감정 선택</p>
+          <TagSelector
+            options={EMOTIONS.map((item) => ({
+              id: item.id,
+              label: item.label,
+              colorClassName: item.color,
+            }))}
+            value={emotion.trim()}
+            onSelect={onSelectEmotion}
+            useOptionColor
+          />
+        </div>
+      )}
+      {selectedEmotionChip}
+      {(manualMode || aiStep === "suggestions") && (
+        <Textarea
+          ref={textareaRef}
+          value={automaticThought}
+          onChange={(e) => onChangeAutomaticThought(e.target.value)}
+          placeholder="자동적으로 떠오르는 생각을 적어주세요."
+          className="min-h-[120px] border-indigo-200 bg-white/90 px-3 py-2 text-[16px] leading-[1.85]"
         />
-        {(manualMode || aiStep === "select-emotion") && (
-          <div>
-            <p className="text-xs text-slate-600 mb-2">감정 선택</p>
-            <TagSelector
-              options={EMOTIONS.map((item) => ({
-                id: item.id,
-                label: item.label,
-                colorClassName: item.color,
-              }))}
-              value={emotion.trim()}
-              onSelect={onSelectEmotion}
-              useOptionColor
-            />
-          </div>
-        )}
-        {selectedEmotionChip}
-        {(manualMode || aiStep === "suggestions") && (
-          <Textarea
-            ref={textareaRef}
-            value={automaticThought}
-            onChange={(e) => onChangeAutomaticThought(e.target.value)}
-            placeholder="자동적으로 떠오르는 생각을 적어주세요."
-            className="min-h-[120px] border-indigo-200 bg-white/90 px-3 py-2 text-[16px] leading-[1.85]"
+      )}
+      <div className="space-y-2">
+        {aiLoading && (
+          <AiLoadingCard
+            title="자동사고 생성 중"
+            description="선택한 감정을 바탕으로 후보를 만들고 있어요."
+            tone="amber"
           />
         )}
-        <div className="space-y-2">
-          {aiLoading && (
-            <AiLoadingCard
-              title="자동사고 생성 중"
-              description="선택한 감정을 바탕으로 후보를 만들고 있어요."
-              tone="amber"
-            />
-          )}
-          {!aiLoading && aiError && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-              {aiError}
-            </div>
-          )}
-          {!aiLoading && hasCandidates && (
-            <AiCandidatesPanel
-              title="AI 자동사고 후보"
-              description="클릭하면 입력창에 바로 적용됩니다."
-              countText={`${aiCandidates.length}개 추천`}
-              tone="amber"
-            >
-              {aiCandidates.map((thought, index) => {
-                const isSelected =
-                  selectedThought.length > 0 && selectedThought === thought;
-                return (
-                  <SelectionCard
-                    key={`${thought}-${index}`}
-                    selected={isSelected}
-                    onSelect={() => handleSelectCandidate(thought)}
-                    tone="amber"
-                  >
-                    <span className="flex-1 text-sm text-slate-700 leading-relaxed">
-                      {thought}
-                    </span>
-                  </SelectionCard>
-                );
-              })}
-            </AiCandidatesPanel>
-          )}
-        </div>
+        {!aiLoading && aiError && (
+          <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+            {aiError}
+          </div>
+        )}
+        {!aiLoading && hasCandidates && (
+          <AiCandidatesPanel
+            title="AI 자동사고 후보"
+            description="클릭하면 입력창에 바로 적용됩니다."
+            countText={`${aiCandidates.length}개 추천`}
+            tone="amber"
+          >
+            {aiCandidates.map((thought, index) => {
+              const isSelected =
+                selectedThought.length > 0 &&
+                selectedThought === thought.belief;
+              return (
+                <SelectionCard
+                  key={`${thought.belief}-${index}`}
+                  selected={isSelected}
+                  onSelect={() => handleSelectCandidate(thought.belief)}
+                  tone="amber"
+                >
+                  <div className="flex-1 text-sm text-slate-700 leading-relaxed space-y-2">
+                    <p>{thought.belief}</p>
+                    {/* {thought.emotionReason ? (
+                        <p className="text-xs text-slate-500">
+                          {thought.emotionReason}
+                        </p>
+                      ) : null} */}
+                  </div>
+                </SelectionCard>
+              );
+            })}
+          </AiCandidatesPanel>
+        )}
+      </div>
     </PatternAddSectionShell>
   );
 }

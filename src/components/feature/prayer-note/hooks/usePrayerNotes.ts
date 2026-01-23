@@ -24,7 +24,6 @@ export function usePrayerNotes({ user }: UsePrayerNotesParams) {
     user,
     notes: data.notes,
     setNotes: data.setNotes,
-    saveNotesLocally: data.saveNotesLocally,
   });
 
   const formatResponseTitle = (content: string) => {

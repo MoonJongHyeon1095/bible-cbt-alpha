@@ -3,6 +3,7 @@ import { EnteranceAlternativeSection } from "./components/EnteranceAlternativeSe
 import { EnteranceErrorSection } from "./components/EnteranceErrorSection";
 import { EnteranceIncidentSection } from "./components/EnteranceIncidentSection";
 import { EnteranceIntroSection } from "./components/EnteranceIntroSection";
+import { EnteranceStepProgress } from "./components/EnteranceStepProgress";
 import { EnteranceStartSection } from "./components/EnteranceStartSection";
 import { EnteranceTermsSection } from "./components/EnteranceTermsSection";
 import { EnteranceThoughtSection } from "./components/EnteranceThoughtSection";
@@ -59,6 +60,11 @@ export function EnterancePage({
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f3efe7] via-[#f8f4ee] to-[#e3eee7] px-6 py-16 text-slate-900 dark:from-[#0f1115] dark:via-[#121826] dark:to-[#0c1a1b] dark:text-slate-100">
       <div className="mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center">
+        <EnteranceStepProgress
+          stepOrder={stepOrder}
+          currentIndex={currentIndex}
+          className="mb-10"
+        />
         {step === "intro" && (
           <EnteranceIntroSection
             onStart={handleNext}
@@ -75,18 +81,6 @@ export function EnterancePage({
         {step === "start" && (
           <EnteranceStartSection onStart={handleStart} onLater={onLater} />
         )}
-        <div className="mt-10 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-          {stepOrder.map((item, index) => (
-            <span
-              key={item}
-              className={`size-2 rounded-full ${
-                index <= currentIndex
-                  ? "bg-slate-900 dark:bg-amber-300"
-                  : "bg-slate-300 dark:bg-slate-600"
-              }`}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );

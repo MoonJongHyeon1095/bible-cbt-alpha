@@ -8,10 +8,6 @@ import {
   fetchPrayerNotes,
   updatePrayerNote,
 } from "../utils/api";
-import {
-  loadLocalPrayerNotes,
-  saveLocalPrayerNotes,
-} from "../utils/storage";
 
 interface UsePrayerNotesDataParams {
   user: User | null;
@@ -47,99 +43,60 @@ export function usePrayerNotesData({ user }: UsePrayerNotesDataParams) {
         } finally {
           setLoading(false);
         }
+        return;
       }
-
-      const normalized = loadLocalPrayerNotes();
-      setNotes(normalized);
+      setNotes([]);
       setLoading(false);
     };
 
     loadNotes();
   }, [user]);
 
-  const saveNotesLocally = (updatedNotes: PrayerNote[]) => {
-    saveLocalPrayerNotes(updatedNotes);
-    setNotes(updatedNotes);
-  };
-
   const createNote = async (payload: PrayerNotePayload) => {
-    if (user) {
-      const newNote = await createPrayerNote(user.id, payload);
-      setNotes((prev) => [newNote, ...prev]);
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
       return;
     }
 
-    const newNote: PrayerNote = {
-      id: Date.now().toString(),
-      title: payload.title,
-      content: payload.content,
-      tags: payload.tags,
-      emotionNoteId: payload.emotionNoteId ?? null,
-      book: payload.book,
-      chapter: payload.chapter,
-      startVerse: payload.startVerse,
-      endVerse: payload.endVerse,
-      timestamp: new Date().toISOString(),
-      responses: [],
-    };
-
-    const updated = [newNote, ...notes];
-    saveNotesLocally(updated);
+    const newNote = await createPrayerNote(user.id, payload);
+    setNotes((prev) => [newNote, ...prev]);
   };
 
   const updateNote = async (noteId: string, payload: PrayerNotePayload) => {
-    if (user) {
-      const updatedNote = await updatePrayerNote(user.id, noteId, payload);
-      const updated = notes.map((note) =>
-        note.id === noteId
-          ? {
-              ...updatedNote,
-              timestamp: updatedNote.timestamp || note.timestamp,
-              responses: note.responses ?? [],
-            }
-          : note
-      );
-      setNotes(updated);
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
       return;
     }
 
+    const updatedNote = await updatePrayerNote(user.id, noteId, payload);
     const updated = notes.map((note) =>
       note.id === noteId
         ? {
-            ...note,
-            title: payload.title,
-            content: payload.content,
-            tags: payload.tags,
-            emotionNoteId: payload.emotionNoteId ?? note.emotionNoteId ?? null,
-            book: payload.book,
-            chapter: payload.chapter,
-            startVerse: payload.startVerse,
-            endVerse: payload.endVerse,
+            ...updatedNote,
+            timestamp: updatedNote.timestamp || note.timestamp,
+            responses: note.responses ?? [],
           }
         : note
     );
-
-    saveNotesLocally(updated);
+    setNotes(updated);
   };
 
   const deleteNote = async (noteId: string) => {
-    if (user) {
-      await deletePrayerNote(user.id, noteId);
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      return;
     }
 
+    await deletePrayerNote(user.id, noteId);
+
     const updated = notes.filter((note) => note.id !== noteId);
-    if (user) {
-      setNotes(updated);
-    } else {
-      saveNotesLocally(updated);
-    }
+    setNotes(updated);
   };
 
   return {
     notes,
     loading,
     setNotes,
-    saveNotesLocally,
     createNote,
     updateNote,
     deleteNote,

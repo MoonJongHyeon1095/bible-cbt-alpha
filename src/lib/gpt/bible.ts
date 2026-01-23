@@ -108,7 +108,10 @@ ${emotion}
 `.trim();
 
   try {
-    const raw = await callGptText(prompt, { systemPrompt: SYSTEM_PROMPT });
+    const raw = await callGptText(prompt, {
+      systemPrompt: SYSTEM_PROMPT,
+      model: "gpt-4.1-mini",
+    });
 
     const jsonText = extractJsonObject(raw);
     if (!jsonText) throw new Error("No JSON object in LLM output");

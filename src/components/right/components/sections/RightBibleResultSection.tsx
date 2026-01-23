@@ -31,6 +31,7 @@ interface RightBibleResultSectionProps {
   isBehaviorGenerating: boolean;
   savingPrayer: boolean;
   onSavePrayer: () => void;
+  canSavePrayer: boolean;
 }
 
 export function RightBibleResultSection({
@@ -52,6 +53,7 @@ export function RightBibleResultSection({
   isBehaviorGenerating,
   savingPrayer,
   onSavePrayer,
+  canSavePrayer,
 }: RightBibleResultSectionProps) {
   if (bibleLoading) {
     return (
@@ -102,6 +104,7 @@ export function RightBibleResultSection({
           bibleVerse={bibleVerse}
           onSavePrayer={onSavePrayer}
           savingPrayer={savingPrayer}
+          canSave={canSavePrayer}
         />
         <Button
           onClick={onComplete}

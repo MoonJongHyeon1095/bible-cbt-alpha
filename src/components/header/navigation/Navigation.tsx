@@ -12,14 +12,13 @@ import { WebCompactNav } from "./WebCompactNav";
 
 interface NavigationProps {
   currentPage: string;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string) => boolean | void;
   onHomeRefresh: () => void;
   user: any;
   onLogout: () => void;
   onShowAuth: () => void;
 
   mode: CbtMode;
-  onChangeMode: (mode: CbtMode) => void;
 }
 
 export function Navigation({
@@ -30,7 +29,6 @@ export function Navigation({
   onLogout,
   onShowAuth,
   mode,
-  onChangeMode,
 }: NavigationProps) {
   const isDesktop = useIsDesktop(768);
   const isNativeMobile = !isDesktop && Capacitor.isNativePlatform();
@@ -58,7 +56,8 @@ export function Navigation({
   }, [mode.toneMode]);
 
   const go = (page: string) => {
-    onNavigate(page);
+    const canNavigate = onNavigate(page);
+    if (canNavigate === false) return;
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -72,8 +71,6 @@ export function Navigation({
         <nav className="bg-white sticky top-0 z-50">
           <MobileTopBar
             user={user}
-            mode={mode}
-            onChangeMode={onChangeMode}
             onLogout={onLogout}
             onShowAuth={onShowAuth}
             onNavigate={go}
@@ -97,8 +94,6 @@ export function Navigation({
           currentPage={currentPage}
           navItems={navItems}
           user={user}
-          mode={mode}
-          onChangeMode={onChangeMode}
           onLogout={onLogout}
           onShowAuth={onShowAuth}
           onNavigate={go}
@@ -109,8 +104,6 @@ export function Navigation({
           currentPage={currentPage}
           navItems={navItems}
           user={user}
-          mode={mode}
-          onChangeMode={onChangeMode}
           onLogout={onLogout}
           onShowAuth={onShowAuth}
           onNavigate={go}

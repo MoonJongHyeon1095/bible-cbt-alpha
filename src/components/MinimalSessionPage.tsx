@@ -7,7 +7,7 @@ import type {
   SelectedCognitiveError,
   SessionHistory,
 } from "../types/sessionHistory";
-import { clearCbtSessionStorage } from "../utils/cbtSessionStorage";
+import { clearCbtSessionStorage } from "../utils/storage/cbtSessionStorage";
 import { MinimalAutoThoughtSection } from "./minimal/center/MinimalAutoThoughtSection";
 import { MinimalEmotionSection } from "./minimal/center/MinimalEmotionSection";
 import { MinimalIncidentSection } from "./minimal/center/MinimalIncidentSection";
@@ -18,7 +18,6 @@ import type { CbtMode } from "./header/navigation/ModePicker";
 import { MinimalCognitiveErrorSection } from "./minimal/left/MinimalCognitiveErrorSection";
 import { MinimalAlternativeThoughtSection } from "./minimal/right/MinimalAlternativeThoughtSection";
 import { saveMinimalPatternAPI } from "./minimal/right/utils/api";
-import { saveMinimalPatternLocal } from "./minimal/right/utils/storage";
 
 type MinimalStep =
   | "incident"
@@ -148,8 +147,6 @@ export function MinimalSessionPage({
         if (!ok) {
           throw new Error("save_minimal_note_failed");
         }
-      } else {
-        saveMinimalPatternLocal(minimalPayload);
       }
 
       if (user) {

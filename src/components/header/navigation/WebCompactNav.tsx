@@ -2,7 +2,6 @@ import { LogIn, LogOut, Menu } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../../ui/button";
 import { Drawer } from "./Drawer";
-import { ModePicker } from "./ModePicker";
 import type { NavSharedProps } from "./types";
 
 type WebCompactNavProps = Pick<
@@ -10,8 +9,6 @@ type WebCompactNavProps = Pick<
   | "currentPage"
   | "navItems"
   | "user"
-  | "mode"
-  | "onChangeMode"
   | "onLogout"
   | "onShowAuth"
   | "onNavigate"
@@ -22,8 +19,6 @@ export function WebCompactNav({
   currentPage,
   navItems,
   user,
-  mode,
-  onChangeMode,
   onLogout,
   onShowAuth,
   onNavigate,
@@ -31,7 +26,11 @@ export function WebCompactNav({
 }: WebCompactNavProps) {
   const [open, setOpen] = useState(false);
   const go = (page: string) => {
-    onNavigate(page);
+    const canNavigate = onNavigate(page);
+    if (canNavigate === false) {
+      setOpen(false);
+      return;
+    }
     setOpen(false);
   };
 
@@ -60,12 +59,9 @@ export function WebCompactNav({
             </div>
           </button>
 
-          <div className="flex items-center gap-2">
-            {/* ✅ 모드 설정 (controlled) */}
-            <ModePicker value={mode} onChange={onChangeMode} />
-
-            {/* 모바일 로그인 */}
-            {user ? (
+        <div className="flex items-center gap-2">
+          {/* 모바일 로그인 */}
+          {user ? (
               <Button
                 onClick={onLogout}
                 variant="outline"

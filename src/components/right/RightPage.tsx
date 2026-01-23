@@ -10,7 +10,7 @@ import type {
   SelectedCognitiveError,
   SessionHistory,
 } from "../../types/sessionHistory";
-import { clearCbtSessionStorage } from "../../utils/cbtSessionStorage";
+import { clearCbtSessionStorage } from "../../utils/storage/cbtSessionStorage";
 import { formatAutoTitle } from "../../utils/formatAutoTitle";
 import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";
@@ -26,7 +26,6 @@ import { RightShalomSection } from "./components/sections/RightShalomSection";
 import { RightStepHeaderSection } from "./components/sections/RightStepHeaderSection";
 import { RightSummarySection } from "./components/sections/RightSummarySection";
 import { saveSessionPatternAPI } from "./utils/api";
-import { saveSessionPatternLocal } from "./utils/storage";
 
 interface RightPageProps {
   step: number;
@@ -303,22 +302,6 @@ export function RightPage({
       }
     } else {
       try {
-        saveSessionPatternLocal({
-          noteId: activeNote?.noteId ?? null,
-          title,
-          triggerText: userInput,
-          emotion: primaryPair?.emotion ?? "",
-          automaticThought: primaryPair?.thought ?? "",
-          alternativeThought: selectedAlternativeThought,
-          errors: selectedCognitiveErrors,
-          behavior: selectedBehavior
-            ? {
-                behaviorLabel: selectedBehavior.behaviorLabel,
-                behaviorText: selectedBehavior.behaviorText,
-              }
-            : null,
-        });
-
         const existing = localStorage.getItem("cbt_history");
         const histories = existing ? JSON.parse(existing) : [];
         histories.unshift(historyItem);
@@ -339,6 +322,10 @@ export function RightPage({
   const handleSavePrayer = async () => {
     if (!bibleVerse) return;
     if (savingPrayer) return;
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      return;
+    }
 
     const now = new Date().toISOString();
     const title = primaryEmotion
@@ -357,36 +344,6 @@ export function RightPage({
       }
     } catch {
       /* ignore */
-    }
-
-    if (!user) {
-      try {
-        setSavingPrayer(true);
-        const existingRaw = localStorage.getItem("prayer_notes");
-        const existing = existingRaw ? JSON.parse(existingRaw) : [];
-        const newNote = {
-          id: Date.now().toString(),
-          title,
-          content: bibleVerse.prayer,
-          tags,
-          emotionNoteId,
-          book: bibleVerse.book,
-          chapter: bibleVerse.chapter,
-          startVerse: bibleVerse.startVerse,
-          endVerse: bibleVerse.endVerse,
-          responses: [],
-          timestamp: now,
-        };
-        const updated = [newNote, ...existing];
-        localStorage.setItem("prayer_notes", JSON.stringify(updated));
-        toast.success("기도 노트에 저장되었습니다.");
-      } catch (e) {
-        console.error("기도 노트 로컬 저장 실패:", e);
-        toast.error("기도 노트를 저장하지 못했습니다.");
-      } finally {
-        setSavingPrayer(false);
-      }
-      return;
     }
 
     setSavingPrayer(true);
@@ -578,6 +535,7 @@ export function RightPage({
               isBehaviorGenerating={isBehaviorGenerating}
               savingPrayer={savingPrayer}
               onSavePrayer={handleSavePrayer}
+              canSavePrayer={Boolean(user)}
             />
           </div>
         )}

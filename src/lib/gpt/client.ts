@@ -2,17 +2,18 @@
 
 // src/lib/gpt/client.ts
 import { ENV } from "../../config/env";
-import { readTokenSessionUsage, writeTokenSessionUsage } from "../../utils/tokenSessionStorage";
+import { readTokenSessionUsage, writeTokenSessionUsage } from "../../utils/storage/tokenSessionStorage";
 
 const API_BASE = ENV.API_BASE || ""; // same-origin이면 ""
 
-export type GptCallOptions = { systemPrompt?: string };
+export type GptCallOptions = { systemPrompt?: string; model?: string };
 
 export async function callGptText(prompt: string, opts: GptCallOptions = {}) {
   if (!prompt?.trim()) throw new Error("prompt is required");
 
   const body: any = { prompt };
   if (opts.systemPrompt) body.systemPrompt = opts.systemPrompt;
+  if (opts.model) body.model = opts.model;
 
   const res = await fetch(`${API_BASE}/api/gpt`, {
     method: "POST",
@@ -58,6 +59,6 @@ export async function callGptText(prompt: string, opts: GptCallOptions = {}) {
 
   const text = typeof data?._text === "string" ? data._text.trim() : "";
   if (!text) throw new Error("AI 응답 텍스트가 비어있습니다.");
-
+  console.log('AI response text:', text);
   return text;
 }

@@ -1,13 +1,10 @@
 import { LogIn, LogOut } from "lucide-react";
 import { Button } from "../../ui/button";
-import { ModePicker } from "../navigation/ModePicker";
 import type { NavSharedProps } from "../navigation/types";
 
 type MobileTopBarProps = Pick<
   NavSharedProps,
   | "user"
-  | "mode"
-  | "onChangeMode"
   | "onLogout"
   | "onShowAuth"
   | "onNavigate"
@@ -16,8 +13,6 @@ type MobileTopBarProps = Pick<
 
 export function MobileTopBar({
   user,
-  mode,
-  onChangeMode,
   onLogout,
   onShowAuth,
   onNavigate,
@@ -48,9 +43,6 @@ export function MobileTopBar({
         </button>
 
         <div className="flex items-center gap-2">
-          {/* ✅ 모드 설정 (controlled) */}
-          <ModePicker value={mode} onChange={onChangeMode} />
-
           {/* 모바일 로그인 */}
           {user ? (
             <Button

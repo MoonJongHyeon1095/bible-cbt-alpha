@@ -1,6 +1,5 @@
 import { LogIn, LogOut } from "lucide-react";
 import { Button } from "../../ui/button";
-import { ModePicker } from "./ModePicker";
 import type { NavSharedProps } from "./types";
 
 type DesktopNavProps = Pick<
@@ -8,8 +7,6 @@ type DesktopNavProps = Pick<
   | "currentPage"
   | "navItems"
   | "user"
-  | "mode"
-  | "onChangeMode"
   | "onLogout"
   | "onShowAuth"
   | "onNavigate"
@@ -20,8 +17,6 @@ export function DesktopNav({
   currentPage,
   navItems,
   user,
-  mode,
-  onChangeMode,
   onLogout,
   onShowAuth,
   onNavigate,
@@ -75,9 +70,6 @@ export function DesktopNav({
 
         {/* User Section */}
         <div className="flex items-center gap-2">
-          {/* ✅ 모드 설정 (controlled) */}
-          <ModePicker value={mode} onChange={onChangeMode} />
-
           {user ? (
             <>
               <div className="text-right mr-2">

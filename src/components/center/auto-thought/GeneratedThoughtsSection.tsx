@@ -5,7 +5,7 @@ export function GeneratedThoughtsSection({
   selectedThoughtIndex,
   onSelectThought,
 }: {
-  generatedThoughts: string[];
+  generatedThoughts: Array<{ belief: string; emotionReason: string }>;
   selectedThoughtIndex: number | null;
   onSelectThought: (index: number) => void;
 }) {
@@ -23,9 +23,16 @@ export function GeneratedThoughtsSection({
               }`}
             >
               <div className="flex items-start gap-3">
-                <p className="text-slate-800 flex-1 leading-relaxed font-serif">
-                  {thought}
-                </p>
+                <div className="flex-1 space-y-2">
+                  <p className="text-slate-800 leading-relaxed font-serif">
+                    {thought.belief}
+                  </p>
+                  {/* {thought.emotionReason ? (
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      {thought.emotionReason}
+                    </p>
+                  ) : null} */}
+                </div>
                 {selectedThoughtIndex === index && (
                   <Check className="size-5 text-blue-600 flex-shrink-0" />
                 )}
