@@ -18,7 +18,9 @@ import {
 import type { CognitiveBehaviorId } from "../constants/behaviors";
 
 export type ExtendedAutomaticThought = {
-  thought: string;
+  category: string;
+  belief: string;
+  emotionReason: string;
 };
 
 export type ExtendedAutomaticThoughtsResult = {

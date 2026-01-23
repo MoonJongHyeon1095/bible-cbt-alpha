@@ -72,7 +72,12 @@ export function MinimalAutoThoughtSection({
       return;
     }
 
-    onSubmitThought(currentThought);
+    const beliefText = currentThought.belief.trim();
+    if (!beliefText) {
+      toast.error("생각을 불러오는 중입니다.");
+      return;
+    }
+    onSubmitThought(beliefText);
   };
 
   return (
@@ -103,7 +108,8 @@ export function MinimalAutoThoughtSection({
             <MinimalLoadingState message="생각을 정리하고 있어요." />
           ) : (
             <MinimalAutoThoughtTextSection
-              text={currentThought}
+              belief={currentThought?.belief ?? ""}
+              emotionReason={currentThought?.emotionReason ?? ""}
               fallback="생각을 불러오는 중입니다."
             />
           )}

@@ -1,5 +1,5 @@
 export type AutoThoughtCacheEntry = {
-  thoughts: string[];
+  thoughts: Array<{ belief: string; emotionReason: string }>;
   index: number;
   hasShownCustomPrompt: boolean;
 };
@@ -16,10 +16,28 @@ export function getAutoThoughtCache(cacheKey: string) {
       `${AUTO_THOUGHT_STORAGE_PREFIX}${cacheKey}`
     );
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as AutoThoughtCacheEntry;
-    if (!parsed?.thoughts?.length) return null;
-    autoThoughtCache.set(cacheKey, parsed);
-    return parsed;
+    const parsed = JSON.parse(raw) as AutoThoughtCacheEntry | {
+      thoughts?: string[];
+      index?: number;
+      hasShownCustomPrompt?: boolean;
+    };
+    const thoughts = Array.isArray(parsed?.thoughts)
+      ? parsed.thoughts
+      : [];
+    if (!thoughts.length) return null;
+    const normalized =
+      typeof thoughts[0] === "string"
+        ? {
+            thoughts: (thoughts as string[]).map((thought) => ({
+              belief: thought,
+              emotionReason: "",
+            })),
+            index: parsed.index ?? 0,
+            hasShownCustomPrompt: parsed.hasShownCustomPrompt ?? false,
+          }
+        : (parsed as AutoThoughtCacheEntry);
+    autoThoughtCache.set(cacheKey, normalized);
+    return normalized;
   } catch {
     return null;
   }

@@ -12,7 +12,10 @@ function makePrefetchKey(emotion: string, input: string): PrefetchKey {
   return `${emotion}::${input.trim()}`;
 }
 
-const thoughtsCache = new Map<PrefetchKey, string[]>();
+const thoughtsCache = new Map<
+  PrefetchKey,
+  Array<{ belief: string; emotionReason: string }>
+>();
 
 export type EmotionView = "grid" | "detail" | "intensity" | "thoughts";
 
@@ -43,7 +46,9 @@ export function useEmotionFlow({
   const [selectedEmotionData, setSelectedEmotionData] =
     useState<EmotionData | null>(null);
 
-  const [generatedThoughts, setGeneratedThoughts] = useState<string[]>([]);
+  const [generatedThoughts, setGeneratedThoughts] = useState<
+    Array<{ belief: string; emotionReason: string }>
+  >([]);
   const [selectedThoughtIndex, setSelectedThoughtIndex] = useState<
     number | null
   >(null);
@@ -105,7 +110,10 @@ export function useEmotionFlow({
         selectedEmotion
       );
 
-      const thoughts = result.sdtThoughts.map((st) => st.thought);
+      const thoughts = result.sdtThoughts.map((st) => ({
+        belief: st.belief,
+        emotionReason: st.emotionReason,
+      }));
 
       if (prefetchKeyRef.current === key) {
         thoughtsCache.set(key, thoughts);
@@ -163,7 +171,10 @@ export function useEmotionFlow({
         userInput,
         emotion
       );
-      const thoughts = result.sdtThoughts.map((st) => st.thought);
+      const thoughts = result.sdtThoughts.map((st) => ({
+        belief: st.belief,
+        emotionReason: st.emotionReason,
+      }));
       thoughtsCache.set(key, thoughts);
       setGeneratedThoughts(thoughts);
       setSelectedThoughtIndex(null);
@@ -257,7 +268,7 @@ export function useEmotionFlow({
     const newPair: EmotionThoughtPair = {
       emotion: selectedEmotion,
       intensity: storedIntensity,
-      thought: generatedThoughts[selectedThoughtIndex],
+      thought: generatedThoughts[selectedThoughtIndex]?.belief ?? "",
     };
 
     onSetEmotionThoughtPairs([newPair]);

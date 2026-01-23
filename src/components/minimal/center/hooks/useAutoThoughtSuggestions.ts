@@ -3,7 +3,6 @@ import { generateExtendedAutomaticThoughts } from "../../../../lib/ai";
 import {
   getAutoThoughtCache,
   setAutoThoughtCache,
-  type AutoThoughtCacheEntry,
 } from "../../../../utils/minimalAutoThoughtCache";
 
 type UseAutoThoughtSuggestionsParams = {
@@ -17,7 +16,9 @@ export function useAutoThoughtSuggestions({
   emotion,
   onResetSelection,
 }: UseAutoThoughtSuggestionsParams) {
-  const [thoughts, setThoughts] = useState<string[]>([]);
+  const [thoughts, setThoughts] = useState<
+    Array<{ belief: string; emotionReason: string }>
+  >([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hasShownCustomPrompt, setHasShownCustomPrompt] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -35,7 +36,10 @@ export function useAutoThoughtSuggestions({
     onResetSelection();
     try {
       const result = await generateExtendedAutomaticThoughts(userInput, emotion);
-      const nextThoughts = result.sdtThoughts.map((item) => item.thought);
+      const nextThoughts = result.sdtThoughts.map((item) => ({
+        belief: item.belief,
+        emotionReason: item.emotionReason,
+      }));
       setThoughts(nextThoughts);
       setCurrentIndex(0);
       setHasShownCustomPrompt(false);
@@ -68,7 +72,7 @@ export function useAutoThoughtSuggestions({
   }, [cacheKey, emotion, userInput]);
 
   const currentThought = useMemo(() => {
-    return thoughts[currentIndex] ?? "";
+    return thoughts[currentIndex] ?? null;
   }, [currentIndex, thoughts]);
 
   useEffect(() => {

@@ -137,7 +137,10 @@ ${behaviorsText}
   try {
     const systemPrompt =
       behaviors.length === 1 ? SYSTEM_PROMPT_SINGLE : SYSTEM_PROMPT;
-    const raw = await callGptText(prompt, { systemPrompt });
+    const raw = await callGptText(prompt, {
+      systemPrompt,
+      model: "gpt-4o-mini",
+    });
 
     const jsonText = extractJsonObject(raw);
     if (!jsonText) throw new Error("No JSON object in LLM output (behavior)");
