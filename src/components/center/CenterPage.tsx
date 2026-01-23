@@ -36,6 +36,7 @@ interface CenterPageProps {
   onStartMinimal?: () => void;
   sessionKind: "minimal" | "cbt";
   onSessionKindChange: (next: "minimal" | "cbt") => void;
+  onChangeMode: (next: CbtMode) => void;
   user: User | null;
   resumeCenterView?: "thoughts" | null;
   onResumeCenterViewHandled?: () => void;
@@ -61,6 +62,7 @@ export function CenterPage({
   onStartMinimal,
   sessionKind,
   onSessionKindChange,
+  onChangeMode,
   user,
   resumeCenterView,
   onResumeCenterViewHandled,
@@ -319,6 +321,8 @@ export function CenterPage({
             onNext={handleStepOneNext}
             sessionKind={sessionKind}
             onChangeSessionKind={onSessionKindChange}
+            mode={mode}
+            onChangeMode={onChangeMode}
             randomExamples={randomExamples}
             onExampleClick={handleExampleClick}
             onRefreshExamples={refreshExamples}

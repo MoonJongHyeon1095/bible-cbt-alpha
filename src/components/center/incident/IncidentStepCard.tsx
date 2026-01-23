@@ -1,3 +1,4 @@
+import type { CbtMode } from "../../header/navigation/ModePicker";
 import { IncidentExamplesSection } from "./IncidentExamplesSection";
 import { IncidentInputSection } from "./IncidentInputSection";
 
@@ -12,6 +13,8 @@ interface IncidentStepCardProps {
   onRefreshExamples: () => void;
   onOpenSavedTriggers: () => void;
   showExamples?: boolean;
+  mode: CbtMode;
+  onChangeMode: (next: CbtMode) => void;
 }
 
 export function IncidentStepCard({
@@ -25,6 +28,8 @@ export function IncidentStepCard({
   onRefreshExamples,
   onOpenSavedTriggers,
   showExamples = true,
+  mode,
+  onChangeMode,
 }: IncidentStepCardProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -36,6 +41,8 @@ export function IncidentStepCard({
           sessionKind={sessionKind}
           onChangeSessionKind={onChangeSessionKind}
           onOpenSavedTriggers={onOpenSavedTriggers}
+          mode={mode}
+          onChangeMode={onChangeMode}
         />
       </div>
 

@@ -9,7 +9,6 @@ type ChromeBarProps = {
   hideChrome: boolean;
   mode: CbtMode;
   user: User | null;
-  onChangeMode: (next: CbtMode) => void;
   onHomeRefresh: () => void;
   onLogout: () => void;
   onNavigate: (page: string) => boolean | void;
@@ -21,7 +20,6 @@ export function ChromeBar({
   hideChrome,
   mode,
   user,
-  onChangeMode,
   onHomeRefresh,
   onLogout,
   onNavigate,
@@ -39,7 +37,6 @@ export function ChromeBar({
         onLogout={onLogout}
         onShowAuth={onShowAuth}
         mode={mode}
-        onChangeMode={onChangeMode}
       />
       <Notice />
     </>

@@ -15,6 +15,7 @@ type PageContentProps = {
   currentPage: string;
   isMinimalExiting: boolean;
   mode: CbtMode;
+  onChangeMode: (next: CbtMode) => void;
   showEnterance: boolean;
   showMinimalCbt: boolean;
   user: User | null;
@@ -32,6 +33,7 @@ export function PageContent({
   currentPage,
   isMinimalExiting,
   mode,
+  onChangeMode,
   showEnterance,
   showMinimalCbt,
   user,
@@ -69,6 +71,7 @@ export function PageContent({
           <CBTSessionPage
             key={cbtResetKey}
             mode={mode}
+            onChangeMode={onChangeMode}
             onStartMinimal={onStartMinimalFromLite}
             sessionKind={cbtSessionKind}
             onSessionKindChange={onSessionKindChange}
@@ -94,6 +97,7 @@ export function PageContent({
       return (
         <CBTSessionPage
           mode={mode}
+          onChangeMode={onChangeMode}
           onStartMinimal={onStartMinimalFromLite}
           sessionKind={cbtSessionKind}
           onSessionKindChange={onSessionKindChange}

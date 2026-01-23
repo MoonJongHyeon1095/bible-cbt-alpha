@@ -56,7 +56,6 @@ export default function App() {
       onLogout={handleLogout}
       onNavigate={handleNavigate}
       onShowAuth={() => setShowAuthModal(true)}
-      onChangeMode={(next) => setMode(next)}
     >
       <PageContent
         cbtResetKey={cbtResetKey}
@@ -64,6 +63,7 @@ export default function App() {
         currentPage={currentPage}
         isMinimalExiting={isMinimalExiting}
         mode={mode}
+        onChangeMode={(next) => setMode(next)}
         showEnterance={showEnterance}
         showMinimalCbt={showMinimalCbt}
         user={user}

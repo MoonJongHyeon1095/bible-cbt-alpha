@@ -10,8 +10,9 @@ export function EnteranceThoughtSection({
   return (
     <EnteranceStepLayoutSection
       eyebrow="Step 2"
-      title="2) 자동 사고를 찾아요"
-      body="사건 뒤에 자동으로 떠오른 생각이 있을 거예요. “내가 순간적으로 뭐라고 해석했지?”를 붙잡습니다."
+      title="숨어있는 생각 찾기"
+      subtitle="감정 가까이 있는 숨은 생각을 찾아봅니다."
+      body="어떤 생각은 종종 우리가 눈치채기 전에 자동으로 작동하고, 우리를 어딘가로 데려갑니다."
       primaryLabel="다음"
       onPrimary={onNext}
     />

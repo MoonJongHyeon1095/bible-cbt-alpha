@@ -4,14 +4,21 @@ type EnteranceErrorSectionProps = {
   onNext: () => void;
 };
 
-export function EnteranceErrorSection({
-  onNext,
-}: EnteranceErrorSectionProps) {
+export function EnteranceErrorSection({ onNext }: EnteranceErrorSectionProps) {
   return (
     <EnteranceStepLayoutSection
       eyebrow="Step 3"
-      title="3) 인지오류를 점검해요"
-      body="자동 사고에는 왜곡된 패턴(인지오류)이 섞일 수 있어요. 패턴을 알아차리면 감정이 덜 휘둘립니다."
+      title="반복되는 경향 찾기"
+      subtitle="생각은 우리를 어디론가 데려가지만..."
+      body={
+        <>
+          우리 의지와 상관없이 어떤 장소에 도착했습니다.
+          <br />
+          속삭이는 목소리들이 들립니다.
+          <br />
+          하지만 목소리들이 진실만 말하는 것 같지는 않습니다.
+        </>
+      }
       primaryLabel="다음"
       onPrimary={onNext}
     />

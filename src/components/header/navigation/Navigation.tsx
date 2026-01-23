@@ -19,7 +19,6 @@ interface NavigationProps {
   onShowAuth: () => void;
 
   mode: CbtMode;
-  onChangeMode: (mode: CbtMode) => void;
 }
 
 export function Navigation({
@@ -30,7 +29,6 @@ export function Navigation({
   onLogout,
   onShowAuth,
   mode,
-  onChangeMode,
 }: NavigationProps) {
   const isDesktop = useIsDesktop(768);
   const isNativeMobile = !isDesktop && Capacitor.isNativePlatform();
@@ -73,8 +71,6 @@ export function Navigation({
         <nav className="bg-white sticky top-0 z-50">
           <MobileTopBar
             user={user}
-            mode={mode}
-            onChangeMode={onChangeMode}
             onLogout={onLogout}
             onShowAuth={onShowAuth}
             onNavigate={go}
@@ -98,8 +94,6 @@ export function Navigation({
           currentPage={currentPage}
           navItems={navItems}
           user={user}
-          mode={mode}
-          onChangeMode={onChangeMode}
           onLogout={onLogout}
           onShowAuth={onShowAuth}
           onNavigate={go}
@@ -110,8 +104,6 @@ export function Navigation({
           currentPage={currentPage}
           navItems={navItems}
           user={user}
-          mode={mode}
-          onChangeMode={onChangeMode}
           onLogout={onLogout}
           onShowAuth={onShowAuth}
           onNavigate={go}

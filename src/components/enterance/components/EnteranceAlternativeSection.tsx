@@ -10,8 +10,16 @@ export function EnteranceAlternativeSection({
   return (
     <EnteranceStepLayoutSection
       eyebrow="Step 4"
-      title="4) 대안 사고를 만들어봐요"
-      body="더 균형 잡힌 해석을 한 문장으로 바꿔봅니다. 현실적이고, 나를 돕는 방향이면 충분해요."
+      title="새로운 목소리"
+      subtitle="속삭이는 목소리를 바꿀 수 있다면?"
+      body={
+        <>
+          조금만 들여다 보아도 목소리는 잦아듭니다.
+          <br />
+          그리고 어쩌면 우리는, 그 곳에 더 나은 목소리를 새길 수 있을지
+          모릅니다.
+        </>
+      }
       primaryLabel="다음"
       onPrimary={onNext}
     />

@@ -23,7 +23,6 @@ type SessionLayoutProps = {
   onLogout: () => void;
   onNavigate: (page: string) => boolean | void;
   onShowAuth: () => void;
-  onChangeMode: (next: CbtMode) => void;
 };
 
 export function SessionLayout({
@@ -43,7 +42,6 @@ export function SessionLayout({
   onLogout,
   onNavigate,
   onShowAuth,
-  onChangeMode,
 }: SessionLayoutProps) {
   return (
     <>
@@ -52,7 +50,6 @@ export function SessionLayout({
         hideChrome={hideChrome}
         mode={mode}
         user={user}
-        onChangeMode={onChangeMode}
         onHomeRefresh={onHomeRefresh}
         onLogout={onLogout}
         onNavigate={onNavigate}

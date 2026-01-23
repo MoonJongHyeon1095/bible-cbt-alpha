@@ -1,5 +1,4 @@
 import type { ComponentType } from "react";
-import type { CbtMode } from "./ModePicker";
 
 export type NavItem = {
   id: string;
@@ -11,8 +10,6 @@ export type NavSharedProps = {
   currentPage: string;
   navItems: NavItem[];
   user: any;
-  mode: CbtMode;
-  onChangeMode: (mode: CbtMode) => void;
   onLogout: () => void;
   onShowAuth: () => void;
   onNavigate: (page: string) => boolean | void;

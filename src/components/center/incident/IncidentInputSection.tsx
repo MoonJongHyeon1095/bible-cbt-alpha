@@ -1,7 +1,9 @@
 import { FolderOpen } from "lucide-react";
 import { checkAiUsageLimit } from "../../../utils/aiUsageGuard";
+import { ModePicker } from "../../header/navigation/ModePicker";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
+import type { CbtMode } from "../../header/navigation/ModePicker";
 interface IncidentInputSectionProps {
   userInput: string;
   onInputChange: (value: string) => void;
@@ -9,6 +11,8 @@ interface IncidentInputSectionProps {
   sessionKind: "minimal" | "cbt";
   onChangeSessionKind: (next: "minimal" | "cbt") => void;
   onOpenSavedTriggers: () => void;
+  mode: CbtMode;
+  onChangeMode: (next: CbtMode) => void;
 }
 
 export function IncidentInputSection({
@@ -18,6 +22,8 @@ export function IncidentInputSection({
   sessionKind,
   onChangeSessionKind,
   onOpenSavedTriggers,
+  mode,
+  onChangeMode,
 }: IncidentInputSectionProps) {
   const isLite = sessionKind === "minimal";
   const handleStartSession = async () => {
@@ -82,7 +88,8 @@ export function IncidentInputSection({
           </Button>
         </div>
       ) : (
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end gap-2">
+          <ModePicker value={mode} onChange={onChangeMode} />
           <button
             onClick={onOpenSavedTriggers}
             className="flex flex-none shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-blue-200/70 bg-blue-50/80 px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-100/80 hover:shadow-md"
