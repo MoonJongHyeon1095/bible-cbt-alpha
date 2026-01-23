@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import type { EmotionThoughtPair } from "../types";
 import type { SelectedCognitiveError } from "../types/sessionHistory";
 import { clearCbtSessionStorage } from "../utils/storage/cbtSessionStorage";
-import { CenterPanel } from "./center/CenterPanel";
+import { CenterPage } from "./center/CenterPage";
 import { SelectedSectionActions } from "./common/SelectedSectionActions";
 import { HistoryModal } from "./feature/dashboard/HistoryModal";
 import { CbtMode } from "./header/navigation/ModePicker";
@@ -100,7 +100,7 @@ export function CBTSessionPage({
     if (step === 1 || step === 2) {
       return (
         <div className="w-full">
-          <CenterPanel
+          <CenterPage
             key={`center-${step}`}
             step={step}
             userInput={userInput}

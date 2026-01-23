@@ -1,4 +1,4 @@
-// src/components/center/CenterPanel.tsx
+// src/components/center/CenterPage.tsx
 import type { User } from "@supabase/supabase-js";
 import { ArrowLeft, DoorOpen } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -23,7 +23,7 @@ import { SavedDetailsModal } from "./modal/SavedDetailsModal";
 import { SavedTriggersModal } from "./modal/SavedTriggersModal";
 import type { EmotionNote } from "./types";
 
-interface CenterPanelProps {
+interface CenterPageProps {
   step: number;
   userInput: string;
   emotionThoughtPairs: EmotionThoughtPair[];
@@ -48,7 +48,7 @@ function scrollToTop(containerRef: React.RefObject<HTMLDivElement | null>) {
 
 const CENTER_DISCLAIMER_KEY = "center_disclaimer_ack_v1";
 
-export function CenterPanel({
+export function CenterPage({
   step,
   userInput,
   emotionThoughtPairs,
@@ -64,7 +64,7 @@ export function CenterPanel({
   user,
   resumeCenterView,
   onResumeCenterViewHandled,
-}: CenterPanelProps) {
+}: CenterPageProps) {
   const showBackButton = step > 1 && Boolean(onPrevious);
 
   // ref for scrolling
