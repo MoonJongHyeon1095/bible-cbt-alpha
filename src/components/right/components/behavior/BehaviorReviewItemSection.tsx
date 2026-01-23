@@ -35,6 +35,7 @@ export function BehaviorReviewItemSection({
 }) {
   const suggestion = suggestionsById[item.behavior.id];
   const isSelected = selectedBehaviorId === item.behavior.id;
+  const hasSuggestion = Boolean(suggestion);
 
   return (
     <AccordionItem
@@ -91,18 +92,14 @@ export function BehaviorReviewItemSection({
             type="button"
             onClick={() => void regenerateOne(item.behavior.id)}
             disabled={loadingId != null || !suggestionsEnabled}
-            className="inline-flex h-4 w-4 items-center justify-center text-indigo-500 transition hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="행동 제안 다시 생성"
+            className="inline-flex items-center gap-1 rounded-full border border-indigo-200 bg-white px-3 py-1 text-xs font-medium text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label={hasSuggestion ? "행동 제안 다시 생성" : "행동 제안 생성"}
           >
             <RefreshCw className="size-3" />
+            {hasSuggestion ? "다시 생성" : "생성"}
           </button>
         </div>
-        {loadingId === "all" ||
-        loadingId === item.behavior.id ||
-        (suggestionsEnabled &&
-          !suggestion &&
-          !errorAll &&
-          !errorById[item.behavior.id]) ? (
+        {loadingId === "all" || loadingId === item.behavior.id ? (
           <div className="mt-2 flex items-center gap-2 text-sm text-indigo-700">
             <Loader2 className="size-4 animate-spin" />
             제안을 생성하고 있습니다...
@@ -114,6 +111,10 @@ export function BehaviorReviewItemSection({
         ) : !suggestionsEnabled ? (
           <p className="text-sm mt-2 text-indigo-700">
             행동 제안을 생성하려면 입력을 완료해주세요.
+          </p>
+        ) : !hasSuggestion ? (
+          <p className="text-sm mt-2 text-indigo-700">
+            행동 제안을 아직 생성하지 않았습니다.
           </p>
         ) : (
           <>
