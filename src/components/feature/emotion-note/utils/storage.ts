@@ -1,4 +1,4 @@
-import type { Pattern } from "../types";
+// import type { Pattern } from "../types";
 
 // const LOCAL_KEY = "cbt_patterns";
 
@@ -107,6 +107,6 @@ import type { Pattern } from "../types";
 //   };
 // };
 
-export const loadLocalPatterns = (): Pattern[] => [];
+// export const loadLocalPatterns = (): Pattern[] => [];
 
-export const saveLocalPatterns = (_patterns: Pattern[]) => {};
+// export const saveLocalPatterns = (_patterns: Pattern[]) => {};
