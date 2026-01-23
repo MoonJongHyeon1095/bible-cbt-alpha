@@ -2,7 +2,7 @@
 
 // src/lib/gpt/client.ts
 import { ENV } from "../../config/env";
-import { readTokenSessionUsage, writeTokenSessionUsage } from "../../utils/tokenSessionStorage";
+import { readTokenSessionUsage, writeTokenSessionUsage } from "../../utils/storage/tokenSessionStorage";
 
 const API_BASE = ENV.API_BASE || ""; // same-origin이면 ""
 

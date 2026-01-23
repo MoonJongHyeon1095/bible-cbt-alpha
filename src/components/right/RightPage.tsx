@@ -10,7 +10,7 @@ import type {
   SelectedCognitiveError,
   SessionHistory,
 } from "../../types/sessionHistory";
-import { clearCbtSessionStorage } from "../../utils/cbtSessionStorage";
+import { clearCbtSessionStorage } from "../../utils/storage/cbtSessionStorage";
 import { formatAutoTitle } from "../../utils/formatAutoTitle";
 import type { CbtMode } from "../header/navigation/ModePicker";
 import { Button } from "../ui/button";

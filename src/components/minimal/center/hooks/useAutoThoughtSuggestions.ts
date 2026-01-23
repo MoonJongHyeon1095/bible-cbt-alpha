@@ -3,7 +3,7 @@ import { generateExtendedAutomaticThoughts } from "../../../../lib/ai";
 import {
   getAutoThoughtCache,
   setAutoThoughtCache,
-} from "../../../../utils/minimalAutoThoughtCache";
+} from "../../../../utils/storage/minimalAutoThoughtCache";
 
 type UseAutoThoughtSuggestionsParams = {
   userInput: string;

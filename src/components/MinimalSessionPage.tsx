@@ -7,7 +7,7 @@ import type {
   SelectedCognitiveError,
   SessionHistory,
 } from "../types/sessionHistory";
-import { clearCbtSessionStorage } from "../utils/cbtSessionStorage";
+import { clearCbtSessionStorage } from "../utils/storage/cbtSessionStorage";
 import { MinimalAutoThoughtSection } from "./minimal/center/MinimalAutoThoughtSection";
 import { MinimalEmotionSection } from "./minimal/center/MinimalEmotionSection";
 import { MinimalIncidentSection } from "./minimal/center/MinimalIncidentSection";

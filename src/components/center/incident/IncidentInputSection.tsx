@@ -1,6 +1,5 @@
 import { FolderOpen } from "lucide-react";
-import { toast } from "sonner";
-import { fetchTokenUsageStatus } from "../../../utils/tokenSessionStorage";
+import { checkAiUsageLimit } from "../../../utils/aiUsageGuard";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
 interface IncidentInputSectionProps {
@@ -22,27 +21,8 @@ export function IncidentInputSection({
 }: IncidentInputSectionProps) {
   const isLite = sessionKind === "minimal";
   const handleStartSession = async () => {
-    try {
-      const status = await fetchTokenUsageStatus();
-      const dailyLimit = status.is_member ? 20000 : 15000;
-      const monthlyLimit = status.is_member ? 150000 : 50000;
-
-      if (status.usage.daily_usage >= dailyLimit) {
-        toast.error(
-          "당일 토큰 사용량을 초과했습니다. (한국시간 매일 오전 09:00 초기화)",
-        );
-        return;
-      }
-
-      if (status.usage.monthly_usage >= monthlyLimit) {
-        toast.error(
-          "월 토큰 사용량을 초과했습니다. (한국시간 매월 1일 오전 09:00 초기화)",
-        );
-        return;
-      }
-    } catch (error) {
-      console.error("token usage check failed:", error);
-    }
+    const canProceed = await checkAiUsageLimit();
+    if (!canProceed) return;
 
     onNext();
   };

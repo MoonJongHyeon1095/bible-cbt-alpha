@@ -15,7 +15,7 @@ import { MinimalSessionPage } from "./components/MinimalSessionPage";
 import { Notice } from "./components/Notice";
 import { Toaster } from "./components/ui/sonner";
 import { authHelpers } from "./lib/supabase/auth";
-import { clearCbtSessionStorage } from "./utils/cbtSessionStorage";
+import { clearCbtSessionStorage } from "./utils/storage/cbtSessionStorage";
 
 import type { User } from "@supabase/supabase-js";
 import type { CbtMode } from "./components/header/navigation/ModePicker";
