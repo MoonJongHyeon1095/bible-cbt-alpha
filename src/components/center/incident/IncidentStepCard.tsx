@@ -15,6 +15,7 @@ interface IncidentStepCardProps {
   showExamples?: boolean;
   mode: CbtMode;
   onChangeMode: (next: CbtMode) => void;
+  canLoadSavedTriggers: boolean;
 }
 
 export function IncidentStepCard({
@@ -30,6 +31,7 @@ export function IncidentStepCard({
   showExamples = true,
   mode,
   onChangeMode,
+  canLoadSavedTriggers,
 }: IncidentStepCardProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -43,6 +45,7 @@ export function IncidentStepCard({
           onOpenSavedTriggers={onOpenSavedTriggers}
           mode={mode}
           onChangeMode={onChangeMode}
+          canLoadSavedTriggers={canLoadSavedTriggers}
         />
       </div>
 

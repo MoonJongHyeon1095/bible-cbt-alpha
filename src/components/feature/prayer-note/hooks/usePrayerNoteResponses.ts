@@ -13,14 +13,12 @@ interface UsePrayerNoteResponsesParams {
   user: User | null;
   notes: PrayerNote[];
   setNotes: Dispatch<SetStateAction<PrayerNote[]>>;
-  saveNotesLocally: (notes: PrayerNote[]) => void;
 }
 
 export function usePrayerNoteResponses({
   user,
   notes,
   setNotes,
-  saveNotesLocally,
 }: UsePrayerNoteResponsesParams) {
   const [responseDrafts, setResponseDrafts] = useState<Record<string, string>>(
     {}
@@ -49,49 +47,37 @@ export function usePrayerNoteResponses({
       return;
     }
 
-    if (user) {
-      try {
-        const noteIdValue = Number(noteId);
-        if (!Number.isFinite(noteIdValue)) {
-          toast.error("응답-묵상을 저장할 수 없습니다.");
-          return;
-        }
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      return;
+    }
 
-        const newResponse = await createPrayerNoteResponse(
-          user.id,
-          noteIdValue,
-          content
-        );
-        setNotes((prev) =>
-          prev.map((note) =>
-            note.id === noteId
-              ? {
-                  ...note,
-                  responses: [newResponse, ...note.responses],
-                }
-              : note
-          )
-        );
-      } catch (error) {
-        console.error("응답-묵상 저장 실패:", error);
-        toast.error("응답-묵상을 저장하지 못했습니다.");
+    try {
+      const noteIdValue = Number(noteId);
+      if (!Number.isFinite(noteIdValue)) {
+        toast.error("응답-묵상을 저장할 수 없습니다.");
         return;
       }
-    } else {
-      const newResponse: PrayerNoteResponse = {
-        id: Date.now().toString(),
-        content,
-        timestamp: new Date().toISOString(),
-      };
-      const updated = notes.map((note) =>
-        note.id === noteId
-          ? {
-              ...note,
-              responses: [newResponse, ...note.responses],
-            }
-          : note
+
+      const newResponse = await createPrayerNoteResponse(
+        user.id,
+        noteIdValue,
+        content
       );
-      saveNotesLocally(updated);
+      setNotes((prev) =>
+        prev.map((note) =>
+          note.id === noteId
+            ? {
+                ...note,
+                responses: [newResponse, ...note.responses],
+              }
+            : note
+        )
+      );
+    } catch (error) {
+      console.error("응답-묵상 저장 실패:", error);
+      toast.error("응답-묵상을 저장하지 못했습니다.");
+      return;
     }
 
     setResponseDrafts((prev) => ({ ...prev, [noteId]: "" }));
@@ -107,51 +93,40 @@ export function usePrayerNoteResponses({
       return;
     }
 
-    if (user) {
-      try {
-        const updatedResponse = await updatePrayerNoteResponse(
-          user.id,
-          responseId,
-          content
-        );
-        setNotes((prev) =>
-          prev.map((note) =>
-            note.id === noteId
-              ? {
-                  ...note,
-                  responses: note.responses.map((response) =>
-                    response.id === responseId
-                      ? {
-                          ...response,
-                          content: updatedResponse.content,
-                          timestamp:
-                            updatedResponse.timestamp ?? response.timestamp,
-                        }
-                      : response
-                  ),
-                }
-              : note
-          )
-        );
-      } catch (error) {
-        console.error("응답-묵상 수정 실패:", error);
-        toast.error("응답-묵상을 수정하지 못했습니다.");
-        return;
-      }
-    } else {
-      const updated = notes.map((note) =>
-        note.id === noteId
-          ? {
-              ...note,
-              responses: note.responses.map((response) =>
-                response.id === responseId
-                  ? { ...response, content }
-                  : response
-              ),
-            }
-          : note
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      return;
+    }
+
+    try {
+      const updatedResponse = await updatePrayerNoteResponse(
+        user.id,
+        responseId,
+        content
       );
-      saveNotesLocally(updated);
+      setNotes((prev) =>
+        prev.map((note) =>
+          note.id === noteId
+            ? {
+                ...note,
+                responses: note.responses.map((response) =>
+                  response.id === responseId
+                    ? {
+                        ...response,
+                        content: updatedResponse.content,
+                        timestamp:
+                          updatedResponse.timestamp ?? response.timestamp,
+                      }
+                    : response
+                ),
+              }
+            : note
+        )
+      );
+    } catch (error) {
+      console.error("응답-묵상 수정 실패:", error);
+      toast.error("응답-묵상을 수정하지 못했습니다.");
+      return;
     }
 
     resetResponseEdit();
@@ -161,14 +136,17 @@ export function usePrayerNoteResponses({
     noteId: string,
     responseId: string
   ) => {
-    if (user) {
-      try {
-        await deletePrayerNoteResponse(user.id, responseId);
-      } catch (error) {
-        console.error("응답-묵상 삭제 실패:", error);
-        toast.error("응답-묵상을 삭제하지 못했습니다.");
-        return;
-      }
+    if (!user) {
+      toast.error("로그인이 필요합니다.");
+      return;
+    }
+
+    try {
+      await deletePrayerNoteResponse(user.id, responseId);
+    } catch (error) {
+      console.error("응답-묵상 삭제 실패:", error);
+      toast.error("응답-묵상을 삭제하지 못했습니다.");
+      return;
     }
 
     const updated = notes.map((note) =>
@@ -182,11 +160,7 @@ export function usePrayerNoteResponses({
         : note
     );
 
-    if (user) {
-      setNotes(updated);
-    } else {
-      saveNotesLocally(updated);
-    }
+    setNotes(updated);
 
     if (editingResponseId === responseId) {
       resetResponseEdit();

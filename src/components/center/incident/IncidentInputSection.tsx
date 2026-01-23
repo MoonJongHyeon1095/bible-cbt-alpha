@@ -13,6 +13,7 @@ interface IncidentInputSectionProps {
   onOpenSavedTriggers: () => void;
   mode: CbtMode;
   onChangeMode: (next: CbtMode) => void;
+  canLoadSavedTriggers: boolean;
 }
 
 export function IncidentInputSection({
@@ -24,6 +25,7 @@ export function IncidentInputSection({
   onOpenSavedTriggers,
   mode,
   onChangeMode,
+  canLoadSavedTriggers,
 }: IncidentInputSectionProps) {
   const isLite = sessionKind === "minimal";
   const handleStartSession = async () => {
@@ -90,14 +92,16 @@ export function IncidentInputSection({
       ) : (
         <div className="flex items-center justify-end gap-2">
           <ModePicker value={mode} onChange={onChangeMode} />
-          <button
-            onClick={onOpenSavedTriggers}
-            className="flex flex-none shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-blue-200/70 bg-blue-50/80 px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-100/80 hover:shadow-md"
-            title="불러오기"
-          >
-            <FolderOpen className="size-4" />
-            불러오기
-          </button>
+          {canLoadSavedTriggers && (
+            <button
+              onClick={onOpenSavedTriggers}
+              className="flex flex-none shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-blue-200/70 bg-blue-50/80 px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-100/80 hover:shadow-md"
+              title="불러오기"
+            >
+              <FolderOpen className="size-4" />
+              불러오기
+            </button>
+          )}
         </div>
       )}
       {/* 저장된 상황 불러오기는 모달로 분리 */}

@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import type { Pattern } from "../types";
 import { updateNoteAPI } from "../utils/api";
-import { saveLocalPatterns } from "../utils/storage";
 
 interface UseFrequencySyncParams {
   user: User | null;
@@ -34,42 +33,8 @@ export function useFrequencySync({
     patternsRef.current = patterns;
   }, [patterns]);
 
-  const pendingFrequencyStorageKey = (userId?: string) =>
-    `emotion-note-frequency-pending:${userId ?? "guest"}`;
-
-  const clearPendingFrequency = (userId?: string) => {
+  const clearPendingFrequency = () => {
     pendingFrequencyRef.current = {};
-    if (typeof window === "undefined") return;
-    localStorage.removeItem(pendingFrequencyStorageKey(userId));
-  };
-
-  const loadPendingFrequency = (userId?: string) => {
-    if (typeof window === "undefined") return {};
-    try {
-      const raw = localStorage.getItem(pendingFrequencyStorageKey(userId));
-      if (!raw) return {};
-      const parsed = JSON.parse(raw);
-      return typeof parsed === "object" && parsed ? parsed : {};
-    } catch (e) {
-      console.warn("로컬 누적 카운트 로드 실패:", e);
-      return {};
-    }
-  };
-
-  const savePendingFrequency = (
-    next: Record<string, number>,
-    userId?: string
-  ) => {
-    pendingFrequencyRef.current = next;
-    if (typeof window === "undefined") return;
-    if (Object.keys(next).length === 0) {
-      localStorage.removeItem(pendingFrequencyStorageKey(userId));
-      return;
-    }
-    localStorage.setItem(
-      pendingFrequencyStorageKey(userId),
-      JSON.stringify(next)
-    );
   };
 
   const addPendingFrequency = (id: string, delta: number) => {
@@ -78,20 +43,19 @@ export function useFrequencySync({
     if (current[id] === 0) {
       delete current[id];
     }
-    savePendingFrequency(current, user?.id);
+    pendingFrequencyRef.current = current;
   };
 
   useEffect(() => {
     if (!user) {
       if (lastUserIdRef.current) {
-        clearPendingFrequency(lastUserIdRef.current);
+        clearPendingFrequency();
       }
       lastUserIdRef.current = null;
       return;
     }
     lastUserIdRef.current = user.id;
-    const pending = loadPendingFrequency(user.id);
-    pendingFrequencyRef.current = pending;
+    pendingFrequencyRef.current = {};
   }, [user]);
 
   const applyPendingFrequency = (list: Pattern[]) => {
@@ -127,15 +91,12 @@ export function useFrequencySync({
       if (remaining <= 0) {
         const next = { ...pendingFrequencyRef.current };
         delete next[id];
-        savePendingFrequency(next, user?.id);
+        pendingFrequencyRef.current = next;
       } else {
-        savePendingFrequency(
-          {
-            ...pendingFrequencyRef.current,
-            [id]: remaining,
-          },
-          user?.id
-        );
+        pendingFrequencyRef.current = {
+          ...pendingFrequencyRef.current,
+          [id]: remaining,
+        };
       }
     } catch (e) {
       console.error("발생 횟수 동기화 실패:", e);
@@ -256,6 +217,7 @@ export function useFrequencySync({
   };
 
   const incrementFrequency = (id: string) => {
+    if (!user) return;
     if (shouldBlockFrequencyClick(id)) return;
     const target = patternsRef.current.find((p) => p.id === id);
     if (!target) return;
@@ -264,18 +226,14 @@ export function useFrequencySync({
       const updated = prev.map((pattern) =>
         pattern.id === id ? { ...pattern, frequency: nextFrequency } : pattern
       );
-      if (!user) {
-        saveLocalPatterns(updated);
-      }
       return updated;
     });
-    if (user) {
-      addPendingFrequency(id, 1);
-      scheduleFrequencySync(id);
-    }
+    addPendingFrequency(id, 1);
+    scheduleFrequencySync(id);
   };
 
   const decrementFrequency = (id: string) => {
+    if (!user) return;
     if (shouldBlockFrequencyClick(id)) return;
     const target = patternsRef.current.find((p) => p.id === id);
     if (!target) return;
@@ -285,15 +243,10 @@ export function useFrequencySync({
       const updated = prev.map((pattern) =>
         pattern.id === id ? { ...pattern, frequency: nextFrequency } : pattern
       );
-      if (!user) {
-        saveLocalPatterns(updated);
-      }
       return updated;
     });
-    if (user) {
-      addPendingFrequency(id, -1);
-      scheduleFrequencySync(id);
-    }
+    addPendingFrequency(id, -1);
+    scheduleFrequencySync(id);
   };
 
   return {

@@ -18,7 +18,6 @@ import type { CbtMode } from "./header/navigation/ModePicker";
 import { MinimalCognitiveErrorSection } from "./minimal/left/MinimalCognitiveErrorSection";
 import { MinimalAlternativeThoughtSection } from "./minimal/right/MinimalAlternativeThoughtSection";
 import { saveMinimalPatternAPI } from "./minimal/right/utils/api";
-import { saveMinimalPatternLocal } from "./minimal/right/utils/storage";
 
 type MinimalStep =
   | "incident"
@@ -148,8 +147,6 @@ export function MinimalSessionPage({
         if (!ok) {
           throw new Error("save_minimal_note_failed");
         }
-      } else {
-        saveMinimalPatternLocal(minimalPayload);
       }
 
       if (user) {

@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import { useEffect } from "react";
 import type { CbtMode } from "../header/navigation/ModePicker";
 
 import { CBTSessionPage } from "../CBTSessionPage";
@@ -25,6 +26,7 @@ type PageContentProps = {
   onMinimalComplete: () => void;
   onSessionKindChange: (next: "minimal" | "cbt") => void;
   onStartMinimalFromLite: () => void;
+  onNavigate: (page: string) => boolean | void;
 };
 
 export function PageContent({
@@ -43,7 +45,14 @@ export function PageContent({
   onMinimalComplete,
   onSessionKindChange,
   onStartMinimalFromLite,
+  onNavigate,
 }: PageContentProps) {
+  useEffect(() => {
+    if (!user && (currentPage === "patterns" || currentPage === "prayer-notes")) {
+      onNavigate("cbt");
+    }
+  }, [currentPage, onNavigate, user]);
+
   switch (currentPage) {
     case "cbt":
       return showEnterance ? (
@@ -85,9 +94,33 @@ export function PageContent({
       return <DashboardPage user={user} />;
 
     case "prayer-notes":
+      if (!user) {
+        return (
+          <CBTSessionPage
+            mode={mode}
+            onChangeMode={onChangeMode}
+            onStartMinimal={onStartMinimalFromLite}
+            sessionKind={cbtSessionKind}
+            onSessionKindChange={onSessionKindChange}
+            user={user}
+          />
+        );
+      }
       return <PrayerNotesPage user={user} />;
 
     case "patterns":
+      if (!user) {
+        return (
+          <CBTSessionPage
+            mode={mode}
+            onChangeMode={onChangeMode}
+            onStartMinimal={onStartMinimalFromLite}
+            sessionKind={cbtSessionKind}
+            onSessionKindChange={onSessionKindChange}
+            user={user}
+          />
+        );
+      }
       return <PatternsPage user={user} />;
 
     case "helpline":

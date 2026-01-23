@@ -328,6 +328,7 @@ export function CenterPage({
             onRefreshExamples={refreshExamples}
             onOpenSavedTriggers={notes.openSavedTriggersModal}
             showExamples={sessionKind === "cbt"}
+            canLoadSavedTriggers={Boolean(user)}
           />
         )}
 

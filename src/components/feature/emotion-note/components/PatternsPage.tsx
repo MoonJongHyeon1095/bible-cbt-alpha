@@ -2,9 +2,11 @@ import type { User } from "@supabase/supabase-js";
 import { HeartPulse, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../../../ui/button";
-import { Card } from "../../../ui/card";
 import { validateUserText } from "../../../../utils/validation";
+import { SelectedSectionActions } from "../../../common/SelectedSectionActions";
+import { Card } from "../../../ui/card";
+import { FeatureHeader } from "../../common/FeatureHeader";
+import { ScrollToTopButton } from "../../common/ScrollToTopButton";
 import { usePatternForm } from "../hooks/usePatternForm";
 import { usePatternsData } from "../hooks/usePatternsData";
 import type {
@@ -14,7 +16,6 @@ import type {
   PatternDetail,
   PatternErrorDetail,
 } from "../types";
-import { PatternCard } from "./PatternCard";
 import { CreatePatternCard } from "./CreatePatternCard";
 import { PatternAlternativesAddSection } from "./edit/PatternAlternativesAddSection";
 import { PatternAlternativesSection } from "./edit/PatternAlternativesSection";
@@ -26,9 +27,7 @@ import { PatternEditModal } from "./edit/PatternEditModal";
 import { PatternErrorAddSection } from "./edit/PatternErrorAddSection";
 import { PatternErrorSection } from "./edit/PatternErrorSection";
 import { PatternTriggerSection } from "./edit/PatternTriggerSection";
-import { FeatureHeader } from "../../common/FeatureHeader";
-import { ScrollToTopButton } from "../../common/ScrollToTopButton";
-import { SelectedSectionActions } from "../../../common/SelectedSectionActions";
+import { PatternCard } from "./PatternCard";
 
 interface PatternsPageProps {
   user: User | null;
@@ -102,7 +101,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
     Record<string, boolean>
   >({});
   const [expandedErrors, setExpandedErrors] = useState<Record<string, boolean>>(
-    {}
+    {},
   );
   const [expandedBehaviors, setExpandedBehaviors] = useState<
     Record<string, boolean>
@@ -127,7 +126,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
     Record<string, boolean>
   >({});
   const [deletingErrors, setDeletingErrors] = useState<Record<string, boolean>>(
-    {}
+    {},
   );
   const [deletingBehaviors, setDeletingBehaviors] = useState<
     Record<string, boolean>
@@ -203,10 +202,10 @@ export function PatternsPage({ user }: PatternsPageProps) {
   };
 
   const latestSortedPatterns = [...patterns].sort((a: Pattern, b: Pattern) =>
-    (b.timestamp ?? "").localeCompare(a.timestamp ?? "")
+    (b.timestamp ?? "").localeCompare(a.timestamp ?? ""),
   );
   const mostFrequentPattern = [...patterns].sort(
-    (a: Pattern, b: Pattern) => b.frequency - a.frequency
+    (a: Pattern, b: Pattern) => b.frequency - a.frequency,
   )[0];
 
   const handleDeletePattern = (patternId: string) => {
@@ -417,7 +416,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
       | "alternatives-add"
       | "behaviors-edit"
       | "behaviors-add",
-    pattern: Pattern
+    pattern: Pattern,
   ) => {
     setIsCreating(false);
     loadPatternForEdit(pattern);
@@ -462,7 +461,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
   const handleDetailDeleteFromCard = async (
     patternId: string,
-    detailId: string
+    detailId: string,
   ) => {
     setDeletingDetails((prev) => ({ ...prev, [detailId]: true }));
     try {
@@ -478,7 +477,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
   const handleAlternativeDeleteFromCard = async (
     patternId: string,
-    alternativeId: string
+    alternativeId: string,
   ) => {
     setDeletingAlternatives((prev) => ({ ...prev, [alternativeId]: true }));
     try {
@@ -494,7 +493,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
   const handleErrorDeleteFromCard = async (
     patternId: string,
-    errorId: string
+    errorId: string,
   ) => {
     setDeletingErrors((prev) => ({ ...prev, [errorId]: true }));
     try {
@@ -510,7 +509,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
 
   const handleBehaviorDeleteFromCard = async (
     patternId: string,
-    behaviorId: string
+    behaviorId: string,
   ) => {
     setDeletingBehaviors((prev) => ({ ...prev, [behaviorId]: true }));
     try {
@@ -653,9 +652,7 @@ export function PatternsPage({ user }: PatternsPageProps) {
               onEditBehaviors={(pattern) =>
                 openEditor("behaviors-edit", pattern)
               }
-              onAddBehaviors={(pattern) =>
-                openEditor("behaviors-add", pattern)
-              }
+              onAddBehaviors={(pattern) => openEditor("behaviors-add", pattern)}
               onRequestDelete={requestDelete}
               onConfirmDelete={handleDeletePattern}
               onCancelDelete={cancelDelete}

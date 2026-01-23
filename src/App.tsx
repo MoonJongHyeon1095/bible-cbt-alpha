@@ -73,6 +73,7 @@ export default function App() {
         onMinimalComplete={handleMinimalComplete}
         onSessionKindChange={setCbtSessionKind}
         onStartMinimalFromLite={handleStartMinimalFromLite}
+        onNavigate={handleNavigate}
       />
     </SessionLayout>
   );
