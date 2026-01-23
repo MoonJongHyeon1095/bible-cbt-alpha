@@ -1,4 +1,4 @@
-package com.example.cbt;
+package com.alliance617.cbt.release;
 
 import com.getcapacitor.BridgeActivity;
 

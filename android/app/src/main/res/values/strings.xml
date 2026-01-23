@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Cognitive Behavioral Therapy Tool</string>
-    <string name="title_activity_main">Cognitive Behavioral Therapy Tool</string>
-    <string name="package_name">com.example.cbt</string>
-    <string name="custom_url_scheme">com.example.cbt</string>
+    <string name="app_name">CBT Tool (Release)</string>
+    <string name="title_activity_main">CBT Tool (Release)</string>
+    <string name="package_name">com.alliance617.cbt.release</string>
+    <string name="custom_url_scheme">com.alliance617.cbt.release</string>
 </resources>
