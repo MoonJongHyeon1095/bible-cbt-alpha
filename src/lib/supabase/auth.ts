@@ -20,22 +20,27 @@ export const authHelpers = {
   },
 
   async getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
     return { user, error };
   },
 
   async getSession() {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     return { session, error };
   },
 
   async signInWithGoogle() {
-    const redirectTo =
-      Capacitor.isNativePlatform()
-        ? "com.example.cbt://auth-callback"
-        : typeof window !== "undefined"
-          ? window.location.origin
-          : undefined;
+    const redirectTo = Capacitor.isNativePlatform()
+      ? "com.alliance617S.cbt://auth-callback"
+      : typeof window !== "undefined"
+      ? window.location.origin
+      : undefined;
 
     console.log("[auth] signInWithGoogle start:", {
       isNative: Capacitor.isNativePlatform(),

@@ -12,8 +12,8 @@ Modal/Sheet: 오버레이 PrayerNoteEditModal
 
 ### 재사용 컴포넌트 네이밍
 
-도메인 비종속이면 NoteList, TagSelector처럼 범용
-도메인 종속이면 PrayerNoteTagSelector처럼 접두사 고정
+도메인 비종속이면 NoteList, TagSelectorSection처럼 범용
+도메인 종속이면 PrayerNoteTagSelectorSection처럼 접두사 고정
 
 ### 훅 네이밍
 

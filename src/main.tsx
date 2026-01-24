@@ -20,7 +20,7 @@ async function registerOAuthDeepLinkHandler() {
     CapApp.addListener("appUrlOpen", async ({ url }) => {
       console.log("[oauth] appUrlOpen:", url);
 
-      if (!url.startsWith("com.example.cbt://auth-callback")) return;
+      if (!url.startsWith("com.alliance617.cbt://auth-callback")) return;
 
       try {
         const u = new URL(url);
@@ -39,7 +39,7 @@ async function registerOAuthDeepLinkHandler() {
 
         if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(
-            code
+            code,
           );
 
           if (error) {
